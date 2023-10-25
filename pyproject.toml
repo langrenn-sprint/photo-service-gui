@@ -1,0 +1,76 @@
+[tool.poetry]
+authors = ["Stig B. Dørmænen <stigbd@gmail.com>", "Heming Harnæs <heming.harnaes@gmail.com"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+]
+description = "An GUI for admin of sporting results"
+homepage = "https://github.com/langrenn-sprint/result-service-gui"
+license = "Apache-2.0"
+name = "result_service_gui"
+readme = "README.md"
+repository = "https://github.com/langrenn-sprint/result-service-gui"
+version = "1.1.0"
+
+[tool.poetry.dependencies]
+aiohttp = "^3.8.1"
+aiohttp-jinja2 = "^1.5"
+aiohttp-middlewares = "^2.2.0"
+aiohttp-session = "^2.9.0"
+aioresponses = "^0.7.2"
+click = "^8.1.3"
+cryptography = "^41"
+flake8-bugbear = "^23.2.13"
+google-api-python-client = "^2.52.0"
+google-auth-oauthlib = "^1.0.0"
+google-cloud-vision = "^3.0.0"
+gunicorn = "^21"
+marshmallow = "^3.18.0"
+motor = "^3.1.1"
+multidict = "^6"
+nox = "^2023"
+nox-poetry = "^1.0.1"
+PyJWT = "^2.6.0"
+python = ">=3.8.1,<3.12"
+python-dotenv = "^1"
+pyyaml = "^6"
+requests = "^2.28.1"
+setuptools = "^68"
+
+[tool.poetry.dev-dependencies]
+aiohttp-devtools = "^1"
+aioresponses = "^0.7.2"
+black = "^23"
+codecov = "^2.1.10"
+coverage = "^7.2.1"
+flake8 = "^6"
+flake8-annotations = "^3"
+flake8-bandit = "^4"
+flake8-black = "^0.3"
+flake8-docstrings = "^1.5.0"
+flake8-import-order = "^0.18.1"
+mypy = "^1.0.1"
+packaging = "^23.2"
+pep8-naming = "^0.13"
+pytest = "^7.2.0"
+pytest-aiohttp = "^1.0.4"
+pytest-asyncio = "^0.21"
+pytest-cov = "^4.0.0"
+pytest-docker = "^2.0.0"
+pytest-mock = "^3.3.1"
+[tool.coverage.paths]
+source = ["result_service_gui", "*/site-packages"]
+
+[tool.coverage.run]
+branch = false
+omit = ["*gunicorn_config.py"]
+source = ["result_service_gui"]
+
+[tool.coverage.report]
+fail_under = 10
+show_missing = true
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
