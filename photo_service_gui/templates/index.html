@@ -13,15 +13,14 @@
   <img id=menu_icon src="../static/icon_live.png"> {{ lopsinfo }}
 {% endblock %}
 {% block content %}
-  {% if username != "Gjest" %}
-    <div align=right>
-      <form onclick="event_gui_action('myNewArr', 'events')" id="myNewArr" action=/events method=get>
-        <input type="submit" name=new value="  Nytt arrangement  ">
-      </form>
-    </div>
-  {% endif %}
   <div id=spacer></div>
     <table>
+      <tr>
+        <td align=center>
+          <a href=photos_adm?event_id=><img id=frontpage_icon title="Foto admin" src="../static/icon_photos_adm_txt.png"></a>
+          <a href="video_events?event_id="><img id=frontpage_icon title="Video events" src="../static/icon_photos_adm_txt.png"></a>
+        </td>
+      </tr>
       {% for oneevent in events %}
       <tr>
         <td id=headerblue colspan=2>

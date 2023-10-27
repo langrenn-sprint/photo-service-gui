@@ -93,8 +93,8 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 ```Shell
 % source .env
 % export GOOGLE_APPLICATION_CREDENTIALS="/home/azureuser/secrets/langrenn-sprint-key220110.json"
-% poetry run adev runserver -p 8090 photo_service_gui
-% docker-compose up event-service race-service user-service photo-service mongodb competition-format-service event-service-gui
+% poetry run adev runserver -p 8080 photo_service_gui
+% docker-compose up user-service photo-service mongodb
 ```
 
 ### Teste manuelt

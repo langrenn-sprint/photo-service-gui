@@ -6,7 +6,6 @@ import aiohttp_jinja2
 
 from photo_service_gui.services import (
     PhotosAdapter,
-    RaceclassesAdapter,
 )
 from .utils import (
     check_login,
@@ -29,9 +28,6 @@ class VideoEvents(web.View):
             user = await check_login_open(self)
             event = await get_event(user, event_id)
 
-            raceclasses = await RaceclassesAdapter().get_raceclasses(
-                user["token"], event_id
-            )
             video_events = []
             video_events = await PhotosAdapter().get_all_video_events(
                 user["token"], event_id
@@ -45,7 +41,6 @@ class VideoEvents(web.View):
                     "event": event,
                     "event_id": event_id,
                     "informasjon": informasjon,
-                    "raceclasses": raceclasses,
                     "video_events": video_events,
                     "username": user["name"],
                 },
