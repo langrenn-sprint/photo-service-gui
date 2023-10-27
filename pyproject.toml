@@ -6,11 +6,11 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 description = "An GUI for admin of sporting results"
-homepage = "https://github.com/langrenn-sprint/result-service-gui"
+homepage = "https://github.com/langrenn-sprint/photo-service-gui"
 license = "Apache-2.0"
-name = "result_service_gui"
+name = "photo_service_gui"
 readme = "README.md"
-repository = "https://github.com/langrenn-sprint/result-service-gui"
+repository = "https://github.com/langrenn-sprint/photo-service-gui"
 version = "1.1.0"
 
 [tool.poetry.dependencies]
@@ -60,12 +60,12 @@ pytest-cov = "^4.0.0"
 pytest-docker = "^2.0.0"
 pytest-mock = "^3.3.1"
 [tool.coverage.paths]
-source = ["result_service_gui", "*/site-packages"]
+source = ["photo_service_gui", "*/site-packages"]
 
 [tool.coverage.run]
 branch = false
 omit = ["*gunicorn_config.py"]
-source = ["result_service_gui"]
+source = ["photo_service_gui"]
 
 [tool.coverage.report]
 fail_under = 10

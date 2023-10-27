@@ -4,8 +4,8 @@ import sys
 import nox
 from nox_poetry import Session, session
 
-package = "result_service_gui"
-locations = "result_service_gui", "tests", "noxfile.py"
+package = "photo_service_gui"
+locations = "photo_service_gui", "tests", "noxfile.py"
 nox.options.envdir = ".cache"
 nox.options.reuse_existing_virtualenvs = True
 nox.options.stop_on_first_error = True
@@ -165,7 +165,7 @@ def mypy(session: Session) -> None:
     args = session.posargs or [
         "--install-types",
         "--non-interactive",
-        "result_service_gui",
+        "photo_service_gui",
         "tests",
     ]
     session.install(".")

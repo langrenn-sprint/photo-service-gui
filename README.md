@@ -16,7 +16,7 @@ Her finner du en enkel webserver som generer html basert på csv-filer i test-da
 ### Installere programvare og sette miljøvariable
 
 ```Shell
-% git clone https://github.com/langrenn-sprint/result-service-gui.git
+% git clone https://github.com/langrenn-sprint/photo-service-gui.git
 % cd evnt-service-gui
 % pyenv install 3.10
 % pyenv local 3.10
@@ -78,7 +78,7 @@ sudo docker-compose up -d #kjøre-modus
 ### Oppdatere services i docker
 sudo docker-compose stop #oppdatere images
 sudo docker-compose pull #oppdatere images
-sudo git pull #result-service-gui
+sudo git pull #photo-service-gui
 sudo docker-compose up --build #bygge og debug modus
 sudo docker-compose stop #oppdatere images
 sudo docker-compose up -d #kjøre-modus
@@ -93,7 +93,7 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 ```Shell
 % source .env
 % export GOOGLE_APPLICATION_CREDENTIALS="/home/azureuser/secrets/langrenn-sprint-key220110.json"
-% poetry run adev runserver -p 8090 result_service_gui
+% poetry run adev runserver -p 8090 photo_service_gui
 % docker-compose up event-service race-service user-service photo-service mongodb competition-format-service event-service-gui
 ```
 
@@ -110,7 +110,7 @@ Eller via curl:
 GCP testinstans: http://34.88.91.136:8090/
 Dokumentasjon: https://langrenn-sprint.github.io/docs/
 
-Når du endrer koden i result_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
+Når du endrer koden i photo_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
 
 ## Referanser
 

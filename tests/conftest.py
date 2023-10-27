@@ -9,7 +9,7 @@ import pytest
 import requests
 from requests.exceptions import ConnectionError, Timeout
 
-from result_service_gui import create_app
+from photo_service_gui import create_app
 
 HOST_PORT = int(env.get("HOST_PORT", "8080"))
 
