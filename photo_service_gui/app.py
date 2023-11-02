@@ -72,7 +72,6 @@ async def create_app() -> web.Application:
             web.view("/logout", Logout),
             web.view("/ping", Ping),
             web.view("/photos_edit", PhotosEdit),
-            web.view("/photo_adm", PhotosAdm),
             web.view("/photo_sync", PhotoSync),
             web.view("/photos_adm", PhotosAdm),
             web.view("/photo_update", PhotoUpdate),

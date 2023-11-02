@@ -28,7 +28,6 @@ class Main(web.View):
             event = await get_event(user, "")
 
             events = await EventsAdapter().get_all_events(user["token"])
-            logging.debug(f"Events: {events}")
 
             return await aiohttp_jinja2.render_template_async(
                 "index.html",

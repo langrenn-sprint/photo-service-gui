@@ -19,37 +19,15 @@
 {% block content %}
   <script>
     /* this function will send results to backend without reloading the page */
-    function import_new_events(button) {
+    function pub_events(button) {
       document.getElementById(button.id).innerHTML = " Sender... ";
       document.getElementById(button.id).disabled = true;
-      var xhttp = new XMLHttpRequest();
-      xhttp.open("POST", "/video_events", true);
-      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-      var my_form = button.form;
-      var formData = "";
-      for (let i = 0; i < my_form.length; i++) {
-        formData += my_form[i].name + "=" + my_form[i].value + "&";
-      }
-      formData += "event_id={{ event_id }}&action=service_bus"
-
-      xhttp.send(formData);
-      xhttp.onload = function() {
-        try {
-          // load new info
-          document.getElementById("info_result").innerHTML = this.response;
-          document.getElementById(button.id).innerHTML = " Hent nye events ";
-          document.getElementById(button.id).disabled = false;
-        }
-        catch(err) {
-          if (err.message.indexOf("401") > 0) {
-            alert("Error 401 - Logg inn på nytt.");
-          }
-          else {
-            alert(err);
-          }
-        }
-      }
+      return true;
+    }
+    function get_events(button) {
+      document.getElementById(button.id).innerHTML = " Mottar... ";
+      document.getElementById(button.id).disabled = true;
+      return true;
     }
   </script>
 
@@ -57,8 +35,17 @@
     <tr>
       <form action=/video_events method=post>
         <td align=right>
-          Velg kø: <input type="text" id="queue_name" name="queue_name" value="langrenn-queue">
-          <button type="button" id="import_events" onclick=import_new_events(this); >Hent nye events</button>
+          Send melding: <input type="text" name="pub_message" value="langrenn-message">
+          <input type="hidden" name=event_id value="{{ event_id }}">
+          <input type="submit" id="pub_button" onsubmit=pub_events(this); value="  Send  ">
+        </td>
+      </tr>
+    </form>
+    <form action=/video_events method=post>
+      <tr>
+        <td align=right>
+          <input type="hidden" name=event_id value="{{ event_id }}">
+          <input type="submit" name="pull_message" onsubmit=get_events(this); value="  Hent  ">
         </td>
       </form>
     </tr>
@@ -67,34 +54,6 @@
       <span id="info_result"></span>
     </td>
     </tr>
-  </table>
-  <table>
-    <tr>
-      <th>Events</th>
-      <th>Timestamp</th>
-      <th>Detections</th>
-      <th>Info</th>
-    </tr>
-    {% for video_event in video_events %}
-    <tr>
-      <td>
-        {% for event in video_event.events %}
-          {{ event.type }} - {{ event.properties.status }}<br>
-        {% endfor %}
-      </td>
-      <td>
-        {{ video_event.sourceInfo.timestamp }}
-      </td>
-      <td>
-        {% for detection in video_event.detections %}
-          Type: {{ detection.type }} - region: {{ detection.region }} - attributes: {{ detection.attributes }}<br>
-        {% endfor %}
-      </td>
-      <td>
-        <a title="{{ video_event }}">Full Details</a> - <a title="{{ video_event.keys() }}">keys</a>
-      </td>
-    </tr>
-    {% endfor %}
   </table>
 {% endblock %}
 </div>

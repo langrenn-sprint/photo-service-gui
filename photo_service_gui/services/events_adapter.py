@@ -48,54 +48,30 @@ class EventsAdapter:
     async def get_all_events(self, token: str) -> List:
         """Get all events function."""
         events = []
-        headers = MultiDict(
-            [
-                (hdrs.CONTENT_TYPE, "application/json"),
-                (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
-        )
 
-        async with ClientSession() as session:
-            async with session.get(
-                f"{EVENT_SERVICE_URL}/events", headers=headers
-            ) as resp:
-                logging.debug(f"get_all_events - got response {resp.status}")
-                if resp.status == 200:
-                    events = await resp.json()
-                    logging.debug(f"events - got response {events}")
-                elif resp.status == 401:
-                    raise Exception(f"Login expired: {resp}")
-                else:
-                    logging.error(f"Error {resp.status} getting events: {resp} ")
+        # TODO: must be updated to use new event service
+        event = {
+            "id": "1",
+            "name": "Testevent foto",
+            "date_of_event": "2023-12-11",
+            "time_of_event": "12:00",
+            "timezone": "Europe/Oslo",
+            "competition_format": "Individual sprint",
+            "organiser": "Kjelsås IL",
+            "webpage": "langrenn.kjelsaas.no",
+            "information": "",
+        }
+        events.append(event)
         return events
 
     async def get_event(self, token: str, id: str) -> dict:
         """Get event function."""
         event = {}
-        headers = MultiDict(
-            [
-                (hdrs.CONTENT_TYPE, "application/json"),
-                (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
-        )
-
-        async with ClientSession() as session:
-            async with session.get(
-                f"{EVENT_SERVICE_URL}/events/{id}", headers=headers
-            ) as resp:
-                logging.debug(f"get_event {id} - got response {resp.status}")
-                if resp.status == 200:
-                    event = await resp.json()
-                    logging.debug(f"event - got response {event}")
-                elif resp.status == 401:
-                    raise Exception(f"Login expired: {resp}")
-                else:
-                    servicename = "get_event"
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
-                    )
+        events = await self.get_all_events(token)
+        for e in events:
+            if e["id"] == id:
+                event = e
+                break
         return event
 
     def get_global_setting(self, param_name: str) -> str:

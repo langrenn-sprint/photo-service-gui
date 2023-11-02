@@ -5,11 +5,10 @@ from aiohttp import web
 import aiohttp_jinja2
 
 from photo_service_gui.services import (
-    PhotosAdapter,
+    GooglePubSubAdapter,
 )
 from .utils import (
-    check_login,
-    check_login_open,
+    check_login_google,
     get_event,
 )
 
@@ -25,13 +24,8 @@ class VideoEvents(web.View):
         except Exception:
             informasjon = ""
         try:
-            user = await check_login_open(self)
+            user = await check_login_google(self, event_id)
             event = await get_event(user, event_id)
-
-            video_events = []
-            video_events = await PhotosAdapter().get_all_video_events(
-                user["token"], event_id
-            )
 
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
@@ -41,7 +35,6 @@ class VideoEvents(web.View):
                     "event": event,
                     "event_id": event_id,
                     "informasjon": informasjon,
-                    "video_events": video_events,
                     "username": user["name"],
                 },
             )
@@ -54,16 +47,21 @@ class VideoEvents(web.View):
         try:
             result = ""
             form = await self.request.post()
-            event_id = form["event_id"]
-            queue_name = form["queue_name"]
-            action = form['action']
-            user = await check_login(self)
-            if action in ["service_bus"]:
-                result = await PhotosAdapter().update_video_events(user["token"], event_id, queue_name)  # type: ignore
+            event_id = str(form["event_id"])
+            user = await check_login_google(self, event_id)
+            if user["name"] == "":
+                raise Exception("401 unathorized: Logg inn for å hente events.")
+            if "pub_message" in form.keys() :
+                pub_message = str(form["pub_message"])
+                result = await GooglePubSubAdapter().publish_message(
+                    pub_message
+                )
+            elif "pull_message" in form.keys():
+                result = str(await GooglePubSubAdapter().pull_messages())
         except Exception as e:
             if "401" in str(e):
                 result = "401 unathorized: Logg inn for å hente events."
             else:
                 result = "Det har oppstått en feil ved henting av video events."
             logging.error(f"Video events update - {e}")
-        return web.Response(text=result)
+        return web.Response(text=str(result))

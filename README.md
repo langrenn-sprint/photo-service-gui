@@ -62,7 +62,8 @@ DB_USER=admin
 DB_PASSWORD=password
 ```
 
-### Config gcloud
+### Config google photos api
+Link: https://developers.google.com/photos/library/guides/get-started
 
 ```Shell
 gcloud -v
@@ -83,6 +84,16 @@ sudo docker-compose up --build #bygge og debug modus
 sudo docker-compose stop #oppdatere images
 sudo docker-compose up -d #kjøre-modus
 
+### Innstillinger i google cloud
+- Create OAuth2.0 client Id: <https://console.cloud.google.com/apis/credentials>
+- Hints1: Javascript origins: http://localhost:8080 and http://localhost
+- Hints2: Redirect URI: http://localhost:8080/photos_adm and http://localhost/photos_adm
+- Download client_secret.json and save it in secrets folder, remember to add it to .env file
+- Set up conset screen
+- PUBSUB: Create topic and subscription
+- Install python libraries: pip install --upgrade google-cloud-pubsub
+- Set upp application default credentials: https://cloud.google.com/docs/authentication/provide-credentials-adc#how-to
+
 
 Denne fila _skal_ ligge i .dockerignore og .gitignore
 ### Kjøre webserver lokalt
@@ -92,26 +103,18 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 
 ```Shell
 % source .env
-% export GOOGLE_APPLICATION_CREDENTIALS="/home/azureuser/secrets/langrenn-sprint-key220110.json"
+% export GOOGLE_APPLICATION_CREDENTIALS="/home/heming/github/secrets/application_default_credentials.json"
+% export GOOGLE_CLOUD_PROJECT="sigma-celerity-257719"
 % poetry run adev runserver -p 8080 photo_service_gui
 % docker-compose up user-service photo-service mongodb
 ```
 
-### Teste manuelt
-Brukermanualer finnes på https://langrenn-sprint.github.io/docs
-Enten åpne din nettleser på <http://localhost:8090/>
-
-Eller via curl:
-
-```Shell
-% curl -i http://localhost:8090/
-```
-
-GCP testinstans: http://34.88.91.136:8090/
 Dokumentasjon: https://langrenn-sprint.github.io/docs/
 
 Når du endrer koden i photo_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
 
 ## Referanser
-
 aiohttp: <https://docs.aiohttp.org/>
+
+Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>
+Google Photos API: <https://developers.google.com/photos/library/guides/get-started>

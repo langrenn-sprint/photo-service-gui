@@ -144,15 +144,15 @@ class UserAdapter:
 
         # store token to session variable
         cookiestorage["token"] = user["token"]
-        cookiestorage["name"] = user["name"]
-        cookiestorage["loggedin"] = user["loggedin"]
+        cookiestorage["name"] = decoded_jwt["name"]
+        cookiestorage["loggedin"] = True
         cookiestorage["g_jwt"] = g_jwt
-        cookiestorage["g_name"] = decoded_jwt["name"]
+        cookiestorage["g_name"] = decoded_jwt["family_name"]
         cookiestorage["g_loggedin"] = True
-        cookiestorage["g_auth_photos"] = user["g_auth_photos"]
+        cookiestorage["g_auth_photos"] = False
         cookiestorage["g_scope"] = ""
         cookiestorage["g_client_id"] = ""
-        cookiestorage["g_photos_token"] = USER_SERVICE_URL  # type: ignore
+        cookiestorage["g_photos_token"] = USERS_HOST_PORT  # type: ignore
         return 200
 
     def login_google_photos(

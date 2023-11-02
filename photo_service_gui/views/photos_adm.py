@@ -9,7 +9,7 @@ from .utils import (
     login_google_photos,
 )
 
-WEBSERVER_PHOTO_URL = "http://localhost:8090/photo_adm"
+WEBSERVER_PHOTO_URL = "http://localhost:8080/photos_adm"
 
 
 class PhotosAdm(web.View):

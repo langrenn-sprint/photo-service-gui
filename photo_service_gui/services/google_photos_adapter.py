@@ -1,5 +1,6 @@
 """Module for google photos adapter."""
 import logging
+import os
 from typing import Dict, List
 
 from aiohttp import ClientSession
@@ -12,9 +13,7 @@ from .events_adapter import EventsAdapter
 
 GOOGLE_PHOTO_SERVER = EventsAdapter().get_global_setting("GOOGLE_PHOTO_SERVER")
 GOOGLE_PHOTO_SCOPE = EventsAdapter().get_global_setting("GOOGLE_PHOTO_SCOPE")
-GOOGLE_PHOTO_CREDENTIALS_FILE = EventsAdapter().get_global_setting(
-    "GOOGLE_PHOTO_CREDENTIALS_FILE"
-)
+GOOGLE_PHOTO_CREDENTIALS_FILE = str(os.getenv("GOOGLE_PHOTO_CREDENTIALS_FILE"))
 
 
 class GooglePhotosAdapter:
