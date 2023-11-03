@@ -2,7 +2,7 @@
 import os
 
 from google.api_core import retry
-from google.cloud import pubsub_v1
+from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
 from .events_adapter import EventsAdapter
 
