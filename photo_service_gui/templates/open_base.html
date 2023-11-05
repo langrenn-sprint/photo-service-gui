@@ -69,11 +69,12 @@
           <a href=javascript:void(0) class=dropbtn>...</a>
           <div class=dropdown-content>
             <table><tr><td>
-              <a href=><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
+              <a href=/><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
               {% if event_id %}
                 <a href=photos?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos.png"> Bilder</a>
                 {% if username != "Gjest" %}
                     <a href=photos_adm?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Foto</a>
+                    <a href=photos_adm?action=photo_push&event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Push photo</a>
                 {% endif %}
               {% endif %}
             </td></tr></table>

@@ -16,6 +16,7 @@ from .views import (
     Login,
     Logout,
     Main,
+    PhotoPush,
     PhotosAdm,
     PhotosEdit,
     PhotoSync,
@@ -25,7 +26,7 @@ from .views import (
 )
 
 load_dotenv()
-LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
+LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", 20)
 PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
 logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
 
@@ -72,6 +73,7 @@ async def create_app() -> web.Application:
             web.view("/logout", Logout),
             web.view("/ping", Ping),
             web.view("/photos_edit", PhotosEdit),
+            web.view("/photo_push", PhotoPush),
             web.view("/photo_sync", PhotoSync),
             web.view("/photos_adm", PhotosAdm),
             web.view("/photo_update", PhotoUpdate),

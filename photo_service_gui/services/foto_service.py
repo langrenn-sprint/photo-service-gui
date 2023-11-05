@@ -2,14 +2,19 @@
 import datetime
 import json
 import logging
+import os
+from typing import Dict, List
 
 from aiohttp import web
 
 from .ai_image_service import AiImageService
 from .albums_adapter import Album, AlbumsAdapter
 from .events_adapter import EventsAdapter
+from .google_cloud_storage_adapter import GoogleCloudStorageAdapter
 from .google_photos_adapter import GooglePhotosAdapter
+from .google_pub_sub_adapter import GooglePubSubAdapter
 from .photos_adapter import PhotosAdapter
+from .photos_file_adapter import PhotosFileAdapter
 
 
 class FotoService:
@@ -174,6 +179,52 @@ class FotoService:
             f"Synkronisert bilder fra Google. {i_u} oppdatert og {i_c} opprettet."
         )
         return informasjon
+
+    async def push_new_photos_from_file(self, g_token: str, event_id: str, album_id: str) -> str:
+        """Push photos to cloud storage, analyze and publish."""
+        informasjon = "Laste opp nye bilder til Google Cloud Storage. "
+        new_photos = PhotosFileAdapter().get_all_photos()
+
+        # loop photos and group crops with main photo - only upload complete pairs
+        new_photos_grouped = group_photos(new_photos)
+        for x in new_photos_grouped:
+            group = new_photos_grouped[x]
+            if group['main'] and group['crop']:
+                # upload photo to cloud storage
+                GoogleCloudStorageAdapter().upload_blob(group['main'], "")
+                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['main']))
+                GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
+                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
+
+                # publish info to pubsub
+                pub_message = {
+                    "event_id": event_id,
+                    "photo_url": f"storage_base_url/{os.path.basename(group['main'])}",
+                    "crop_url": f"storage_base_url/{os.path.basename(group['crop'])}",
+                }
+                result = await GooglePubSubAdapter().publish_message(
+                    json.dumps(pub_message)
+                )
+                logging.info(f"Published message {result} to pubsub.")
+                informasjon += f" {os.path.basename(group['main'])}."
+        return informasjon
+
+
+def group_photos(photo_list: List[str]) -> Dict[str, Dict[str, str]]:
+    """Create a dictionary where the photos are grouped by main and crop."""
+    photo_dict = {}
+    for photo_name in photo_list:
+        if "_crop" in photo_name:
+            main_photo = photo_name.replace("_crop", "")
+            if main_photo not in photo_dict:
+                photo_dict[main_photo] = {'main': "", 'crop': photo_name}
+            else:
+                photo_dict[main_photo] = {'main': main_photo, 'crop': photo_name}
+        elif photo_name not in photo_dict:
+            photo_dict[photo_name] = {'main': photo_name, 'crop': ""}
+        else:
+            photo_dict[photo_name] = {'main': photo_name, 'crop': photo_dict[photo_name]["crop"]}
+    return photo_dict
 
 
 def format_zulu_time(timez: str) -> str:

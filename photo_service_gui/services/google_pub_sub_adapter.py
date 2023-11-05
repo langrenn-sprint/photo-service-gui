@@ -1,4 +1,5 @@
 """Module for google pub/sub adapter."""
+import logging
 import os
 
 from google.api_core import retry
@@ -15,45 +16,56 @@ class GooglePubSubAdapter:
     """Class representing google pub sub adapter."""
     async def publish_message(self, data_str: str) -> str:
         """Get all items for an album."""
-        publisher = pubsub_v1.PublisherClient()
-        # The `topic_path` method creates a fully qualified identifier
-        # in the form `projects/{project_id}/topics/{topic_id}`
-        topic_path = publisher.topic_path(project_id, topic_id)
+        servicename = "GooglePubSubAdapter.publish_message"
+        try:
+            publisher = pubsub_v1.PublisherClient()
+            # The `topic_path` method creates a fully qualified identifier
+            # in the form `projects/{project_id}/topics/{topic_id}`
+            topic_path = publisher.topic_path(project_id, topic_id)
 
-        # Data must be a bytestring
-        data = data_str.encode("utf-8")
-        # When you publish a message, the client returns a future.
-        future = publisher.publish(topic_path, data)
+            # Data must be a bytestring
+            data = data_str.encode("utf-8")
+            # When you publish a message, the client returns a future.
+            future = publisher.publish(topic_path, data)
+        except Exception as err:
+            logging.error(f"{servicename}, data: {data_str}. Error: {err}")
+            raise err
         return future.result()
 
     async def pull_messages(self) -> list:
         """Pull messages from topic."""
-        message_body = []
-        subscriber = pubsub_v1.SubscriberClient()
-        subscription_path = subscriber.subscription_path(project_id, subscription_id)
+        servicename = "GooglePubSubAdapter.pull_messages"
+        try:
+            message_body = []
+            subscriber = pubsub_v1.SubscriberClient()
+            subscription_path = subscriber.subscription_path(project_id, subscription_id)
 
-        NUM_MESSAGES = 3
+            NUM_MESSAGES = 3
 
-        # Wrap the subscriber in a 'with' block to automatically call close() to
-        # close the underlying gRPC channel when done.
-        with subscriber:
-            # The subscriber pulls a specific number of messages. The actual
-            # number of messages pulled may be smaller than max_messages.
-            response = subscriber.pull(
-                request={"subscription": subscription_path, "max_messages": NUM_MESSAGES},
-                retry=retry.Retry(deadline=300),
-            )
+            # Wrap the subscriber in a 'with' block to automatically call close() to
+            # close the underlying gRPC channel when done.
+            with subscriber:
+                # The subscriber pulls a specific number of messages. The actual
+                # number of messages pulled may be smaller than max_messages.
+                response = subscriber.pull(
+                    request={"subscription": subscription_path, "max_messages": NUM_MESSAGES},
+                    retry=retry.Retry(deadline=300),
+                )
 
-            if len(response.received_messages) == 0:
-                return []
+                if len(response.received_messages) == 0:
+                    return []
 
-            ack_ids = []
-            for received_message in response.received_messages:
-                message_body.append(received_message.message)
-                ack_ids.append(received_message.ack_id)
+                ack_ids = []
+                for received_message in response.received_messages:
+                    message_body.append(received_message.message)
+                    ack_ids.append(received_message.ack_id)
 
-            # Acknowledges the received messages so they will not be sent again.
-            subscriber.acknowledge(
-                request={"subscription": subscription_path, "ack_ids": ack_ids}
-            )
+                # Acknowledges the received messages so they will not be sent again.
+                subscriber.acknowledge(
+                    request={"subscription": subscription_path, "ack_ids": ack_ids}
+                )
+        except Exception as err:
+            logging.error(f"{servicename}. Error: {err}")
+            raise err
+
         return message_body

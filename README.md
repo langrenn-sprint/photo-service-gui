@@ -93,7 +93,8 @@ sudo docker-compose up -d #kjøre-modus
 - PUBSUB: Create topic and subscription
 - Install python libraries: pip install --upgrade google-cloud-pubsub
 - Set upp application default credentials: https://cloud.google.com/docs/authentication/provide-credentials-adc#how-to
-
+- Cloud storage: Bucket - https://storage.googleapis.com/langrenn-photo/result2.jpg
+  - Hint: Set to publicly available and allUsers principals, role Viewer
 
 Denne fila _skal_ ligge i .dockerignore og .gitignore
 ### Kjøre webserver lokalt

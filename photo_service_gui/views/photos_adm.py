@@ -22,6 +22,10 @@ class PhotosAdm(web.View):
         except Exception:
             event_id = ""
         try:
+            action = self.request.rel_url.query["action"]
+        except Exception:
+            action = ""
+        try:
             user = await check_login_google(self, event_id)
         except Exception as e:
             return web.HTTPSeeOther(location=f"{e}")
@@ -49,7 +53,10 @@ class PhotosAdm(web.View):
                     if auth_url:
                         return web.HTTPSeeOther(location=f"{auth_url}")
             # authenticated ok send to sync page
-            return web.HTTPSeeOther(location=f"photo_sync?event_id={event_id}")
+            if action == "photo_push":
+                return web.HTTPSeeOther(location=f"photo_push?event_id={event_id}")
+            else:
+                return web.HTTPSeeOther(location=f"photo_sync?event_id={event_id}")
 
         except Exception as e:
             logging.error(f"Error: {e}. Redirect to main page.")
