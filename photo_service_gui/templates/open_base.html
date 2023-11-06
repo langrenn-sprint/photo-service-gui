@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Photo-Service {% block titleheader %}{% endblock %}</title>
+    <title>{% block titleheader %}{% endblock %}</title>
     <link rel="stylesheet" type="text/css" href="../static/styles.css">
     {% if event.organiser[:5] == "Kjels" %}
       <link rel="stylesheet" type="text/css" href="../static/styles_kjelsaas.css">
@@ -24,10 +24,10 @@
         document.getElementById(my_element).href = "http://" + window.location.hostname + ":8080/" + path;
       }
       function result_gui_action(my_element, path) {
-        document.getElementById(my_element).action = "http://" + window.location.hostname + ":8090/" + path;
+        document.getElementById(my_element).action = "http://" + window.location.hostname + ":8080/" + path;
       }
       function result_gui_href(my_element, path) {
-        document.getElementById(my_element).href = "http://" + window.location.hostname + ":8090/" + path;
+        document.getElementById(my_element).href = "http://" + window.location.hostname + ":8080/" + path;
       }
       function confirm_delete(message) {
         return window.confirm(message);
@@ -60,7 +60,7 @@
   </head>
   <body>
     <div class="w3-container" id=adminpagetitle>
-      Photo-Service {% block headercontainer %}{% endblock %}{{ event.name }}
+      {% block headercontainer %}{% endblock %}{{ event.name }}
     </div>
     <div id=minispacer></div>
     <div class="w3-container-sticky">
@@ -69,12 +69,12 @@
           <a href=javascript:void(0) class=dropbtn>...</a>
           <div class=dropdown-content>
             <table><tr><td>
-              <a href=/><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
+              <a id="myIndex" onclick="event_gui_href('myIndex', '')" href=><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
               {% if event_id %}
-                <a href=photos?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos.png"> Bilder</a>
                 {% if username != "Gjest" %}
-                    <a href=photos_adm?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Foto</a>
-                    <a href=photos_adm?action=photo_push&event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Push photo</a>
+                </td><td>
+                    <a id="myAdmB" onclick="result_gui_href('myAdmB', 'photos_adm?event_id={{ event_id }}')" href=><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Foto</a>
+                    <a id="myAdmB" onclick="result_gui_href('myAdmB', 'photo_push?event_id={{ event_id }}')" href=><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Push foto</a>
                 {% endif %}
               {% endif %}
             </td></tr></table>
@@ -90,6 +90,8 @@
             {% if username == "Gjest" %}
               <a href=/login class=dropbtn>Logg inn</a>
             {% else %}
+              <a id="myUsers" onclick="event_gui_href('myUsers', 'users')" href="/users">Brukere</a>
+              <a id="mySettings" onclick="event_gui_href('mySettings', 'settings')" href="/settings">Globale innstillinger</a>
               <a href="/logout">Logg ut</a>
             {% endif %}
           </div>

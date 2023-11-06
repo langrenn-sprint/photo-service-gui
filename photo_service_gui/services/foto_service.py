@@ -182,7 +182,8 @@ class FotoService:
 
     async def push_new_photos_from_file(self, g_token: str, event_id: str, album_id: str) -> str:
         """Push photos to cloud storage, analyze and publish."""
-        informasjon = "Laste opp nye bilder til Google Cloud Storage. "
+        informasjon = "Lastet opp nye bilder til Google Cloud Storage:"
+        i_photo_count = 0
         new_photos = PhotosFileAdapter().get_all_photos()
 
         # loop photos and group crops with main photo - only upload complete pairs
@@ -191,22 +192,28 @@ class FotoService:
             group = new_photos_grouped[x]
             if group['main'] and group['crop']:
                 # upload photo to cloud storage
-                GoogleCloudStorageAdapter().upload_blob(group['main'], "")
+                url_main = GoogleCloudStorageAdapter().upload_blob(group['main'], "")
                 PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['main']))
-                GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
+                url_crop = GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
                 PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
 
+                # analyze photo
+                ai_information = AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
                 # publish info to pubsub
                 pub_message = {
+                    "ai_information": ai_information,
+                    "crop_url": url_crop,
                     "event_id": event_id,
-                    "photo_url": f"storage_base_url/{os.path.basename(group['main'])}",
-                    "crop_url": f"storage_base_url/{os.path.basename(group['crop'])}",
+                    "photo_url": url_main,
                 }
                 result = await GooglePubSubAdapter().publish_message(
                     json.dumps(pub_message)
                 )
                 logging.info(f"Published message {result} to pubsub.")
                 informasjon += f" {os.path.basename(group['main'])}."
+                i_photo_count += 1
+        if i_photo_count == 0:
+            informasjon = "Ingen nye bilder å laste opp."
         return informasjon
 
 

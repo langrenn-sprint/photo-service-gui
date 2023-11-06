@@ -8,7 +8,7 @@ from photo_service_gui.services import (
     GooglePubSubAdapter,
 )
 from .utils import (
-    check_login_google,
+    check_login,
     get_event,
 )
 
@@ -24,7 +24,7 @@ class VideoEvents(web.View):
         except Exception:
             informasjon = ""
         try:
-            user = await check_login_google(self, event_id)
+            user = await check_login(self)
             event = await get_event(user, event_id)
 
             """Get route function."""
@@ -47,8 +47,7 @@ class VideoEvents(web.View):
         try:
             result = ""
             form = await self.request.post()
-            event_id = str(form["event_id"])
-            user = await check_login_google(self, event_id)
+            user = await check_login(self)
             if user["name"] == "":
                 raise Exception("401 unathorized: Logg inn for å hente events.")
             if "pub_message" in form.keys() :

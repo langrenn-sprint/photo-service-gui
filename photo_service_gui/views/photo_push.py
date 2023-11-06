@@ -6,7 +6,7 @@ import aiohttp_jinja2
 
 from photo_service_gui.services import EventsAdapter, FotoService, PhotosFileAdapter
 from .utils import (
-    check_login_google_photos,
+    check_login,
     get_event,
 )
 
@@ -29,7 +29,7 @@ class PhotoPush(web.View):
         except Exception:
             action = ""
         try:
-            user = await check_login_google_photos(self, event_id)
+            user = await check_login(self)
         except Exception as e:
             return web.HTTPSeeOther(location=f"{e}")
         try:
@@ -67,14 +67,13 @@ class PhotoPush(web.View):
         informasjon = ""
         form = await self.request.post()
         event_id = str(form["event_id"])
-        user = await check_login_google_photos(self, event_id)
+        user = await check_login(self)
         album_id = str(form["album_id"])
 
         try:
             if "photo_push" in form.keys():
                 # push photos to album, analyze and create event - finally move photos to archive
                 informasjon = await FotoService().push_new_photos_from_file(user["g_photos_token"], event_id, album_id)
-
         except Exception as e:
             logging.error(f"Error: {e}")
             informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
@@ -83,5 +82,6 @@ class PhotoPush(web.View):
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
                 )
+        breakpoint()
 
         return web.HTTPSeeOther(location=f"/photo_push?event_id={event_id}&informasjon={informasjon}&action={action}")
