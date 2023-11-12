@@ -1,5 +1,6 @@
 """Package for all services."""
 from .ai_image_service import AiImageService
+from .ai_video_service import AiVideoService
 from .events_adapter import EventsAdapter
 from .foto_service import FotoService
 from .google_cloud_storage_adapter import GoogleCloudStorageAdapter

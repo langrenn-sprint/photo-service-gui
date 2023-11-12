@@ -22,6 +22,7 @@ from .views import (
     PhotoSync,
     PhotoUpdate,
     Ping,
+    PubEvents,
     VideoEvents
 )
 
@@ -77,6 +78,7 @@ async def create_app() -> web.Application:
             web.view("/photo_sync", PhotoSync),
             web.view("/photos_adm", PhotosAdm),
             web.view("/photo_update", PhotoUpdate),
+            web.view("/pub_events", PubEvents),
             web.view("/video_events", VideoEvents),
         ]
     )

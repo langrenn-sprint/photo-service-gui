@@ -3,8 +3,10 @@ import logging
 import os
 from typing import List
 
-PHOTOS_FILE_PATH = os.getenv("PHOTOS_FILE_PATH")
-PHOTOS_ARCHIVE_PATH = os.getenv("PHOTOS_ARCHIVE_PATH")
+from .events_adapter import EventsAdapter
+
+PHOTOS_FILE_PATH = EventsAdapter().get_global_setting("PHOTOS_FILE_PATH")
+PHOTOS_ARCHIVE_PATH = EventsAdapter().get_global_setting("PHOTOS_ARCHIVE_PATH")
 
 
 class PhotosFileAdapter:

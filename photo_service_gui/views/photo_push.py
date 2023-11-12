@@ -68,20 +68,19 @@ class PhotoPush(web.View):
         form = await self.request.post()
         event_id = str(form["event_id"])
         user = await check_login(self)
-        album_id = str(form["album_id"])
 
         try:
             if "photo_push" in form.keys():
                 # push photos to album, analyze and create event - finally move photos to archive
-                informasjon = await FotoService().push_new_photos_from_file(user["g_photos_token"], event_id, album_id)
+                informasjon = await FotoService().push_new_photos_from_file(event_id)
         except Exception as e:
-            logging.error(f"Error: {e}")
-            informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
             error_reason = str(e)
             if error_reason.startswith("401"):
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
                 )
-        breakpoint()
+            else:
+                logging.error(f"Error: {e}")
+                informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
 
         return web.HTTPSeeOther(location=f"/photo_push?event_id={event_id}&informasjon={informasjon}&action={action}")

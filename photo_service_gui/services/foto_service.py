@@ -180,7 +180,7 @@ class FotoService:
         )
         return informasjon
 
-    async def push_new_photos_from_file(self, g_token: str, event_id: str, album_id: str) -> str:
+    async def push_new_photos_from_file(self, event_id: str) -> str:
         """Push photos to cloud storage, analyze and publish."""
         informasjon = "Lastet opp nye bilder til Google Cloud Storage:"
         i_photo_count = 0
@@ -197,19 +197,23 @@ class FotoService:
                 url_crop = GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
                 PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
 
-                # analyze photo
+                # analyze photo with Vision AI
                 ai_information = AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
+
+                # get info from photo / file attributes
+                photo_info = "Here comes a lot of info from the photo as a json string."
                 # publish info to pubsub
                 pub_message = {
                     "ai_information": ai_information,
                     "crop_url": url_crop,
                     "event_id": event_id,
+                    "photo_info": photo_info,
                     "photo_url": url_main,
                 }
                 result = await GooglePubSubAdapter().publish_message(
                     json.dumps(pub_message)
                 )
-                logging.info(f"Published message {result} to pubsub.")
+                logging.debug(f"Published message {result} to pubsub.")
                 informasjon += f" {os.path.basename(group['main'])}."
                 i_photo_count += 1
         if i_photo_count == 0:

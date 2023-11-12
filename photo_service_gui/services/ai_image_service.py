@@ -103,7 +103,7 @@ class AiImageService:
             ):
                 if object_.name == "Person":
                     count_persons = count_persons + 1
-        _tags["Persons"] = count_persons
+        _tags["persons"] = count_persons
 
         # Performs text detection on the image file
         _numbers = []
