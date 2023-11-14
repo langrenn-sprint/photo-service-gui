@@ -1,4 +1,4 @@
-# webserver
+# webserver photo-service-gui
 
 Her finner du en enkel webserver som generer html basert på csv-filer i test-data
 
@@ -26,8 +26,6 @@ Her finner du en enkel webserver som generer html basert på csv-filer i test-da
 % poetry install
 ```
 
-
-
 ## oppdatere
 
 ```Shell
@@ -52,14 +50,8 @@ GOOGLE_OAUTH_CLIENT_ID=12345My-ClientId12345.apps.googleusercontent.com
 SERVICEBUS_NAMESPACE_CONNECTION_STR=<connection string>
 JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
-RACE_HOST_SERVER=localhost
-RACE_SERVICE_PORT=8088
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
-USER_SERVICE_HOST=localhost
-USER_SERVICE_PORT=8086
-DB_USER=admin
-DB_PASSWORD=password
 ```
 
 ### Config google photos api
@@ -106,7 +98,7 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 % source .env
 % export GOOGLE_APPLICATION_CREDENTIALS="/home/heming/github/secrets/application_default_credentials.json"
 % export GOOGLE_CLOUD_PROJECT="sigma-celerity-257719"
-% poetry run adev runserver -p 8080 photo_service_gui
+% poetry run adev runserver -p 8096 photo_service_gui
 % docker-compose up user-service photo-service mongodb
 ```
 

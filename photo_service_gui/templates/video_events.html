@@ -30,7 +30,11 @@
         var d = new Date();
         var current_time = d.toLocaleTimeString();
         document.getElementById("analyse_result").innerHTML = current_time + " - Starter analyse, url: " + video_url + "<br>" + old_info;
+        var max_lengt_info = 600;
         old_info = document.getElementById("analyse_result").innerHTML;
+        if (old_info.length > max_lengt_info) {
+          old_info = old_info.substring(0, max_lengt_info);
+        }
 
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", "/video_ai?action=run", true);
@@ -70,17 +74,17 @@
       }
 
 
-    function get_events(button) {
-      document.getElementById(button.id).innerHTML = " Mottar... ";
-      document.getElementById(button.id).disabled = true;
-      return true;
-    }
     /* this function will send events to queue without reloading the page */
     function pub_events_new(button) {
       try {
         document.getElementById(button.id).innerHTML = " Sender... ";
         document.getElementById(button.id).disabled = true;
+        var max_lengt_info = 600;
         var old_info = document.getElementById("send_reslut").innerHTML;
+        if (old_info.length > max_lengt_info) {
+          old_info = old_info.substring(0, max_lengt_info);
+        }
+
         // get current time, hours, minutes
         var d = new Date();
         var current_time = d.toLocaleTimeString();
@@ -124,32 +128,21 @@
   </script>
 
   <table>
-    <form action=/video_events method=post">
       <tr>
-        <td align=center>
-          <input type="hidden" name=event_id value="{{ event_id }}">
-          <input type="submit" name="pull_message" onsubmit=get_events(this); value="  Hent fra kø (test) ">
-
-        </td>
-      </form>
         <td align=center>
           <button type="button" id="pub_events_button" onclick="pub_events_new(this);" > Send nye bilder fra video-analyse </button>
         </td>
         <td align=center>
           <!-- add input text with url to video -->
-          <input type="text" id="video_ai_url" name="video_ai_url" value="http://" size="20">
-          <br>
+          Video url: <input type="text" id="video_ai_url" name="video_ai_url" value="http://" size="20">
           <button type="button" id="video_ai_button" onclick="video_ai_run(this);" > Start video-analyse </button>
         </td>
     </tr>
-    <tr>
-      <td id="orange">
-        <span id="hent_result"></span>
-      </td>
-      <td id="orange">
+    <tr height="500">
+      <td id="orange" valign="top">
         <span id="send_reslut"></span>
       </td>
-      <td id="orange">
+      <td id="orange" valign="top">
         <span id="analyse_result"></span>
       </td>
   </tr>
