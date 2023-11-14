@@ -1,6 +1,8 @@
 # webserver photo-service-gui
+Hovedfunksjonen til photo-service-gui er å analysere video og generere events på passeringer. Events inkuderer både skjermbilder og analyse av innholdet som deles på PubSub.
 
-Her finner du en enkel webserver som generer html basert på csv-filer i test-data
+![image](https://github.com/langrenn-sprint/photo-service-gui/assets/56455987/2b7599a2-a58e-4ade-816e-c15abb1d6f7b)
+
 
 ## Slik går du fram for å kjøre dette lokalt
 
