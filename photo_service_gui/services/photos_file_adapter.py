@@ -13,7 +13,7 @@ class PhotosFileAdapter:
     """Class representing photos."""
 
     def get_all_photos(self) -> List:
-        """Get all photos on file directory function."""
+        """Get all path/filename to all photos on file directory."""
         photos = []
         try:
             # loop files in directory

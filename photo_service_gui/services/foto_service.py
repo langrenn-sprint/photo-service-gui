@@ -6,6 +6,7 @@ import os
 from typing import Dict, List
 
 from aiohttp import web
+import piexif
 
 from .ai_image_service import AiImageService
 from .albums_adapter import Album, AlbumsAdapter
@@ -193,23 +194,23 @@ class FotoService:
             if group['main'] and group['crop']:
                 # upload photo to cloud storage
                 url_main = GoogleCloudStorageAdapter().upload_blob(group['main'], "")
-                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['main']))
                 url_crop = GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
-                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
 
                 # analyze photo with Vision AI
                 ai_information = AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
 
-                # get info from photo / file attributes
-                photo_info = "Here comes a lot of info from the photo as a json string."
-                # publish info to pubsub
                 pub_message = {
                     "ai_information": ai_information,
                     "crop_url": url_crop,
                     "event_id": event_id,
-                    "photo_info": photo_info,
+                    "photo_info": get_image_description(group['main']),
                     "photo_url": url_main,
                 }
+                # archive photos
+                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['main']))
+                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
+
+                # publish info to pubsub
                 result = await GooglePubSubAdapter().publish_message(
                     json.dumps(pub_message)
                 )
@@ -256,3 +257,24 @@ def format_zulu_time(timez: str) -> str:
 
     time = f"{t2.strftime('%Y')}-{t2.strftime('%m')}-{t2.strftime('%d')}T{t2.strftime('%X')}"
     return time
+
+
+def get_image_description(file_path: str) -> dict:
+    """Get image description from EXIF data."""
+    try:
+        # Load the EXIF data from the image
+        exif_dict = piexif.load(file_path)
+
+        # Get the ImageDescription from the '0th' IFD
+        image_description = exif_dict['0th'].get(piexif.ImageIFD.ImageDescription)
+
+        # The ImageDescription is a bytes object, so decode it to a string
+        image_description = image_description.decode('utf-8')
+
+        # The ImageDescription is a JSON string, so parse it to a dictionary
+        image_info = json.loads(image_description)
+    except Exception as e:
+        logging.error(f"Error reading image description - {file_path}: {e}")
+        image_info = {}
+
+    return image_info

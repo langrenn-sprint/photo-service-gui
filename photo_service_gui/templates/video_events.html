@@ -80,7 +80,7 @@
         document.getElementById(button.id).innerHTML = " Sender... ";
         document.getElementById(button.id).disabled = true;
         var max_lengt_info = 600;
-        var old_info = document.getElementById("send_reslut").innerHTML;
+        var old_info = document.getElementById("send_result").innerHTML;
         if (old_info.length > max_lengt_info) {
           old_info = old_info.substring(0, max_lengt_info);
         }
@@ -101,7 +101,7 @@
           try {
             // load new info
             const info = this.response;
-            document.getElementById("send_reslut").innerHTML = current_time + " - " + info + "<br>" + old_info;
+            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
             document.getElementById(button.id).innerHTML = " Send ny ";
             document.getElementById(button.id).disabled = false;
           }
@@ -110,7 +110,7 @@
               alert("Error 401 - Logg inn på nytt.");
             }
             else {
-              document.getElementById("send_reslut").innerHTML = err;
+              document.getElementById("send_result").innerHTML = err;
               alert(err);
             }
             document.getElementById(button.id).innerHTML = " Send ny ";
@@ -140,7 +140,7 @@
     </tr>
     <tr height="500">
       <td id="orange" valign="top">
-        <span id="send_reslut"></span>
+        <span id="send_result"></span>
       </td>
       <td id="orange" valign="top">
         <span id="analyse_result"></span>
