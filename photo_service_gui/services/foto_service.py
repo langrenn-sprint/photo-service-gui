@@ -17,6 +17,8 @@ from .google_pub_sub_adapter import GooglePubSubAdapter
 from .photos_adapter import PhotosAdapter
 from .photos_file_adapter import PhotosFileAdapter
 
+GOOGLE_PUBSUB_TEST_FILE = EventsAdapter().get_global_setting("GOOGLE_PUBSUB_TEST_FILE")
+
 
 class FotoService:
     """Class representing foto service."""
@@ -183,8 +185,8 @@ class FotoService:
 
     async def push_new_photos_from_file(self, event_id: str) -> str:
         """Push photos to cloud storage, analyze and publish."""
-        informasjon = "Lastet opp nye bilder til Google Cloud Storage:"
         i_photo_count = 0
+        informasjon = ""
         new_photos = PhotosFileAdapter().get_all_photos()
 
         # loop photos and group crops with main photo - only upload complete pairs
@@ -219,6 +221,32 @@ class FotoService:
                 i_photo_count += 1
         if i_photo_count == 0:
             informasjon = "Ingen nye bilder å laste opp."
+        else:
+            informasjon = f"Lastet opp {i_photo_count} nye bilder til Google Cloud Storage: {informasjon}"
+
+        return informasjon
+
+    async def push_data_from_file(self, event_id: str) -> str:
+        """Push photos to cloud storage, analyze and publish."""
+        i_photo_count = 0
+        informasjon = ""
+
+        # load json from GOOGLE_PUBSUB_TEST_FILE and publish to pubsub
+        breakpoint()
+        with open(GOOGLE_PUBSUB_TEST_FILE) as json_file:
+            data = json.load(json_file)
+            for pub_message in data:
+                # publish info to pubsub
+                result = await GooglePubSubAdapter().publish_message(
+                    json.dumps(pub_message)
+                )
+                logging.debug(f"Published message {result} to pubsub.")
+                i_photo_count += 1
+        if i_photo_count == 0:
+            informasjon = "Ingen nye bilder å laste opp."
+        else:
+            informasjon = f"Lastet opp info fra fil til pub_sub for {i_photo_count} elementer."
+
         return informasjon
 
 

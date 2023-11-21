@@ -77,6 +77,7 @@
     /* this function will send events to queue without reloading the page */
     function pub_events_new(button) {
       try {
+        var button_text = document.getElementById(button.id).innerHTML;
         document.getElementById(button.id).innerHTML = " Sender... ";
         document.getElementById(button.id).disabled = true;
         var max_lengt_info = 600;
@@ -89,12 +90,16 @@
         var d = new Date();
         var current_time = d.toLocaleTimeString();
 
+        var action = "pub";
+        if (button.id == "pub_from_file_button") {
+          action = "pub_from_file";
+        }
+
         var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/pub_events?action=pub", true);
+        xhttp.open("POST", "/pub_events", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-        var formData = "";
-        formData += "action=pub&event_id={{ event_id }}"
+        var formData ="action=" + action + "&event_id={{ event_id }}"
 
         xhttp.send(formData);
         xhttp.onload = function() {
@@ -102,7 +107,7 @@
             // load new info
             const info = this.response;
             document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
-            document.getElementById(button.id).innerHTML = " Send ny ";
+            document.getElementById(button.id).innerHTML = button_text;
             document.getElementById(button.id).disabled = false;
           }
           catch(err) {
@@ -113,14 +118,14 @@
               document.getElementById("send_result").innerHTML = err;
               alert(err);
             }
-            document.getElementById(button.id).innerHTML = " Send ny ";
+            document.getElementById(button.id).innerHTML = button_text;
             document.getElementById(button.id).disabled = false;
           }
         }
       }
       catch(err) {
           alert(err);
-          document.getElementById(button.id).innerHTML = " Send ny ";
+          document.getElementById(button.id).innerHTML = button_text;
           document.getElementById(button.id).disabled = false;
         }
         return false; // avoid to execute the actual submit of the form.
@@ -131,6 +136,8 @@
       <tr>
         <td align=center>
           <button type="button" id="pub_events_button" onclick="pub_events_new(this);" > Send nye bilder fra video-analyse </button>
+          <br>
+          <button type="button" name="file_data" id="pub_from_file_button" onclick="pub_events_new(this);" > Test: Send data fra fil </button>
         </td>
         <td align=center>
           <!-- add input text with url to video -->

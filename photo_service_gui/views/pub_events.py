@@ -24,6 +24,9 @@ class PubEvents(web.View):
             if action == "pub":
                 res = await FotoService().push_new_photos_from_file(event_id)
                 result += f" {res}"
+            elif action == "pub_from_file":
+                res = await FotoService().push_data_from_file(event_id)
+                result += f" {res}"
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):

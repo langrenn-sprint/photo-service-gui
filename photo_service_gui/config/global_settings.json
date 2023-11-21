@@ -20,5 +20,6 @@
   "GOOGLE_PUBSUB_SUBSCRIPTION_ID": "langrenn-sprint-sub",
   "GOOGLE_STORAGE_BUCKET": "langrenn-sprint",
   "GOOGLE_STORAGE_SERVER": "https://storage.googleapis.com",
-  "SKI_TRACKER_YAML": "photo_service_gui/config/ski_tracker.yaml"
+  "SKI_TRACKER_YAML": "photo_service_gui/config/ski_tracker.yaml",
+  "GOOGLE_PUBSUB_TEST_FILE": "photo_service_gui/files/pubsub_test.json"
 }

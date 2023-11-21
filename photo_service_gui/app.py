@@ -27,7 +27,7 @@ from .views import (
 )
 
 load_dotenv()
-LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", 20)
+LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
 PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
 logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
 
