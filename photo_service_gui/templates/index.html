@@ -40,4 +40,33 @@
       </tr>
       {% endfor %}
     </table>
+    {% if username != "Gjest" %}
+      <form action="/" method="post">
+        <table cellpadding=4>
+          <tr>
+            <td colspan=2 id=headerblue>
+              <b>Importer events fra ekstern langrenn-sprint server</b>
+            </td>
+          </tr>
+          <tr>
+            <td>Url</td>
+            <td><input type="url" name="serverUrl" value="http://10.0.0.20:8080" size="50"></td>
+          </tr>
+          <tr>
+          <td colspan=2>
+            <input type="submit" name=get_events value="  Hent og lagre  ">
+          </td>
+        </tr>
+        <tr>
+          <td>Json med event-details</td>
+          <td><input type="text" name="eventsJson" value="" size="100"></td>
+        </tr>
+        <tr>
+        <td colspan=2>
+          <input type="submit" name=json_events value="  Lagre  ">
+        </td>
+      </tr>
+    </table>
+      </form>
+    {% endif %}
 {% endblock %}

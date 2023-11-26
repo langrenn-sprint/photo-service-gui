@@ -5,7 +5,7 @@ from aiohttp import web
 import aiohttp_jinja2
 
 from photo_service_gui.services import EventsAdapter
-from .utils import check_login_open, get_event
+from .utils import check_login, check_login_open, get_event
 
 
 class Main(web.View):
@@ -45,3 +45,27 @@ class Main(web.View):
         except Exception as e:
             logging.error(f"Error: {e}. Redirect to login page.")
             return web.HTTPSeeOther(location=f"/login?informasjon={e}")
+
+    async def post(self) -> web.Response:
+        """Post route function."""
+        informasjon = ""
+        form = await self.request.post()
+        user = await check_login(self)
+
+        try:
+            if "get_events" in form.keys():
+                serverUrl = form["serverUrl"]
+                informasjon = await EventsAdapter().sync_events(user["token"], serverUrl)  # type: ignore
+            elif "json_events" in form.keys():
+                informasjon = await EventsAdapter().create_events_json(user["token"], form["eventsJson"])  # type: ignore
+        except Exception as e:
+            error_reason = str(e)
+            if error_reason.startswith("401"):
+                return web.HTTPSeeOther(
+                    location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
+                )
+            else:
+                logging.error(f"Error: {e}")
+                informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
+
+        return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")
