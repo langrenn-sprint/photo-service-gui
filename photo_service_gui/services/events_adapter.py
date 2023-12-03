@@ -12,6 +12,8 @@ from aiohttp import hdrs
 from aiohttp import web
 from multidict import MultiDict
 
+from .competition_format_adapter import CompetitionFormatAdapter
+
 EVENTS_HOST_SERVER = os.getenv("EVENTS_HOST_SERVER", "localhost")
 EVENTS_HOST_PORT = os.getenv("EVENTS_HOST_PORT", "8082")
 EVENT_SERVICE_URL = f"http://{EVENTS_HOST_SERVER}:{EVENTS_HOST_PORT}"
@@ -164,18 +166,13 @@ class EventsAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        url = f"{remote_url}/events?action=REST"
+        url = f"{remote_url}/?action=REST"
         async with ClientSession() as session:
             async with session.get(url, headers=headers) as resp:
                 res = resp.status
                 if res == 200:
-                    body = await resp.json()
+                    events = await resp.json()
                     # import events to local database
-                    try:
-                        events = json.loads(body)
-                    except Exception as e:
-                        logging.error(f"{servicename} failed - {e}")
-                        raise web.HTTPBadRequest(reason=f"{servicename} failed - {e}") from e
                     if events:
                         for event in events:
                             information += await EventsAdapter().create_event(token, event)
@@ -207,6 +204,13 @@ class EventsAdapter:
     async def create_event(self, token: str, event: dict) -> str:
         """Create new event function."""
         servicename = "create_event"
+
+        # create competition formats if nessesary
+        competition_formats = await CompetitionFormatAdapter().get_competition_formats(token)
+        if len(competition_formats) == 0:
+            request_body = CompetitionFormatAdapter().get_default_competition_format("default_individual_sprint")
+            await CompetitionFormatAdapter().create_competition_format(token, request_body)
+
         id = ""
         headers = MultiDict(
             [

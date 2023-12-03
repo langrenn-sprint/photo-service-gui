@@ -232,7 +232,6 @@ class FotoService:
         informasjon = ""
 
         # load json from GOOGLE_PUBSUB_TEST_FILE and publish to pubsub
-        breakpoint()
         with open(GOOGLE_PUBSUB_TEST_FILE) as json_file:
             data = json.load(json_file)
             for pub_message in data:

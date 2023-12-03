@@ -101,7 +101,7 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 % export GOOGLE_APPLICATION_CREDENTIALS="/home/heming/github/secrets/application_default_credentials.json"
 % export GOOGLE_CLOUD_PROJECT="sigma-celerity-257719"
 % poetry run adev runserver -p 8096 photo_service_gui
-% docker-compose up user-service event-service mongodb
+% docker-compose up user-service event-service competition-format-service mongodb
 ```
 
 Dokumentasjon: https://langrenn-sprint.github.io/docs/
