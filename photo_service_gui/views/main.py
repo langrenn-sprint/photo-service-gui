@@ -51,13 +51,14 @@ class Main(web.View):
         informasjon = ""
         form = await self.request.post()
         user = await check_login(self)
-
         try:
             if "get_events" in form.keys():
                 serverUrl = form["serverUrl"]
                 informasjon = await EventsAdapter().sync_events(user["token"], serverUrl)  # type: ignore
             elif "json_events" in form.keys():
                 informasjon = await EventsAdapter().create_events_json(user["token"], form["eventsJson"])  # type: ignore
+            elif "delete_event" in form.keys():
+                informasjon = await EventsAdapter().delete_event(user["token"], form["event_id"])  # type: ignore
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):
