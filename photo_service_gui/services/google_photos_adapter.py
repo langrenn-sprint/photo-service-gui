@@ -19,7 +19,10 @@ GOOGLE_PHOTO_CREDENTIALS_FILE = str(os.getenv("GOOGLE_PHOTO_CREDENTIALS_FILE"))
 
 class GooglePhotosAdapter:
     """Class representing google photos."""
-    async def upload_photo_to_google(self, g_token: str, photo_list: list, album_id: str) -> str:
+
+    async def upload_photo_to_google(
+        self, g_token: str, photo_list: list, album_id: str
+    ) -> str:
         """Upload photo to a specific album in google photos."""
         i = 0
         servicename = "upload_photo_to_album"
@@ -30,17 +33,21 @@ class GooglePhotosAdapter:
                 upload_url = f"{GOOGLE_PHOTO_SERVER}/uploads"
                 image_type = "image/jpeg"
                 headers = {
-                    'Authorization': f'Bearer {g_token}',
-                    'Content-Type': 'application/octet-stream',
-                    'X-Goog-Upload-Content-Type': image_type,
-                    'X-Goog-Upload-Protocol': 'raw',
-                    'X-Goog-Upload-File-Name': os.path.basename(photo),
+                    "Authorization": f"Bearer {g_token}",
+                    "Content-Type": "application/octet-stream",
+                    "X-Goog-Upload-Content-Type": image_type,
+                    "X-Goog-Upload-Protocol": "raw",
+                    "X-Goog-Upload-File-Name": os.path.basename(photo),
                 }
 
                 async with ClientSession() as session:
-                    async with session.post(upload_url, data=open_photo_binary(photo), headers=headers) as response:
+                    async with session.post(
+                        upload_url, data=open_photo_binary(photo), headers=headers
+                    ) as response:
                         if response.status != 200:
-                            raise Exception(f"Upload step1 failed for {photo} - {response}.")
+                            raise Exception(
+                                f"Upload step1 failed for {photo} - {response}."
+                            )
                         else:
                             logging.info(f"Upload step1 ok - {photo}.")
                         upload_token = await response.text()
@@ -48,22 +55,28 @@ class GooglePhotosAdapter:
                 # Step 2: Use the uploadToken to add the photo to the album
                 create_item_url = f"{GOOGLE_PHOTO_SERVER}/mediaItems:batchCreate"
                 headers = {
-                    'Authorization': f'Bearer {g_token}',
-                    'Content-Type': 'application/json',
+                    "Authorization": f"Bearer {g_token}",
+                    "Content-Type": "application/json",
                 }
-                body = json.dumps({
-                    'newMediaItems': [{
-                        'description': 'Uploaded from photo-service-gui',
-                        'simpleMediaItem': {
-                            'uploadToken': upload_token
-                        }
-                    }],
-                    'albumId': album_id,
-                })
+                body = json.dumps(
+                    {
+                        "newMediaItems": [
+                            {
+                                "description": "Uploaded from photo-service-gui",
+                                "simpleMediaItem": {"uploadToken": upload_token},
+                            }
+                        ],
+                        "albumId": album_id,
+                    }
+                )
                 async with ClientSession() as session:
-                    async with session.post(create_item_url, data=body, headers=headers) as response:
+                    async with session.post(
+                        create_item_url, data=body, headers=headers
+                    ) as response:
                         if response.status != 200:
-                            raise Exception(f"Upload step2 failed for {photo} - {response}.")
+                            raise Exception(
+                                f"Upload step2 failed for {photo} - {response}."
+                            )
                         else:
                             logging.info(f"Upload step2 ok - {photo}.")
                 i += 1
@@ -85,13 +98,10 @@ class GooglePhotosAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {g_token}"),
             ]
         )
-        request_body = {
-            "albumId": album_id,
-            "pageSize": 100
-        }
+        request_body = {"albumId": album_id, "pageSize": 100}
         while morePages:
             if pageToken:
-                request_body['pageToken'] = pageToken
+                request_body["pageToken"] = pageToken
 
             async with ClientSession() as session:
                 async with session.post(
@@ -198,5 +208,5 @@ class GooglePhotosAdapter:
 
 def open_photo_binary(file_path: str) -> bytes:
     """Open photo in binary mode."""
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         return file.read()

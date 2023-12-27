@@ -1,8 +1,8 @@
 # webserver photo-service-gui
+
 Hovedfunksjonen til photo-service-gui er å analysere video og generere events på passeringer. Events inkuderer både skjermbilder og analyse av innholdet som deles på PubSub.
 
 ![image](https://github.com/langrenn-sprint/photo-service-gui/assets/56455987/2b7599a2-a58e-4ade-816e-c15abb1d6f7b)
-
 
 ## Slik går du fram for å kjøre dette lokalt
 
@@ -57,7 +57,8 @@ USERS_HOST_PORT=8086
 ```
 
 ### Config google photos api
-Link: https://developers.google.com/photos/library/guides/get-started
+
+Link: <https://developers.google.com/photos/library/guides/get-started>
 
 ```Shell
 gcloud -v
@@ -104,11 +105,12 @@ poetry run adev runserver -p 8096 photo_service_gui
 docker-compose up user-service event-service competition-format-service mongodb
 ```
 
-Dokumentasjon: https://langrenn-sprint.github.io/docs/
+Dokumentasjon: <https://langrenn-sprint.github.io/docs/>
 
 Når du endrer koden i photo_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
 
 ## Referanser
+
 aiohttp: <https://docs.aiohttp.org/>
 
 Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>

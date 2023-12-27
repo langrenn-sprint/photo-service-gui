@@ -6,7 +6,6 @@ import time
 
 from aiohttp import web
 import aiohttp_jinja2
-from aiohttp_middlewares import cors_middleware, error_middleware
 from aiohttp_session import get_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from dotenv import load_dotenv
@@ -23,7 +22,7 @@ from .views import (
     PhotoUpdate,
     Ping,
     PubEvents,
-    VideoEvents
+    VideoEvents,
 )
 
 load_dotenv()
@@ -43,12 +42,7 @@ async def handler(request) -> web.Response:
 
 async def create_app() -> web.Application:
     """Create an web application."""
-    app = web.Application(
-        middlewares=[
-            cors_middleware(allow_all=True),
-            error_middleware(),  # default error handler for whole application
-        ]
-    )
+    app = web.Application()
 
     # sesson handling - secret_key must be 32 url-safe base64-encoded bytes
     fernet_key = os.getenv("FERNET_KEY", "23EHUWpP_tpleR_RjuX5hxndWqyc0vO-cjNUMSzbjN4=")

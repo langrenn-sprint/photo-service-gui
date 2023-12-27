@@ -17,7 +17,9 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 class PhotosAdapter:
     """Class representing photos."""
 
-    async def get_all_photos(self, token: str, event_id: str, limit: Optional[int] = None) -> List:
+    async def get_all_photos(
+        self, token: str, event_id: str, limit: Optional[int] = None
+    ) -> List:
         """Get all photos function."""
         photos = []
         headers = MultiDict(
@@ -42,7 +44,9 @@ class PhotosAdapter:
                     logging.error(f"Error {resp.status} getting photos: {resp} ")
         return photos
 
-    async def get_all_video_events(self, token: str, event_id: str, limit: Optional[int] = None) -> List:
+    async def get_all_video_events(
+        self, token: str, event_id: str, limit: Optional[int] = None
+    ) -> List:
         """Get all video events function."""
         video_events = []
         headers = MultiDict(
@@ -96,7 +100,9 @@ class PhotosAdapter:
                     )
         return photo
 
-    async def get_photos_by_raceclass(self, token: str, event_id: str, raceclass: str, limit: Optional[int] = None) -> List:
+    async def get_photos_by_raceclass(
+        self, token: str, event_id: str, raceclass: str, limit: Optional[int] = None
+    ) -> List:
         """Get all photos function."""
         photos = []
         headers = MultiDict(
@@ -228,7 +234,9 @@ class PhotosAdapter:
             logging.debug(f"Updated photo: {id} - res {resp.status}")
         return str(resp.status)
 
-    async def update_video_events(self, token: str, event_id: str, queue_name: str) -> str:
+    async def update_video_events(
+        self, token: str, event_id: str, queue_name: str
+    ) -> str:
         """Create new photo function."""
         servicename = "update_video_events"
         informasjon = ""
@@ -241,9 +249,7 @@ class PhotosAdapter:
         url = f"{PHOTO_SERVICE_URL}/video_events?eventId={event_id}&queueName={queue_name}"
 
         async with ClientSession() as session:
-            async with session.post(
-                url, headers=headers
-            ) as resp:
+            async with session.post(url, headers=headers) as resp:
                 if resp.status == 201:
                     logging.debug(f"result - got response {resp}")
                     informasjon = "201: Events er oppdatert"

@@ -17,7 +17,7 @@ class PubEvents(web.View):
         result = "200"
         try:
             form = await self.request.post()
-            action = form['action']
+            action = form["action"]
             event_id = str(form["event_id"])
             user = await check_login(self)
             logging.debug(f"User: {user}")

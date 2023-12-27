@@ -26,6 +26,8 @@ class PhotosFileAdapter:
     def move_photo_to_archive(self, filename: str) -> None:
         """Move photo to archive."""
         try:
-            os.rename(f"{PHOTOS_FILE_PATH}/{filename}", f"{PHOTOS_ARCHIVE_PATH}/{filename}")
+            os.rename(
+                f"{PHOTOS_FILE_PATH}/{filename}", f"{PHOTOS_ARCHIVE_PATH}/{filename}"
+            )
         except Exception as e:
             logging.error(f"Error moving photo to archive: {e}")

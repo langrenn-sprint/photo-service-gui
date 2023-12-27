@@ -1,9 +1,9 @@
 """Module for image services."""
 import logging
 
-from google.cloud import vision  # type: ignore
-import requests
-from requests.exceptions import ConnectionError, Timeout
+from google.cloud import vision
+import requests  # type: ignore
+from requests.exceptions import ConnectionError, Timeout  # type: ignore
 
 from .events_adapter import EventsAdapter
 

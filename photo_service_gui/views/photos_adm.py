@@ -44,7 +44,9 @@ class PhotosAdm(web.View):
                         # reload user session information
                         user = await check_login_google(self, event_id)
                     else:
-                        raise Exception(f"Det har oppstått en feil med google autorisasjon - {result}")
+                        raise Exception(
+                            f"Det har oppstått en feil med google autorisasjon - {result}"
+                        )
                 else:
                     # case (step 1): initiate authorization for google photo
                     auth_url = await get_auth_url_google_photos(

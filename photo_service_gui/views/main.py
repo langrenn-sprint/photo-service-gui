@@ -67,6 +67,8 @@ class Main(web.View):
                 )
             else:
                 logging.error(f"Error: {e}")
-                informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
+                informasjon = (
+                    f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
+                )
 
         return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

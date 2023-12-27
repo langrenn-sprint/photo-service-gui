@@ -52,16 +52,16 @@ class FotoService:
             informasjon = "Stjernemerke fjernet."
         return informasjon
 
-    async def add_album_for_synk(self, token: str, g_token: str, event: dict, g_album_id: str) -> int:
+    async def add_album_for_synk(
+        self, token: str, g_token: str, event: dict, g_album_id: str
+    ) -> int:
         """Create album for synk."""
         g_album = await GooglePhotosAdapter().get_album(g_token, g_album_id)
 
         # check if album already has been synced, if not create new
         album = await AlbumsAdapter().get_album_by_g_id(token, g_album_id)
         if album:
-            raise web.HTTPBadRequest(
-                reason="Error - album eksisterer allerede."
-            )
+            raise web.HTTPBadRequest(reason="Error - album eksisterer allerede.")
         else:
             # create album instance
             album = Album(
@@ -76,7 +76,7 @@ class FotoService:
                 None,
                 None,
                 "",
-                g_album["title"]
+                g_album["title"],
             )
             resC = await AlbumsAdapter().create_album(token, album)
             logging.debug(f"Created album, local copy {resC}")
@@ -99,7 +99,9 @@ class FotoService:
                             token, photo["id"], photo
                         )
                         iCount += 1
-                        logging.debug(f"Updated photo with id {photo_id} for event {event_id} - {result}")
+                        logging.debug(
+                            f"Updated photo with id {photo_id} for event {event_id} - {result}"
+                        )
                 except Exception as e:
                     logging.error(f"Error reading biblist - {form[key]}: {e}")
                     informasjon += "En Feil oppstod. "
@@ -175,7 +177,9 @@ class FotoService:
 
             # update album register
             sync_album.last_sync_time = EventsAdapter().get_local_datetime_now(event)
-            resU = await AlbumsAdapter().update_album(user["token"], sync_album.id, sync_album)
+            resU = await AlbumsAdapter().update_album(
+                user["token"], sync_album.id, sync_album
+            )
             logging.debug(f"Synked album - {sync_album.g_id}, stored locally {resU}")
 
         informasjon = (
@@ -193,24 +197,30 @@ class FotoService:
         new_photos_grouped = group_photos(new_photos)
         for x in new_photos_grouped:
             group = new_photos_grouped[x]
-            if group['main'] and group['crop']:
+            if group["main"] and group["crop"]:
                 # upload photo to cloud storage
-                url_main = GoogleCloudStorageAdapter().upload_blob(group['main'], "")
-                url_crop = GoogleCloudStorageAdapter().upload_blob(group['crop'], "")
+                url_main = GoogleCloudStorageAdapter().upload_blob(group["main"], "")
+                url_crop = GoogleCloudStorageAdapter().upload_blob(group["crop"], "")
 
                 # analyze photo with Vision AI
-                ai_information = AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
+                ai_information = (
+                    AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
+                )
 
                 pub_message = {
                     "ai_information": ai_information,
                     "crop_url": url_crop,
                     "event_id": event_id,
-                    "photo_info": get_image_description(group['main']),
+                    "photo_info": get_image_description(group["main"]),
                     "photo_url": url_main,
                 }
                 # archive photos
-                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['main']))
-                PhotosFileAdapter().move_photo_to_archive(os.path.basename(group['crop']))
+                PhotosFileAdapter().move_photo_to_archive(
+                    os.path.basename(group["main"])
+                )
+                PhotosFileAdapter().move_photo_to_archive(
+                    os.path.basename(group["crop"])
+                )
 
                 # publish info to pubsub
                 result = await GooglePubSubAdapter().publish_message(
@@ -244,7 +254,9 @@ class FotoService:
         if i_photo_count == 0:
             informasjon = "Ingen nye bilder å laste opp."
         else:
-            informasjon = f"Lastet opp info fra fil til pub_sub for {i_photo_count} elementer."
+            informasjon = (
+                f"Lastet opp info fra fil til pub_sub for {i_photo_count} elementer."
+            )
 
         return informasjon
 
@@ -256,13 +268,16 @@ def group_photos(photo_list: List[str]) -> Dict[str, Dict[str, str]]:
         if "_crop" in photo_name:
             main_photo = photo_name.replace("_crop", "")
             if main_photo not in photo_dict:
-                photo_dict[main_photo] = {'main': "", 'crop': photo_name}
+                photo_dict[main_photo] = {"main": "", "crop": photo_name}
             else:
-                photo_dict[main_photo] = {'main': main_photo, 'crop': photo_name}
+                photo_dict[main_photo] = {"main": main_photo, "crop": photo_name}
         elif photo_name not in photo_dict:
-            photo_dict[photo_name] = {'main': photo_name, 'crop': ""}
+            photo_dict[photo_name] = {"main": photo_name, "crop": ""}
         else:
-            photo_dict[photo_name] = {'main': photo_name, 'crop': photo_dict[photo_name]["crop"]}
+            photo_dict[photo_name] = {
+                "main": photo_name,
+                "crop": photo_dict[photo_name]["crop"],
+            }
     return photo_dict
 
 
@@ -293,10 +308,10 @@ def get_image_description(file_path: str) -> dict:
         exif_dict = piexif.load(file_path)
 
         # Get the ImageDescription from the '0th' IFD
-        image_description = exif_dict['0th'].get(piexif.ImageIFD.ImageDescription)
+        image_description = exif_dict["0th"].get(piexif.ImageIFD.ImageDescription)
 
         # The ImageDescription is a bytes object, so decode it to a string
-        image_description = image_description.decode('utf-8')
+        image_description = image_description.decode("utf-8")
 
         # The ImageDescription is a JSON string, so parse it to a dictionary
         image_info = json.loads(image_description)

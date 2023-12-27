@@ -134,9 +134,7 @@ class EventsAdapter:
             time_now = datetime.now()
 
         if format == "HH:MM":
-            local_time = (
-                f"{time_now.strftime('%H')}:{time_now.strftime('%M')}"
-            )
+            local_time = f"{time_now.strftime('%H')}:{time_now.strftime('%M')}"
         elif format == "log":
             local_time = f"{time_now.strftime('%Y')}-{time_now.strftime('%m')}-{time_now.strftime('%d')}T{time_now.strftime('%X')}"
         else:
@@ -175,7 +173,9 @@ class EventsAdapter:
                     # import events to local database
                     if events:
                         for event in events:
-                            information += await EventsAdapter().create_event(token, event)
+                            information += await EventsAdapter().create_event(
+                                token, event
+                            )
                 elif resp.status == 401:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:
@@ -206,10 +206,16 @@ class EventsAdapter:
         servicename = "create_event"
 
         # create competition formats if nessesary
-        competition_formats = await CompetitionFormatAdapter().get_competition_formats(token)
+        competition_formats = await CompetitionFormatAdapter().get_competition_formats(
+            token
+        )
         if len(competition_formats) == 0:
-            request_body = CompetitionFormatAdapter().get_default_competition_format("default_individual_sprint")
-            await CompetitionFormatAdapter().create_competition_format(token, request_body)
+            request_body = CompetitionFormatAdapter().get_default_competition_format(
+                "default_individual_sprint"
+            )
+            await CompetitionFormatAdapter().create_competition_format(
+                token, request_body
+            )
 
         id = ""
         headers = MultiDict(

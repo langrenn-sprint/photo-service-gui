@@ -6,10 +6,9 @@ from nox_poetry import Session, session
 
 package = "photo_service_gui"
 locations = "photo_service_gui", "tests", "noxfile.py"
-nox.options.envdir = ".cache"
-nox.options.reuse_existing_virtualenvs = True
 nox.options.stop_on_first_error = True
 nox.options.sessions = (
+    "black",
     "lint",
     "mypy",
     "pytype",

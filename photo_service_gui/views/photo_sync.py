@@ -95,4 +95,6 @@ class PhotoSync(web.View):
         info = (
             f"album_id={album_id}&album_title={album_title}&informasjon={informasjon}"
         )
-        return web.HTTPSeeOther(location=f"/photo_sync?event_id={event_id}&{info}&action={action}")
+        return web.HTTPSeeOther(
+            location=f"/photo_sync?event_id={event_id}&{info}&action={action}"
+        )

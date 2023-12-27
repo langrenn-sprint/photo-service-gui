@@ -50,11 +50,9 @@ class VideoEvents(web.View):
             user = await check_login(self)
             if user["name"] == "":
                 raise Exception("401 unathorized: Logg inn for å hente events.")
-            if "pub_message" in form.keys() :
+            if "pub_message" in form.keys():
                 pub_message = str(form["pub_message"])
-                result = await GooglePubSubAdapter().publish_message(
-                    pub_message
-                )
+                result = await GooglePubSubAdapter().publish_message(pub_message)
             elif "pull_message" in form.keys():
                 result = str(await GooglePubSubAdapter().pull_messages())
         except Exception as e:
