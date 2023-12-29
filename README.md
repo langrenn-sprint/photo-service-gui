@@ -19,9 +19,9 @@ Hovedfunksjonen til photo-service-gui er å analysere video og generere events p
 
 ```Shell
 % git clone https://github.com/langrenn-sprint/photo-service-gui.git
-% cd evnt-service-gui
-% pyenv install 3.10
-% pyenv local 3.10
+% cd photo-service-gui
+% pyenv install 3.11
+% pyenv local 3.11
 % pipx install poetry
 % pipx install nox
 % pipx inject nox nox-poetry
