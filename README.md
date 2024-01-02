@@ -48,6 +48,14 @@ EVENTS_HOST_PORT=8082
 PHOTOS_HOST_SERVER=localhost
 PHOTOS_HOST_PORT=8092
 FERNET_KEY=23EHUWpP_MyKey_MyKeyhxndWqyc0vO-MyKeySMyKey=
+GOOGLE_APPLICATION_CREDENTIALS=/Users/name/github/secrets/application_default_credentials.json
+GOOGLE_CLOUD_PROJECT=sigma-celerity-257719
+GOOGLE_PUBSUB_NUM_MESSAGES=1
+GOOGLE_PUBSUB_PROJECT_ID=sigma-celerity-257719
+GOOGLE_PUBSUB_TOPIC_ID=langrenn-sprint
+GOOGLE_PUBSUB_SUBSCRIPTION_ID=langrenn-sprint-sub
+GOOGLE_STORAGE_BUCKET=langrenn-sprint
+GOOGLE_STORAGE_SERVER=https://storage.googleapis.com
 GOOGLE_OAUTH_CLIENT_ID=12345My-ClientId12345.apps.googleusercontent.com
 SERVICEBUS_NAMESPACE_CONNECTION_STR=<connection string>
 JWT_EXP_DELTA_SECONDS=3600
@@ -99,8 +107,6 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 
 ```Shell
 source .env
-export GOOGLE_APPLICATION_CREDENTIALS="/Users/t520834/github/secrets/application_default_credentials.json"
-export GOOGLE_CLOUD_PROJECT="sigma-celerity-257719"
 poetry run adev runserver -p 8096 photo_service_gui
 docker-compose up user-service event-service competition-format-service mongodb
 ```

@@ -4,10 +4,8 @@ import os
 
 from google.cloud import storage  # type: ignore[attr-defined]
 
-from .events_adapter import EventsAdapter
-
-GOOGLE_STORAGE_BUCKET = EventsAdapter().get_global_setting("GOOGLE_STORAGE_BUCKET")
-GOOGLE_STORAGE_SERVER = EventsAdapter().get_global_setting("GOOGLE_STORAGE_SERVER")
+GOOGLE_STORAGE_BUCKET = os.getenv("GOOGLE_STORAGE_BUCKET")
+GOOGLE_STORAGE_SERVER = os.getenv("GOOGLE_STORAGE_SERVER")
 
 
 class GoogleCloudStorageAdapter:

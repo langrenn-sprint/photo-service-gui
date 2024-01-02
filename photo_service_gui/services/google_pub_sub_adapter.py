@@ -1,16 +1,15 @@
 """Module for google pub/sub adapter."""
 import json
 import logging
+import os
 
 from google.api_core import retry
 from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
-from .events_adapter import EventsAdapter
-
-project_id = EventsAdapter().get_global_setting("GOOGLE_PUBSUB_PROJECT_ID")
-topic_id = EventsAdapter().get_global_setting("GOOGLE_PUBSUB_TOPIC_ID")
-subscription_id = EventsAdapter().get_global_setting("GOOGLE_PUBSUB_SUBSCRIPTION_ID")
-num_messages = int(EventsAdapter().get_global_setting("GOOGLE_PUBSUB_NUM_MESSAGES"))
+project_id = os.getenv("GOOGLE_PUBSUB_PROJECT_ID")
+topic_id = os.getenv("GOOGLE_PUBSUB_TOPIC_ID")
+subscription_id = os.getenv("GOOGLE_PUBSUB_SUBSCRIPTION_ID")
+num_messages = os.getenv("GOOGLE_PUBSUB_NUM_MESSAGES", 10)
 
 
 class GooglePubSubAdapter:

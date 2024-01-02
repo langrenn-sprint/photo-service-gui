@@ -18,12 +18,26 @@
 
 {% block content %}
   <script>
-    /* this function will send events to queue without reloading the page */
-    function pub_events_new(button) {
+
+    /* this function will trigger automatic updates */
+    function pub_events_reload() {
       try {
-        var button_text = document.getElementById(button.id).innerHTML;
-        document.getElementById(button.id).innerHTML = " Sender... ";
-        document.getElementById(button.id).disabled = true;
+        var checkBox = document.getElementById("pub_events_automatic");
+        if (checkBox.checked) {
+          pub_events_new();
+        }
+      }
+      catch(err) {
+          alert(err);
+        }
+      }
+
+    /* this function will send events to queue */
+    function pub_events_new() {
+      try {
+        var button_text = document.getElementById("pub_events_button").innerHTML;
+        document.getElementById("pub_events_button").innerHTML = " Sender... ";
+        document.getElementById("pub_events_button").disabled = true;
         var max_lengt_info = 600;
         var old_info = document.getElementById("send_result").innerHTML;
         if (old_info.length > max_lengt_info) {
@@ -35,10 +49,6 @@
         var current_time = d.toLocaleTimeString();
 
         var action = "pub";
-        if (button.id == "pub_from_file_button") {
-          action = "pub_from_file";
-        }
-
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", "/pub_events", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -51,8 +61,8 @@
             // load new info
             const info = this.response;
             document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
-            document.getElementById(button.id).innerHTML = button_text;
-            document.getElementById(button.id).disabled = false;
+            document.getElementById("pub_events_button").innerHTML = button_text;
+            document.getElementById("pub_events_button").disabled = false;
           }
           catch(err) {
             if (err.message.indexOf("401") > 0) {
@@ -62,15 +72,15 @@
               document.getElementById("send_result").innerHTML = err;
               alert(err);
             }
-            document.getElementById(button.id).innerHTML = button_text;
-            document.getElementById(button.id).disabled = false;
+            document.getElementById("pub_events_button").innerHTML = button_text;
+            document.getElementById("pub_events_button").disabled = false;
           }
         }
       }
       catch(err) {
           alert(err);
-          document.getElementById(button.id).innerHTML = button_text;
-          document.getElementById(button.id).disabled = false;
+          document.getElementById("pub_events_button").innerHTML = button_text;
+          document.getElementById("pub_events_button").disabled = false;
         }
         return false; // avoid to execute the actual submit of the form.
       }
@@ -79,9 +89,9 @@
   <table>
       <tr>
         <td align=center>
-          <button type="button" id="pub_events_button" onclick="pub_events_new(this);" > Send nye bilder fra video-analyse </button>
+          <button type="button" id="pub_events_button" onclick="pub_events_new();" > Send nye bilder fra video-analyse </button>
+          <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Send automatisk hvert 30. sekund
           <br>
-          <button type="button" name="file_data" id="pub_from_file_button" onclick="pub_events_new(this);" > Test: Send data fra fil </button>
         </td>
     </tr>
     <tr height="500">
@@ -93,5 +103,9 @@
       </td>
   </tr>
 </table>
+<script>
+  // trigger every 30 seconds
+  window.setInterval(pub_events_reload, 30000);
+</script>
 {% endblock %}
 </div>
