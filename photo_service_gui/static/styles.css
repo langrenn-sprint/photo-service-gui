@@ -287,6 +287,7 @@ td {
 .w3-footer-sticky {
   padding:0.01em 0px;
   position: fixed;
+  width: 100%;
   bottom: 0;
 }
 

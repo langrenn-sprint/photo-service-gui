@@ -1,6 +1,5 @@
 {% extends "open_base.html" %}
 {% block titlecontainer %}
-<div class="w3-10"></div>
 <div class="w3-80">
 {% endblock %}
 
@@ -94,14 +93,20 @@
           <br>
         </td>
     </tr>
+    <tr id="headerblack">
+      <td>Status messages</td>
+      <td>Line crossing configuration</td>
+    </tr>
     <tr height="500">
       <td id="orange" valign="top">
         <span id="send_result"></span>
       </td>
       <td id="orange" valign="top">
-        <span id="analyse_result"></span>
+          <img width=600 src="{{ line_config_file }}">
       </td>
-  </tr>
+    </tr>
+
+  
 </table>
 <script>
   // trigger every 30 seconds

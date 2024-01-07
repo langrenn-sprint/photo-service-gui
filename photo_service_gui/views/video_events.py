@@ -5,6 +5,7 @@ from aiohttp import web
 import aiohttp_jinja2
 
 from photo_service_gui.services import (
+    EventsAdapter,
     GooglePubSubAdapter,
 )
 from .utils import (
@@ -36,6 +37,9 @@ class VideoEvents(web.View):
                     "event_id": event_id,
                     "informasjon": informasjon,
                     "username": user["name"],
+                    "line_config_file": EventsAdapter().get_global_setting(
+                        "LINE_CONFIG_FILE_URL"
+                    ),
                 },
             )
         except Exception as e:
