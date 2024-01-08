@@ -7,6 +7,7 @@ import aiohttp_jinja2
 from photo_service_gui.services import (
     EventsAdapter,
     GooglePubSubAdapter,
+    PhotosFileAdapter,
 )
 from .utils import (
     check_login,
@@ -40,6 +41,8 @@ class VideoEvents(web.View):
                     "line_config_file": EventsAdapter().get_global_setting(
                         "LINE_CONFIG_FILE_URL"
                     ),
+                    "photo_queue": PhotosFileAdapter().get_all_photo_urls()
+
                 },
             )
         except Exception as e:
@@ -58,7 +61,8 @@ class VideoEvents(web.View):
                 pub_message = str(form["pub_message"])
                 result = await GooglePubSubAdapter().publish_message(pub_message)
             elif "pull_message" in form.keys():
-                result = str(await GooglePubSubAdapter().pull_messages())
+                result_list = await GooglePubSubAdapter().pull_messages()
+                result = str(result_list)
         except Exception as e:
             if "401" in str(e):
                 result = "401 unathorized: Logg inn for å hente events."

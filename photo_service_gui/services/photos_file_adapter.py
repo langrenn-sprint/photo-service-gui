@@ -7,6 +7,7 @@ from .events_adapter import EventsAdapter
 
 PHOTOS_FILE_PATH = EventsAdapter().get_global_setting("PHOTOS_FILE_PATH")
 PHOTOS_ARCHIVE_PATH = f"{PHOTOS_FILE_PATH}/archive"
+PHOTOS_URL_PATH = EventsAdapter().get_global_setting("PHOTOS_URL_PATH")
 
 
 class PhotosFileAdapter:
@@ -17,8 +18,25 @@ class PhotosFileAdapter:
         photos = []
         try:
             # loop files in directory
-            for filename in os.listdir(PHOTOS_FILE_PATH):
-                photos.append(f"{PHOTOS_FILE_PATH}/{filename}")
+            for f in os.listdir(PHOTOS_FILE_PATH):
+                if f.endswith(".jpg") or f.endswith(".png"):
+                    # check that filename not contains _config or _crop
+                    if "_config" not in f:
+                        photos.append(f"{PHOTOS_FILE_PATH}/{f}")
+        except Exception as e:
+            logging.error(f"Error getting photos: {e}")
+        return photos
+
+    def get_all_photo_urls(self) -> List:
+        """Get all url to all photos on file directory."""
+        photos = []
+        try:
+            # loop files in directory and find all photos
+            for f in os.listdir(PHOTOS_FILE_PATH):
+                if f.endswith(".jpg") or f.endswith(".png"):
+                    # check that filename not contains _config or _crop
+                    if "_config" not in f and "_crop" not in f:
+                        photos.append(f"{PHOTOS_URL_PATH}/{f}")
         except Exception as e:
             logging.error(f"Error getting photos: {e}")
         return photos

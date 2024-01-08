@@ -3,6 +3,7 @@
   "TIME_ZONE_OFFSET_G_PHOTOS": 2,
   "CONFIDENCE_LIMIT": "0.7",
   "PHOTOS_FILE_PATH": "photo_service_gui/files",
+  "PHOTOS_URL_PATH": "../files",
   "LINE_CONFIG_FILE_URL": "../files/Finish_line_config.jpg",
   "PHOTO_THUMB_SIZE": "240",
   "PHOTO_THUMB_WIDTH": "240",

@@ -87,7 +87,7 @@
 
   <table>
       <tr>
-        <td align=center>
+        <td align=center colspan="3">
           <button type="button" id="pub_events_button" onclick="pub_events_new();" > Send nye bilder fra video-analyse </button>
           <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Send automatisk hvert 30. sekund
           <br>
@@ -95,11 +95,20 @@
     </tr>
     <tr id="headerblack">
       <td>Status messages</td>
+      <td>Photos ready for sending</td>
       <td>Line crossing configuration</td>
     </tr>
     <tr height="500">
       <td id="orange" valign="top">
         <span id="send_result"></span>
+      </td>
+      <td valign="top">
+        <span id="photo_queue">
+          {% for photo in photo_queue %}
+            <img width=100 src="{{ photo }}" title="{{ photo }}">
+            {% if loop.index % 3 == 0 %}<br>{% endif %}
+          {% endfor %}
+        </span>
       </td>
       <td id="orange" valign="top">
           <img width=600 src="{{ line_config_file }}">
