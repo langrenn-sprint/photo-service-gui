@@ -41,8 +41,7 @@ class VideoEvents(web.View):
                     "line_config_file": EventsAdapter().get_global_setting(
                         "LINE_CONFIG_FILE_URL"
                     ),
-                    "photo_queue": PhotosFileAdapter().get_all_photo_urls()
-
+                    "photo_queue": PhotosFileAdapter().get_all_photo_urls(),
                 },
             )
         except Exception as e:

@@ -204,7 +204,9 @@ class FotoService:
 
                 # analyze photo with Vision AI
                 ai_information = (
-                    AiImageService().analyze_photo_with_google_for_langrenn(url_crop)
+                    AiImageService().analyze_photo_with_google_for_langrenn_v2(
+                        url_main, url_crop
+                    )
                 )
 
                 pub_message = {
