@@ -3,7 +3,7 @@ import logging
 
 from aiohttp import web
 
-from photo_service_gui.services import FotoService
+from photo_service_gui.services import FotoService, VisionAIService
 from .utils import (
     check_login,
 )
@@ -27,6 +27,10 @@ class PubEvents(web.View):
             elif action == "pub_from_file":
                 res = await FotoService().push_data_from_file(event_id)
                 result += f" {res}"
+            elif action == "detect_crossings":
+                video_url = form["video_url"]
+                res = VisionAIService().detect_crossings_with_ultraltyics(video_url)
+                result += f"Analyse fullført: {res}"
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):

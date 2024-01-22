@@ -18,6 +18,60 @@
 {% block content %}
   <script>
 
+ /* this function will send events to queue */
+ function detect_crossings_new() {
+      try {
+        var button_text = document.getElementById("detect_crossings_button").innerHTML;
+        document.getElementById("detect_crossings_button").innerHTML = " Sender... ";
+        document.getElementById("detect_crossings_button").disabled = true;
+        var max_lengt_info = 600;
+        var old_info = document.getElementById("send_result").innerHTML;
+        if (old_info.length > max_lengt_info) {
+          old_info = old_info.substring(0, max_lengt_info);
+        }
+
+        // get current time, hours, minutes
+        var d = new Date();
+        var current_time = d.toLocaleTimeString();
+
+        var video_url = document.getElementById("detect_crossings_url").value;
+        var action = "detect_crossings";
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/pub_events", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        var formData ="action=" + action + "&video_url=" + video_url + "&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
+
+        xhttp.send(formData);
+        xhttp.onload = function() {
+          try {
+            // load new info
+            const info = this.response;
+            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
+            document.getElementById("detect_crossings_button").innerHTML = button_text;
+            document.getElementById("detect_crossings_button").disabled = false;
+          }
+          catch(err) {
+            if (err.message.indexOf("401") > 0) {
+              alert("Error 401 - Logg inn på nytt.");
+            }
+            else {
+              document.getElementById("send_result").innerHTML = err;
+              alert(err);
+            }
+            document.getElementById("detect_crossings_button").innerHTML = button_text;
+            document.getElementById("detect_crossings_button").disabled = false;
+          }
+        }
+      }
+      catch(err) {
+          alert(err);
+          document.getElementById("detect_crossings_button").innerHTML = button_text;
+          document.getElementById("detect_crossings_button").disabled = false;
+        }
+        return false; // avoid to execute the actual submit of the form.
+      }
+
     /* this function will trigger automatic updates */
     function pub_events_reload() {
       try {
@@ -93,6 +147,13 @@
           <br>
         </td>
     </tr>
+    <tr>
+      <td align=center colspan="3">
+        <button type="button" id="detect_crossings_button" onclick="detect_crossings_new();" > Start video analyse </button>
+        <input type="text" id="detect_crossings_url" name="detect_crossings_url" value="">
+        <br>
+      </td>
+  </tr>
     <tr id="headerblack">
       <td>Status messages</td>
       <td>Photos ready for sending</td>
