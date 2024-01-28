@@ -23,7 +23,7 @@ PHOTOS_FILE_PATH = os.getenv("PHOTOS_FILE_PATH")
 class VisionAIService:
     """Class representing video services."""
 
-    def detect_crossings_with_ultraltyics(
+    async def detect_crossings_with_ultraltyics(
         self,
     ) -> str:
         """Analyze video and capture screenshots of line crossings."""
@@ -88,8 +88,12 @@ class VisionAIService:
                                 else:
                                     if id not in crossedLineList:
                                         crossedLineList.append(id)
-                                        logging.info(
-                                            f"Line crossing! ID:{id}, pos:{xyxyn}"
+                                        current_time = datetime.datetime.now()
+                                        time_text = current_time.strftime(
+                                            "%Y%m%d %H:%M:%S"
+                                        )
+                                        EventsAdapter().update_video_service_status_messages(
+                                            time_text, f"Line crossing! ID:{id}"
                                         )
 
                                         # set a timestamp with font size 50
@@ -97,10 +101,6 @@ class VisionAIService:
                                         font_size = 50
                                         font_color = (255, 0, 0)  # red
                                         font = ImageFont.truetype("Arial", font_size)
-                                        current_time = datetime.datetime.now()
-                                        time_text = current_time.strftime(
-                                            "%Y%m%d %H:%M:%S"
-                                        )
                                         draw.text(
                                             (50, 50),
                                             time_text,
@@ -268,13 +268,17 @@ def print_image_with_trigger_line(
         # get the current time
         current_time = datetime.datetime.now()
         time_text = current_time.strftime("%Y%m%d %H:%M:%S")
-        time_text = (
+        image_time_text = (
             f"Crossing line coordinates: {trigger_line_xyxyn} - Time: {time_text}"
         )
-        draw.text((50, 50), time_text, font=font, fill=font_color)
+        draw.text((50, 50), image_time_text, font=font, fill=font_color)
 
         # save image to file - full size
         im.save(f"{photos_file_path}/{camera_location}_line_config.jpg")
+        EventsAdapter().update_video_service_status_messages(
+            time_text, "Updated line config"
+        )
+
     except TypeError as e:
         logging.debug(f"TypeError: {e}")
         pass  # ignore

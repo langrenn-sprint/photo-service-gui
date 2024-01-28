@@ -68,6 +68,8 @@ DETECTION_BOX_MINIMUM_SIZE=0.08
 PHOTOS_FILE_PATH=photo_service_gui/files
 ```
 
+### Rydde opp i docker stuff
+docker system prune
 
 ### Starte services i docker
 sudo docker-compose pull #oppdatere images

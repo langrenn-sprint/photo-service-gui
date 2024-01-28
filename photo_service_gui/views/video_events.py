@@ -6,7 +6,7 @@ import aiohttp_jinja2
 
 from photo_service_gui.services import (
     EventsAdapter,
-    GooglePubSubAdapter,
+    FotoService,
     PhotosFileAdapter,
     VisionAIService,
 )
@@ -47,6 +47,9 @@ class VideoEvents(web.View):
                     ),
                     "photo_queue": PhotosFileAdapter().get_all_photo_urls(),
                     "video_url": EventsAdapter().get_global_setting("VIDEO_URL"),
+                    "video_analytics_running": EventsAdapter().get_global_setting(
+                        "VIDEO_ANALYTICS_RUNNING"
+                    ),
                 },
             )
         except Exception as e:
@@ -59,24 +62,20 @@ class VideoEvents(web.View):
             result = ""
             form = await self.request.post()
             user = await check_login(self)
-            if user["name"] == "":
-                raise Exception("401 unathorized: Logg inn for å hente events.")
+            logging.debug(f"User: {user}")
             if "pub_message" in form.keys():
-                pub_message = str(form["pub_message"])
-                result = await GooglePubSubAdapter().publish_message(pub_message)
-            elif "pull_message" in form.keys():
-                result_list = await GooglePubSubAdapter().pull_messages()
-                result = str(result_list)
-            elif "update_config" in form.keys():
-                EventsAdapter().update_global_setting(
-                    "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
-                )
-                EventsAdapter().update_global_setting(
-                    "VIDEO_URL", str(form["video_url"])
-                )
-                res = VisionAIService().draw_trigger_line_with_ultraltyics()
                 event_id = str(form["event_id"])
-                informasjon = f"Oppdatert! {res}"
+                res = await FotoService().push_new_photos_from_file(event_id)
+                result += f" {res}"
+            elif "video_status" in form.keys():
+                result = str(EventsAdapter().get_video_service_status_messages())
+            elif "video_analytics_start" in form.keys():
+                result = await start_video_analytics()
+            elif "video_analytics_stop" in form.keys():
+                result = stop_video_analytics()
+            elif "update_config" in form.keys():
+                event_id = str(form["event_id"])
+                informasjon = update_config(form)  # type: ignore
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
@@ -88,3 +87,25 @@ class VideoEvents(web.View):
                 result = "Det har oppstått en feil ved henting av video events."
             logging.error(f"Video events update - {e}")
         return web.Response(text=str(result))
+
+
+async def start_video_analytics() -> str:
+    """Start video analytics."""
+    result = await VisionAIService().detect_crossings_with_ultraltyics()
+    return result
+
+
+def stop_video_analytics() -> str:
+    """Stop video analytics."""
+    EventsAdapter().update_global_setting("VIDEO_ANALYTICS_STOP", "true")
+    return "Stop video analytics initiert."
+
+
+def update_config(form: dict) -> str:
+    """Draw trigger line with ultraltyics."""
+    EventsAdapter().update_global_setting(
+        "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
+    )
+    EventsAdapter().update_global_setting("VIDEO_URL", str(form["video_url"]))
+    result = VisionAIService().draw_trigger_line_with_ultraltyics()
+    return result

@@ -8,5 +8,4 @@ from .photo_sync import PhotoSync
 from .photo_update import PhotoUpdate
 from .photos_adm import PhotosAdm
 from .photos_edit import PhotosEdit
-from .pub_events import PubEvents
 from .video_events import VideoEvents

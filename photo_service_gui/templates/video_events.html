@@ -18,12 +18,43 @@
 {% block content %}
   <script>
 
- /* this function will send events to queue */
- function detect_crossings_new() {
+ /* this function will get status updates */
+ function get_status_updates() {
       try {
-        var button_text = document.getElementById("detect_crossings_button").innerHTML;
-        document.getElementById("detect_crossings_button").innerHTML = " Sender... ";
-        document.getElementById("detect_crossings_button").disabled = true;
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/video_events", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        var formData ="video_status=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
+
+        xhttp.send(formData);
+        xhttp.onload = function() {
+          try {
+            // load new info
+            const info = this.response;
+            document.getElementById("send_result").innerHTML = info;
+          }
+          catch(err) {
+            if (err.message.indexOf("401") > 0) {
+              alert("Error 401 - Logg inn på nytt.");
+            }
+            else {
+              document.getElementById("send_result").innerHTML = err;
+              alert(err);
+            }
+          }
+        }
+      }
+      catch(err) {
+          alert(err);
+        }
+        return false; // avoid to execute the actual submit of the form.
+      }
+
+      
+ /* this function will stop video analytics */
+ function video_analytics_stop() {
+      try {
         var max_lengt_info = 600;
         var old_info = document.getElementById("send_result").innerHTML;
         if (old_info.length > max_lengt_info) {
@@ -34,12 +65,11 @@
         var d = new Date();
         var current_time = d.toLocaleTimeString();
 
-        var action = "detect_crossings";
         var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/pub_events", true);
+        xhttp.open("POST", "/video_events", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-        var formData ="action=" + action + "&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
+        var formData ="video_analytics_stop=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
 
         xhttp.send(formData);
         xhttp.onload = function() {
@@ -47,8 +77,6 @@
             // load new info
             const info = this.response;
             document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
-            document.getElementById("detect_crossings_button").innerHTML = button_text;
-            document.getElementById("detect_crossings_button").disabled = false;
           }
           catch(err) {
             if (err.message.indexOf("401") > 0) {
@@ -58,15 +86,54 @@
               document.getElementById("send_result").innerHTML = err;
               alert(err);
             }
-            document.getElementById("detect_crossings_button").innerHTML = button_text;
-            document.getElementById("detect_crossings_button").disabled = false;
           }
         }
       }
       catch(err) {
           alert(err);
-          document.getElementById("detect_crossings_button").innerHTML = button_text;
-          document.getElementById("detect_crossings_button").disabled = false;
+        }
+        return false; // avoid to execute the actual submit of the form.
+      }
+
+      /* this function will trigger video analytics */
+ function detect_crossings_new() {
+      try {
+        var max_lengt_info = 600;
+        var old_info = document.getElementById("send_result").innerHTML;
+        if (old_info.length > max_lengt_info) {
+          old_info = old_info.substring(0, max_lengt_info);
+        }
+
+        // get current time, hours, minutes
+        var d = new Date();
+        var current_time = d.toLocaleTimeString();
+
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("POST", "/video_events", true);
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+        var formData ="video_analytics_start=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
+
+        xhttp.send(formData);
+        xhttp.onload = function() {
+          try {
+            // load new info
+            const info = this.response;
+            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
+          }
+          catch(err) {
+            if (err.message.indexOf("401") > 0) {
+              alert("Error 401 - Logg inn på nytt.");
+            }
+            else {
+              document.getElementById("send_result").innerHTML = err;
+              alert(err);
+            }
+          }
+        }
+      }
+      catch(err) {
+          alert(err);
         }
         return false; // avoid to execute the actual submit of the form.
       }
@@ -83,13 +150,23 @@
           alert(err);
         }
       }
+      function video_analytics_checked(checkBox) {
+      try {
+        if (checkBox.checked) {
+          detect_crossings_new();
+        }
+        else {
+          video_analytics_stop();
+        }
+      }
+      catch(err) {
+          alert(err);
+        }
+      }
 
     /* this function will send events to queue */
     function pub_events_new() {
       try {
-        var button_text = document.getElementById("pub_events_button").innerHTML;
-        document.getElementById("pub_events_button").innerHTML = " Sender... ";
-        document.getElementById("pub_events_button").disabled = true;
         var max_lengt_info = 600;
         var old_info = document.getElementById("send_result").innerHTML;
         if (old_info.length > max_lengt_info) {
@@ -102,10 +179,10 @@
 
         var action = "pub";
         var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/pub_events", true);
+        xhttp.open("POST", "/video_events", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-        var formData ="action=" + action + "&event_id={{ event_id }}"
+        var formData ="pub_message=true&event_id={{ event_id }}"
 
         xhttp.send(formData);
         xhttp.onload = function() {
@@ -113,8 +190,6 @@
             // load new info
             const info = this.response;
             document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
-            document.getElementById("pub_events_button").innerHTML = button_text;
-            document.getElementById("pub_events_button").disabled = false;
           }
           catch(err) {
             if (err.message.indexOf("401") > 0) {
@@ -124,36 +199,20 @@
               document.getElementById("send_result").innerHTML = err;
               alert(err);
             }
-            document.getElementById("pub_events_button").innerHTML = button_text;
-            document.getElementById("pub_events_button").disabled = false;
           }
         }
       }
       catch(err) {
           alert(err);
-          document.getElementById("pub_events_button").innerHTML = button_text;
-          document.getElementById("pub_events_button").disabled = false;
         }
         return false; // avoid to execute the actual submit of the form.
       }
   </script>
 
   <table>
-      <tr>
-        <td align=center colspan="3">
-          <button type="button" id="pub_events_button" onclick="pub_events_new();" > Send nye bilder fra video-analyse </button>
-          <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Send automatisk hvert 30. sekund
-          <br>
-        </td>
-    </tr>
-    <tr>
-      <td align=center colspan="3">
-        <button type="button" id="detect_crossings_button" onclick="detect_crossings_new();" > Start video analyse </button>
-      </td>
-  </tr>
     <tr id="headerblack">
       <td>Status messages</td>
-      <td>Photos ready for sending</td>
+      <td>Service status</td>
       <td>Line crossing configuration</td>
     </tr>
     <tr height="500">
@@ -161,6 +220,20 @@
         <span id="send_result"></span>
       </td>
       <td valign="top">
+        <table> 
+          <tr>  
+            <td>Photos ready for sending</td>
+            <td><span id="photo_queue_length">{{ photo_queue|length }}</span></td>
+          </tr>
+          <tr>  
+            <td>Video analytics</td>
+            <td><input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}> Start</td>
+          </tr>
+          <tr>  
+            <td>Pubsub - send photos</td>
+            <td><input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Start</td>
+          </tr>
+        </table>
         <span id="photo_queue">
           {% for photo in photo_queue %}
             <img width=100 src="{{ photo }}" title="{{ photo }}">
@@ -169,21 +242,38 @@
         </span>
       </td>
       <td valign="top">
-        <img width=600 src="{{ line_config_file }}"><br>
         <form action=/video_events method=post>
           <input type="hidden" name="event_id" value="{{ event_id }}">
-          <br>Trigger line config:
-          <input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}">
-          <br>Video url:
-          <input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="60">
-          <br><input type="submit" name="update_config" value="  Lagre  ">
+          <table> 
+            <tr>
+              <td>Trigger line config</td>
+              <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> (eks: 0.1:0.8:0.9:0.8)</td>
+            </tr>
+            <tr>
+              <td>Video url</td>
+              <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="50"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" name="update_config" value="  Lagre  "></td>
+            </tr>
+          </table>
         </form>
+        <br><img width=600 src="{{ line_config_file }}">
       </td>
     </tr>
 </table>
 <script>
-  // trigger every 30 seconds
-  window.setInterval(pub_events_reload, 30000);
+  // trigger every 15 seconds
+  window.setInterval(pub_events_reload, 15000);
+  window.setInterval(get_status_updates, 15000);
+
+  const video_checkbox = document.getElementById("video_analytics_automatic");
+  video_checkbox.addEventListener("change", () => {
+    // Do something when the checkbox is checked.
+    video_analytics_checked(video_checkbox)
+  });
+
 </script>
 {% endblock %}
 </div>

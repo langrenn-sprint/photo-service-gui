@@ -103,17 +103,52 @@ class EventsAdapter:
 
     def get_global_setting(self, param_name: str) -> str:
         """Get global settings from .env file."""
-        config_files_directory = f"{os.getcwd()}/photo_service_gui/config"
+        config_file = f"{os.getcwd()}/photo_service_gui/config/global_settings.json"
         try:
-            with open(f"{config_files_directory}/global_settings.json") as json_file:
+            with open(config_file, "r") as json_file:
                 settings = json.load(json_file)
                 global_setting = settings[param_name]
         except Exception as e:
             logging.error(
-                f"Global setting {param_name} not found. File path {config_files_directory} - {e}"
+                f"Global setting {param_name} not found. File path {config_file} - {e}"
             )
             raise Exception from e
         return global_setting
+
+    def get_video_service_status_messages(self) -> dict:
+        """Get video service status."""
+        video_status = {}
+        config_file = f"{os.getcwd()}/photo_service_gui/files/video_status.json"
+        try:
+            with open(config_file, "r") as json_file:
+                video_status = json.load(json_file)
+        except Exception as e:
+            logging.error(f"Erorr loading video status. File path {config_file} - {e}")
+            raise Exception from e
+        return video_status
+
+    def update_video_service_status_messages(self, time: str, message: str) -> None:
+        """Get video service status."""
+        video_status = {time: message}
+        config_file = f"{os.getcwd()}/photo_service_gui/files/video_status.json"
+        try:
+            with open(config_file, "r") as json_file:
+                old_status = json.load(json_file)
+
+            i = 0
+            for key, value in old_status.items():
+                video_status[key] = value
+                if i > 20:
+                    break
+                i += 1
+
+            # Write the updated dictionary to the global settings file in write mode.
+            with open(config_file, "w") as json_file:
+                json.dump(video_status, json_file)
+
+        except Exception as e:
+            logging.error(f"Erorr updating video status. File path {config_file} - {e}")
+            raise Exception from e
 
     def update_global_setting(self, param_name: str, new_value: str) -> None:
         """Update global_settings file."""
