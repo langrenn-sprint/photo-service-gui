@@ -115,6 +115,26 @@ class EventsAdapter:
             raise Exception from e
         return global_setting
 
+    def update_global_setting(self, param_name: str, new_value: str) -> None:
+        """Update global_settings file."""
+        config_file = f"{os.getcwd()}/photo_service_gui/config/global_settings.json"
+        try:
+            # Open the global settings file in read-only mode.
+            with open(config_file, "r") as json_file:
+                settings = json.load(json_file)
+
+                # Update the value of the global setting in the dictionary.
+                settings[param_name] = new_value
+
+            # Write the updated dictionary to the global settings file in write mode.
+            with open(config_file, "w") as json_file:
+                json.dump(settings, json_file)
+        except Exception as e:
+            logging.error(
+                f"Global setting {param_name} not found. File {config_file} - {e}"
+            )
+            raise Exception from e
+
     def get_local_datetime_now(self, event: dict) -> datetime:
         """Return local datetime object, time zone adjusted from event info."""
         timezone = event["timezone"]

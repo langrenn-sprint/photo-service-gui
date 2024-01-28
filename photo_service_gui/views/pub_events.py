@@ -28,8 +28,7 @@ class PubEvents(web.View):
                 res = await FotoService().push_data_from_file(event_id)
                 result += f" {res}"
             elif action == "detect_crossings":
-                video_url = str(form["video_url"])
-                res = VisionAIService().detect_crossings_with_ultraltyics(video_url)
+                res = VisionAIService().detect_crossings_with_ultraltyics()
                 result += f"Analyse fullført: {res}"
         except Exception as e:
             error_reason = str(e)

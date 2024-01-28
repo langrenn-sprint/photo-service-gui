@@ -25,7 +25,6 @@ class VisionAIService:
 
     def detect_crossings_with_ultraltyics(
         self,
-        video_uri: str,
     ) -> str:
         """Analyze video and capture screenshots of line crossings."""
         crossedLineList: List[float] = []  # id of people who crossed the line
@@ -33,6 +32,7 @@ class VisionAIService:
         crossed09Line = {}  # type: ignore
         firstDetection = True
         trigger_line_xyxyn = get_trigger_line_xyxy_list()
+        video_url = EventsAdapter().get_global_setting("VIDEO_URL")
         camera_location = os.getenv("CAMERA_LOCATION", "")
         photos_file_path = os.getenv("PHOTOS_FILE_PATH", "")
 
@@ -41,7 +41,7 @@ class VisionAIService:
 
         # Perform tracking with the model
         results = model.track(
-            source=video_uri,
+            source=video_url,
             show=False,
             stream=True,
             persist=True,
@@ -139,10 +139,38 @@ class VisionAIService:
                         pass  # ignore
         return "200"
 
+    def draw_trigger_line_with_ultraltyics(
+        self,
+    ) -> str:
+        """Analyze video and capture screenshot of trigger line."""
+        trigger_line_xyxyn = get_trigger_line_xyxy_list()
+        camera_location = os.getenv("CAMERA_LOCATION", "")
+        photos_file_path = os.getenv("PHOTOS_FILE_PATH", "")
+        video_url = EventsAdapter().get_global_setting("VIDEO_URL")
+
+        # Load an official or custom model
+        model = YOLO("yolov8n.pt")  # Load an official Detect model
+
+        # Perform tracking with the model
+        results = model.track(
+            source=video_url,
+            show=False,
+            stream=True,
+            persist=True,
+            tracker=SKI_TRACKER_YAML,
+        )
+
+        for result in results:
+            print_image_with_trigger_line(
+                result, camera_location, photos_file_path, trigger_line_xyxyn
+            )
+            return "200 - updated trigger line photo"
+        return "204 - no detection"
+
 
 def get_trigger_line_xyxy_list() -> list:
     """Get list of trigger line coordinates."""
-    trigger_line_xyxy = os.getenv("TRIGGER_LINE_XYXY", "")
+    trigger_line_xyxy = EventsAdapter().get_global_setting("TRIGGER_LINE_XYXYN")
     trigger_line_xyxy_list = []
 
     try:

@@ -34,13 +34,12 @@
         var d = new Date();
         var current_time = d.toLocaleTimeString();
 
-        var video_url = document.getElementById("detect_crossings_url").value;
         var action = "detect_crossings";
         var xhttp = new XMLHttpRequest();
         xhttp.open("POST", "/pub_events", true);
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-        var formData ="action=" + action + "&video_url=" + video_url + "&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
+        var formData ="action=" + action + "&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
 
         xhttp.send(formData);
         xhttp.onload = function() {
@@ -150,8 +149,6 @@
     <tr>
       <td align=center colspan="3">
         <button type="button" id="detect_crossings_button" onclick="detect_crossings_new();" > Start video analyse </button>
-        <input type="text" id="detect_crossings_url" name="detect_crossings_url" value="">
-        <br>
       </td>
   </tr>
     <tr id="headerblack">
@@ -171,12 +168,18 @@
           {% endfor %}
         </span>
       </td>
-      <td id="orange" valign="top">
-          <img width=600 src="{{ line_config_file }}">
+      <td valign="top">
+        <img width=600 src="{{ line_config_file }}"><br>
+        <form action=/video_events method=post>
+          <input type="hidden" name="event_id" value="{{ event_id }}">
+          <br>Trigger line config:
+          <input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}">
+          <br>Video url:
+          <input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="60">
+          <br><input type="submit" name="update_config" value="  Lagre  ">
+        </form>
       </td>
     </tr>
-
-  
 </table>
 <script>
   // trigger every 30 seconds

@@ -8,6 +8,7 @@ from photo_service_gui.services import (
     EventsAdapter,
     GooglePubSubAdapter,
     PhotosFileAdapter,
+    VisionAIService,
 )
 from .utils import (
     check_login,
@@ -41,7 +42,11 @@ class VideoEvents(web.View):
                     "line_config_file": EventsAdapter().get_global_setting(
                         "LINE_CONFIG_FILE_URL"
                     ),
+                    "trigger_line_xyxyn": EventsAdapter().get_global_setting(
+                        "TRIGGER_LINE_XYXYN"
+                    ),
                     "photo_queue": PhotosFileAdapter().get_all_photo_urls(),
+                    "video_url": EventsAdapter().get_global_setting("VIDEO_URL"),
                 },
             )
         except Exception as e:
@@ -62,6 +67,20 @@ class VideoEvents(web.View):
             elif "pull_message" in form.keys():
                 result_list = await GooglePubSubAdapter().pull_messages()
                 result = str(result_list)
+            elif "update_config" in form.keys():
+                EventsAdapter().update_global_setting(
+                    "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
+                )
+                EventsAdapter().update_global_setting(
+                    "VIDEO_URL", str(form["video_url"])
+                )
+                res = VisionAIService().draw_trigger_line_with_ultraltyics()
+                event_id = str(form["event_id"])
+                informasjon = f"Oppdatert! {res}"
+                return web.HTTPSeeOther(
+                    location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
+                )
+
         except Exception as e:
             if "401" in str(e):
                 result = "401 unathorized: Logg inn for å hente events."

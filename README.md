@@ -68,15 +68,6 @@ DETECTION_BOX_MINIMUM_SIZE=0.08
 PHOTOS_FILE_PATH=photo_service_gui/files
 ```
 
-### Config google photos api
-
-Link: <https://developers.google.com/photos/library/guides/get-started>
-
-```Shell
-gcloud -v
-gcloud auth login
-gcloud config set project langrenn-sprint
-gcloud auth configure-docker
 
 ### Starte services i docker
 sudo docker-compose pull #oppdatere images
@@ -125,3 +116,8 @@ aiohttp: <https://docs.aiohttp.org/>
 
 Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>
 Google Photos API: <https://developers.google.com/photos/library/guides/get-started>
+
+# testfiler for video
+VIDEO_URL=20240113_110011_KJ.mp4
+VIDEO_URL=20240113_105758_KJ.mp4
+VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
