@@ -24,6 +24,7 @@ jobs:
           pipx install poetry==1.7.1
           pipx install nox==2023.4.22
           pipx inject nox nox-poetry
+          pip install ultralytics
 
       - name: Build image and test with nox
         run: |-
