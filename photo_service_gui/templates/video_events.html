@@ -77,20 +77,20 @@
     /* this function will trigger video analytics */
     function detect_crossings_new() {
       try {
-        loadDoc("POST", "/video_events", myFunctionVAStart, "video_analytics_start=true&event_id={{ event_id }}");
+          loadDoc("POST", "/video_events", myFunctionVAStart, "video_analytics_start=true&event_id={{ event_id }}");
 
-        function myFunctionVAStart(xhttp) {
-          try {
-            // load new info
-            const info = xhttp.response;
+          function myFunctionVAStart(xhttp) {
+            try {
+              // load new info
+              const info = xhttp.response;
             old_info = document.getElementById("send_result").innerHTML
             document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
           }
           catch(err) {
               alert(err);
           }
-        }
-      }
+            }
+          }
       catch(err) {
           alert(err);
         }
@@ -165,11 +165,11 @@
           </tr>
           <tr>  
             <td>Video analytics</td>
-            <td><input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}> Start</td>
+            <td><input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}> Start / Stop </td>
           </tr>
           <tr>  
             <td>Pubsub - send photos</td>
-            <td><input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Start</td>
+            <td><input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Start / Stop </td>
           </tr>
         </table>
         <span id="photo_queue">

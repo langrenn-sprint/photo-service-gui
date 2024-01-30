@@ -62,7 +62,9 @@ class VisionAIService:
                 EventsAdapter().update_video_service_status_messages(
                     time_text, "Video analytics stopped."
                 )
-                EventsAdapter().update_global_setting("VIDEO_ANALYTICS_RUNNING", "false")
+                EventsAdapter().update_global_setting(
+                    "VIDEO_ANALYTICS_RUNNING", "false"
+                )
                 EventsAdapter().update_global_setting("VIDEO_ANALYTICS_STOP", "false")
                 return "Video analytics stopped."
 
