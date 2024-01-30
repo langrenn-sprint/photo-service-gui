@@ -164,6 +164,14 @@ class EventsAdapter:
             # Write the updated dictionary to the global settings file in write mode.
             with open(config_file, "w") as json_file:
                 json.dump(settings, json_file)
+
+            # log the event
+            current_time = datetime.now()
+            time_text = current_time.strftime("%Y%m%d %H:%M:%S")
+            EventsAdapter().update_video_service_status_messages(
+                time_text, f"Updated config: {param_name} to {new_value}"
+            )
+
         except Exception as e:
             logging.error(
                 f"Global setting {param_name} not found. File {config_file} - {e}"

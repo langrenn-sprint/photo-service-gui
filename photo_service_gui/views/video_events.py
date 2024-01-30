@@ -81,10 +81,7 @@ class VideoEvents(web.View):
                 )
 
         except Exception as e:
-            if "401" in str(e):
-                result = "401 unathorized: Logg inn for å hente events."
-            else:
-                result = "Det har oppstått en feil ved henting av video events."
+            result = f"Det har oppstått en feil: {e}"
             logging.error(f"Video events update - {e}")
         return web.Response(text=str(result))
 

@@ -47,6 +47,7 @@ class VisionAIService:
             persist=True,
             tracker=SKI_TRACKER_YAML,
         )
+        EventsAdapter().update_global_setting("VIDEO_ANALYTICS_RUNNING", "true")
 
         for result in results:
             if firstDetection:
@@ -54,6 +55,17 @@ class VisionAIService:
                 print_image_with_trigger_line(
                     result, camera_location, photos_file_path, trigger_line_xyxyn
                 )
+            current_time = datetime.datetime.now()
+            time_text = current_time.strftime("%Y%m%d %H:%M:%S")
+            stop_tracking = EventsAdapter().get_global_setting("VIDEO_ANALYTICS_STOP")
+            if stop_tracking == "true":
+                EventsAdapter().update_video_service_status_messages(
+                    time_text, "Video analytics stopped."
+                )
+                EventsAdapter().update_global_setting("VIDEO_ANALYTICS_RUNNING", "false")
+                EventsAdapter().update_global_setting("VIDEO_ANALYTICS_STOP", "false")
+                return "Video analytics stopped."
+
             boxes = result.boxes
             if boxes:
                 class_values = boxes.cls
@@ -88,10 +100,6 @@ class VisionAIService:
                                 else:
                                     if id not in crossedLineList:
                                         crossedLineList.append(id)
-                                        current_time = datetime.datetime.now()
-                                        time_text = current_time.strftime(
-                                            "%Y%m%d %H:%M:%S"
-                                        )
                                         EventsAdapter().update_video_service_status_messages(
                                             time_text, f"Line crossing! ID:{id}"
                                         )
@@ -137,7 +145,8 @@ class VisionAIService:
                     except TypeError as e:
                         logging.debug(f"TypeError: {e}")
                         pass  # ignore
-        return "200"
+        EventsAdapter().update_global_setting("VIDEO_ANALYTICS_RUNNING", "false")
+        return "Video analysis complete"
 
     def draw_trigger_line_with_ultraltyics(
         self,
@@ -276,7 +285,7 @@ def print_image_with_trigger_line(
         # save image to file - full size
         im.save(f"{photos_file_path}/{camera_location}_line_config.jpg")
         EventsAdapter().update_video_service_status_messages(
-            time_text, "Updated line config"
+            time_text, "New trigger line photo"
         )
 
     except TypeError as e:

@@ -18,74 +18,53 @@
 {% block content %}
   <script>
 
- /* this function will get status updates */
- function get_status_updates() {
+    /* this function will get status updates */
+    function get_status_updates() {
       try {
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/video_events", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        loadDoc("POST", "/video_events", myFunctionGSU, "video_status=true&event_id={{ event_id }}");
 
-        var formData ="video_status=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
-
-        xhttp.send(formData);
-        xhttp.onload = function() {
+        function myFunctionGSU(xhttp) {
           try {
             // load new info
-            const info = this.response;
+            const info = xhttp.response;
             document.getElementById("send_result").innerHTML = info;
           }
           catch(err) {
-            if (err.message.indexOf("401") > 0) {
-              alert("Error 401 - Logg inn på nytt.");
-            }
-            else {
-              document.getElementById("send_result").innerHTML = err;
               alert(err);
-            }
           }
         }
       }
       catch(err) {
           alert(err);
-        }
-        return false; // avoid to execute the actual submit of the form.
       }
+      return false; // avoid to execute the actual submit of the form.
+    }
+
+    /* this function will get status updates */
+    function loadDoc(req, url, cFunction, formData) {
+      const xhttp = new XMLHttpRequest();
+      xhttp.onload = function() {cFunction(this);}
+      xhttp.open(req, url, true);
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhttp.send(formData);
+    }
+
 
       
- /* this function will stop video analytics */
- function video_analytics_stop() {
+    /* this function will stop video analytics */
+    function video_analytics_stop() {
       try {
-        var max_lengt_info = 600;
-        var old_info = document.getElementById("send_result").innerHTML;
-        if (old_info.length > max_lengt_info) {
-          old_info = old_info.substring(0, max_lengt_info);
-        }
+        loadDoc("POST", "/video_events", myFunctionVAStop, "video_analytics_stop=true&event_id={{ event_id }}");
 
-        // get current time, hours, minutes
-        var d = new Date();
-        var current_time = d.toLocaleTimeString();
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/video_events", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-        var formData ="video_analytics_stop=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
-
-        xhttp.send(formData);
-        xhttp.onload = function() {
+        function myFunctionVAStop(xhttp) {
           try {
             // load new info
-            const info = this.response;
-            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
+            const info = xhttp.response;
+            old_info = document.getElementById("send_result").innerHTML
+            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
           }
           catch(err) {
-            if (err.message.indexOf("401") > 0) {
-              alert("Error 401 - Logg inn på nytt.");
-            }
-            else {
-              document.getElementById("send_result").innerHTML = err;
               alert(err);
-            }
           }
         }
       }
@@ -95,40 +74,20 @@
         return false; // avoid to execute the actual submit of the form.
       }
 
-      /* this function will trigger video analytics */
- function detect_crossings_new() {
+    /* this function will trigger video analytics */
+    function detect_crossings_new() {
       try {
-        var max_lengt_info = 600;
-        var old_info = document.getElementById("send_result").innerHTML;
-        if (old_info.length > max_lengt_info) {
-          old_info = old_info.substring(0, max_lengt_info);
-        }
+        loadDoc("POST", "/video_events", myFunctionVAStart, "video_analytics_start=true&event_id={{ event_id }}");
 
-        // get current time, hours, minutes
-        var d = new Date();
-        var current_time = d.toLocaleTimeString();
-
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/video_events", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-        var formData ="video_analytics_start=true&event_id=66760b5f-a4bb-47b5-8d17-8a448232b31a"
-
-        xhttp.send(formData);
-        xhttp.onload = function() {
+        function myFunctionVAStart(xhttp) {
           try {
             // load new info
-            const info = this.response;
-            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
+            const info = xhttp.response;
+            old_info = document.getElementById("send_result").innerHTML
+            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
           }
           catch(err) {
-            if (err.message.indexOf("401") > 0) {
-              alert("Error 401 - Logg inn på nytt.");
-            }
-            else {
-              document.getElementById("send_result").innerHTML = err;
               alert(err);
-            }
           }
         }
       }
@@ -148,9 +107,9 @@
       }
       catch(err) {
           alert(err);
-        }
       }
-      function video_analytics_checked(checkBox) {
+    }
+    function video_analytics_checked(checkBox) {
       try {
         if (checkBox.checked) {
           detect_crossings_new();
@@ -162,43 +121,22 @@
       catch(err) {
           alert(err);
         }
-      }
+    }
 
     /* this function will send events to queue */
     function pub_events_new() {
       try {
-        var max_lengt_info = 600;
-        var old_info = document.getElementById("send_result").innerHTML;
-        if (old_info.length > max_lengt_info) {
-          old_info = old_info.substring(0, max_lengt_info);
-        }
+        loadDoc("POST", "/video_events", myFunctionPEN, "pub_message=true&event_id={{ event_id }}");
 
-        // get current time, hours, minutes
-        var d = new Date();
-        var current_time = d.toLocaleTimeString();
-
-        var action = "pub";
-        var xhttp = new XMLHttpRequest();
-        xhttp.open("POST", "/video_events", true);
-        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-
-        var formData ="pub_message=true&event_id={{ event_id }}"
-
-        xhttp.send(formData);
-        xhttp.onload = function() {
+        function myFunctionPEN(xhttp) {
           try {
             // load new info
-            const info = this.response;
-            document.getElementById("send_result").innerHTML = current_time + " - " + info + "<br>" + old_info;
+            const info = xhttp.response;
+            old_info = document.getElementById("send_result").innerHTML
+            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
           }
           catch(err) {
-            if (err.message.indexOf("401") > 0) {
-              alert("Error 401 - Logg inn på nytt.");
-            }
-            else {
-              document.getElementById("send_result").innerHTML = err;
               alert(err);
-            }
           }
         }
       }
@@ -265,8 +203,8 @@
 </table>
 <script>
   // trigger every 15 seconds
-  window.setInterval(pub_events_reload, 15000);
-  window.setInterval(get_status_updates, 15000);
+  window.setInterval(pub_events_reload, 10000);
+  window.setInterval(get_status_updates, 10000);
 
   const video_checkbox = document.getElementById("video_analytics_automatic");
   video_checkbox.addEventListener("change", () => {
