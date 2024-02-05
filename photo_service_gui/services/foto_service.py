@@ -234,9 +234,7 @@ class FotoService:
         else:
             informasjon = f"Lastet opp {i_photo_count} nye bilder til Google Cloud Storage: {informasjon}"
 
-        current_time = datetime.datetime.now()
-        time_text = current_time.strftime("%Y%m%d %H:%M:%S")
-        EventsAdapter().update_video_service_status_messages(time_text, informasjon)
+        EventsAdapter().add_video_service_message(informasjon)
 
         return informasjon
 

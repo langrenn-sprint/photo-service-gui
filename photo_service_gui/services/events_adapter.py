@@ -115,9 +115,9 @@ class EventsAdapter:
             raise Exception from e
         return global_setting
 
-    def get_video_service_status_messages(self) -> dict:
+    def get_video_service_messages(self) -> list:
         """Get video service status."""
-        video_status = {}
+        video_status = []
         config_file = f"{os.getcwd()}/photo_service_gui/files/video_status.json"
         try:
             with open(config_file, "r") as json_file:
@@ -127,17 +127,20 @@ class EventsAdapter:
             raise Exception from e
         return video_status
 
-    def update_video_service_status_messages(self, time: str, message: str) -> None:
+    def add_video_service_message(self, message: str) -> None:
         """Get video service status."""
-        video_status = {time: message}
+        current_time = datetime.now()
+        time_text = current_time.strftime("%Y%m%d %H:%M:%S")
+        video_status = []
         config_file = f"{os.getcwd()}/photo_service_gui/files/video_status.json"
         try:
             with open(config_file, "r") as json_file:
                 old_status = json.load(json_file)
 
             i = 0
-            for key, value in old_status.items():
-                video_status[key] = value
+            video_status.append(f"{time_text}: {message}")
+            for my_message in old_status:
+                video_status.append(my_message)
                 if i > 20:
                     break
                 i += 1
@@ -166,10 +169,8 @@ class EventsAdapter:
                 json.dump(settings, json_file)
 
             # log the event
-            current_time = datetime.now()
-            time_text = current_time.strftime("%Y%m%d %H:%M:%S")
-            EventsAdapter().update_video_service_status_messages(
-                time_text, f"Updated config: {param_name} to {new_value}"
+            EventsAdapter().add_video_service_message(
+                f"Updated config: {param_name} to {new_value}"
             )
 
         except Exception as e:

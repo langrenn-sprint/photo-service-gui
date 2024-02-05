@@ -21,10 +21,12 @@
           <b>{{ oneevent.date_of_event }}: {{ oneevent.name }}, {{ oneevent.organiser }} <a target=_new href="{{ oneevent.webpage }}">(mer info)</a></b>
         </td>
         <td id=headerblue align="right">
-          <form action="/" method="post">
-            <input type="submit" name=delete_event value="  Slett event ">
-            <input type="hidden" name=event_id value={{ oneevent.id }}>
-          </form>
+          {% if username != "Gjest" %}
+            <form action="/" method="post">
+              <input type="submit" name=delete_event value="  Slett event ">
+              <input type="hidden" name=event_id value={{ oneevent.id }}>
+            </form>
+          {% endif %}
       </tr>
       <tr valign="top">
         <td colspan="2" align="center">

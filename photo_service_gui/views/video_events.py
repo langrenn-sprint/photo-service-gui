@@ -8,7 +8,6 @@ from photo_service_gui.services import (
     EventsAdapter,
     FotoService,
     PhotosFileAdapter,
-    VisionAIService,
 )
 from .utils import (
     check_login,
@@ -68,9 +67,10 @@ class VideoEvents(web.View):
                 res = await FotoService().push_new_photos_from_file(event_id)
                 result += f" {res}"
             elif "video_status" in form.keys():
-                result = str(EventsAdapter().get_video_service_status_messages())
+                result = str(EventsAdapter().get_video_service_messages())
             elif "video_analytics_start" in form.keys():
-                result = await start_video_analytics()
+                event_id = str(form["event_id"])
+                result = await start_video_analytics(event_id)
             elif "video_analytics_stop" in form.keys():
                 result = stop_video_analytics()
             elif "update_config" in form.keys():
@@ -86,10 +86,10 @@ class VideoEvents(web.View):
         return web.Response(text=str(result))
 
 
-async def start_video_analytics() -> str:
+async def start_video_analytics(event_id: str) -> str:
     """Start video analytics."""
-    result = await VisionAIService().detect_crossings_with_ultraltyics()
-    return result
+    EventsAdapter().update_global_setting("VIDEO_ANALYTICS_START", "true")
+    return "Video analytics started"
 
 
 def stop_video_analytics() -> str:
@@ -104,5 +104,6 @@ def update_config(form: dict) -> str:
         "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
     )
     EventsAdapter().update_global_setting("VIDEO_URL", str(form["video_url"]))
-    result = VisionAIService().draw_trigger_line_with_ultraltyics()
-    return result
+
+    EventsAdapter().update_global_setting("DRAW_TRIGGER_LINE", "true")
+    return "Config updated - reload if new trigger line photo not is visible"

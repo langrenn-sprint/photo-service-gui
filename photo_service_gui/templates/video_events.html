@@ -74,6 +74,26 @@
         return false; // avoid to execute the actual submit of the form.
       }
 
+      var w;
+      function startVideoAnalytics() {
+        if(typeof(Worker) !== "undefined") {
+          if(typeof(w) == "undefined") {
+            w = new Worker("../static/video_analytics.js");
+          }
+          w.onmessage = function(event) {
+            document.getElementById("send_result").innerHTML = event.data + "<br>" + document.getElementById("send_result").innerHTML;
+          };
+        } else {
+          document.getElementById("send_result").innerHTML = "Sorry, your browser does not support Web Workers...";
+        }
+      }
+
+      function stopVideoAnalytics() { 
+        w.terminate();
+        w = undefined;
+        video_analytics_stop();
+      }
+
     /* this function will trigger video analytics */
     function detect_crossings_new() {
       try {
@@ -83,7 +103,7 @@
             try {
               // load new info
               const info = xhttp.response;
-            old_info = document.getElementById("send_result").innerHTML
+            old_info = document.getElementById("").innerHTML
             document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
           }
           catch(err) {
@@ -172,6 +192,9 @@
             <td><input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Start / Stop </td>
           </tr>
         </table>
+        <button onclick="startVideoAnalytics()">Start</button> 
+        <button onclick="stopVideoAnalytics()">Stop</button>
+
         <span id="photo_queue">
           {% for photo in photo_queue %}
             <img width=100 src="{{ photo }}" title="{{ photo }}">

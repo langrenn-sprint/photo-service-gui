@@ -9,4 +9,3 @@ from .google_pub_sub_adapter import GooglePubSubAdapter
 from .photos_adapter import PhotosAdapter
 from .photos_file_adapter import PhotosFileAdapter
 from .user_adapter import UserAdapter
-from .vision_ai_service import VisionAIService
