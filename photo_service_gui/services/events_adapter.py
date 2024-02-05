@@ -130,7 +130,7 @@ class EventsAdapter:
     def add_video_service_message(self, message: str) -> None:
         """Get video service status."""
         current_time = datetime.now()
-        time_text = current_time.strftime("%Y%m%d %H:%M:%S")
+        time_text = current_time.strftime("%H:%M:%S")
         video_status = []
         config_file = f"{os.getcwd()}/photo_service_gui/files/video_status.json"
         try:
@@ -138,7 +138,7 @@ class EventsAdapter:
                 old_status = json.load(json_file)
 
             i = 0
-            video_status.append(f"{time_text}: {message}")
+            video_status.append(f"{time_text} {message}")
             for my_message in old_status:
                 video_status.append(my_message)
                 if i > 20:
@@ -167,11 +167,6 @@ class EventsAdapter:
             # Write the updated dictionary to the global settings file in write mode.
             with open(config_file, "w") as json_file:
                 json.dump(settings, json_file)
-
-            # log the event
-            EventsAdapter().add_video_service_message(
-                f"Updated config: {param_name} to {new_value}"
-            )
 
         except Exception as e:
             logging.error(

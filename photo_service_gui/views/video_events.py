@@ -62,23 +62,27 @@ class VideoEvents(web.View):
             form = await self.request.post()
             user = await check_login(self)
             logging.debug(f"User: {user}")
-            if "pub_message" in form.keys():
-                event_id = str(form["event_id"])
-                res = await FotoService().push_new_photos_from_file(event_id)
-                result += f" {res}"
-            elif "video_status" in form.keys():
-                result = str(EventsAdapter().get_video_service_messages())
-            elif "video_analytics_start" in form.keys():
-                event_id = str(form["event_id"])
-                result = await start_video_analytics(event_id)
-            elif "video_analytics_stop" in form.keys():
-                result = stop_video_analytics()
-            elif "update_config" in form.keys():
+            if "update_config" in form.keys():
                 event_id = str(form["event_id"])
                 informasjon = update_config(form)  # type: ignore
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
+            if "pub_message" in form.keys():
+                event_id = str(form["event_id"])
+                res = await FotoService().push_new_photos_from_file(event_id)
+                result = f" {res}"
+            if "video_analytics_start" in form.keys():
+                event_id = str(form["event_id"])
+                result = start_video_analytics(event_id)
+            if "video_analytics_stop" in form.keys():
+                result = stop_video_analytics()
+            if "video_status" in form.keys():
+                result_list = EventsAdapter().get_video_service_messages()
+                tmp_result = ""
+                for res in result_list:
+                    tmp_result += f"{res}<br>"
+                result = tmp_result
 
         except Exception as e:
             result = f"Det har oppstått en feil: {e}"
@@ -86,9 +90,13 @@ class VideoEvents(web.View):
         return web.Response(text=str(result))
 
 
-async def start_video_analytics(event_id: str) -> str:
+def start_video_analytics(event_id: str) -> str:
     """Start video analytics."""
-    EventsAdapter().update_global_setting("VIDEO_ANALYTICS_START", "true")
+    analytics_running = EventsAdapter().get_global_setting("VIDEO_ANALYTICS_RUNNING")
+    if analytics_running == "true":
+        return "Video analytics already running"
+    else:
+        EventsAdapter().update_global_setting("VIDEO_ANALYTICS_START", "true")
     return "Video analytics started"
 
 

@@ -18,12 +18,25 @@
 {% block content %}
   <script>
 
-    /* this function will get status updates */
-    function get_status_updates() {
+    /* this function will sync (update+get) status updates with backend */
+    function sync_status() {
       try {
-        loadDoc("POST", "/video_events", myFunctionGSU, "video_status=true&event_id={{ event_id }}");
+        var formData = "video_status=true&event_id={{ event_id }}"
+        var checkBoxPub = document.getElementById("pub_events_automatic");
+        if (checkBoxPub.checked) {
+          formData = formData + "&pub_message=true"
+        }
+        var checkBoxAna = document.getElementById("video_analytics_automatic");
+        if (checkBoxAna.checked) {
+          formData = formData + "&video_analytics_start=true"
+        }
+        else {
+          formData = formData + "&video_analytics_stop=true"
+        }
+        
+        loadDoc("POST", "/video_events", mySync, formData);
 
-        function myFunctionGSU(xhttp) {
+        function mySync(xhttp) {
           try {
             // load new info
             const info = xhttp.response;
@@ -37,7 +50,6 @@
       catch(err) {
           alert(err);
       }
-      return false; // avoid to execute the actual submit of the form.
     }
 
     /* this function will get status updates */
@@ -48,159 +60,28 @@
       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
       xhttp.send(formData);
     }
-
-
-      
-    /* this function will stop video analytics */
-    function video_analytics_stop() {
-      try {
-        loadDoc("POST", "/video_events", myFunctionVAStop, "video_analytics_stop=true&event_id={{ event_id }}");
-
-        function myFunctionVAStop(xhttp) {
-          try {
-            // load new info
-            const info = xhttp.response;
-            old_info = document.getElementById("send_result").innerHTML
-            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
-          }
-          catch(err) {
-              alert(err);
-          }
-        }
-      }
-      catch(err) {
-          alert(err);
-        }
-        return false; // avoid to execute the actual submit of the form.
-      }
-
-      var w;
-      function startVideoAnalytics() {
-        if(typeof(Worker) !== "undefined") {
-          if(typeof(w) == "undefined") {
-            w = new Worker("../static/video_analytics.js");
-          }
-          w.onmessage = function(event) {
-            document.getElementById("send_result").innerHTML = event.data + "<br>" + document.getElementById("send_result").innerHTML;
-          };
-        } else {
-          document.getElementById("send_result").innerHTML = "Sorry, your browser does not support Web Workers...";
-        }
-      }
-
-      function stopVideoAnalytics() { 
-        w.terminate();
-        w = undefined;
-        video_analytics_stop();
-      }
-
-    /* this function will trigger video analytics */
-    function detect_crossings_new() {
-      try {
-          loadDoc("POST", "/video_events", myFunctionVAStart, "video_analytics_start=true&event_id={{ event_id }}");
-
-          function myFunctionVAStart(xhttp) {
-            try {
-              // load new info
-              const info = xhttp.response;
-            old_info = document.getElementById("").innerHTML
-            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
-          }
-          catch(err) {
-              alert(err);
-          }
-            }
-          }
-      catch(err) {
-          alert(err);
-        }
-        return false; // avoid to execute the actual submit of the form.
-      }
-
-    /* this function will trigger automatic updates */
-    function pub_events_reload() {
-      try {
-        var checkBox = document.getElementById("pub_events_automatic");
-        if (checkBox.checked) {
-          pub_events_new();
-        }
-      }
-      catch(err) {
-          alert(err);
-      }
-    }
-    function video_analytics_checked(checkBox) {
-      try {
-        if (checkBox.checked) {
-          detect_crossings_new();
-        }
-        else {
-          video_analytics_stop();
-        }
-      }
-      catch(err) {
-          alert(err);
-        }
-    }
-
-    /* this function will send events to queue */
-    function pub_events_new() {
-      try {
-        loadDoc("POST", "/video_events", myFunctionPEN, "pub_message=true&event_id={{ event_id }}");
-
-        function myFunctionPEN(xhttp) {
-          try {
-            // load new info
-            const info = xhttp.response;
-            old_info = document.getElementById("send_result").innerHTML
-            document.getElementById("send_result").innerHTML = info + "<br>" + old_info;
-          }
-          catch(err) {
-              alert(err);
-          }
-        }
-      }
-      catch(err) {
-          alert(err);
-        }
-        return false; // avoid to execute the actual submit of the form.
-      }
   </script>
 
   <table>
     <tr id="headerblack">
-      <td>Status messages</td>
       <td>Service status</td>
       <td>Line crossing configuration</td>
     </tr>
     <tr height="500">
-      <td id="orange" valign="top">
-        <span id="send_result"></span>
-      </td>
       <td valign="top">
         <table> 
-          <tr>  
-            <td>Photos ready for sending</td>
-            <td><span id="photo_queue_length">{{ photo_queue|length }}</span></td>
-          </tr>
-          <tr>  
-            <td>Video analytics</td>
-            <td><input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}> Start / Stop </td>
-          </tr>
-          <tr>  
-            <td>Pubsub - send photos</td>
-            <td><input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox"> Start / Stop </td>
-          </tr>
-        </table>
-        <button onclick="startVideoAnalytics()">Start</button> 
-        <button onclick="stopVideoAnalytics()">Stop</button>
-
-        <span id="photo_queue">
-          {% for photo in photo_queue %}
-            <img width=100 src="{{ photo }}" title="{{ photo }}">
-            {% if loop.index % 3 == 0 %}<br>{% endif %}
-          {% endfor %}
-        </span>
+        <tr>  
+          <td>
+            Run video analytics
+            <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}>
+          </td>
+          <td>
+            Run Pubsub (send photos)
+            <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox">
+          </td>
+        </tr>
+      </table>
+        <span id="send_result"></span>
       </td>
       <td valign="top">
         <form action=/video_events method=post>
@@ -220,20 +101,47 @@
             </tr>
           </table>
         </form>
-        <br><img width=600 src="{{ line_config_file }}">
+        <br>
+        <!-- Trigger the Modal -->
+        <img id="modalImg_line" src="{{ line_config_file }}" alt="Click to view big size" style="width:400px">
+        <!-- The Modal -->
+        <div id="myModal_line" class="modal">
+          <!-- The Close Button -->
+          <span id="close_line" class="close">&times;</span>
+          <!-- Modal Content (The Image) -->
+          <img class="modal-content" id="img_line">
+          <!-- Modal Caption (Image Text) -->
+          <div id="caption_line"></div>
+        </div>
+        <script>
+          // Get the modal
+          var modal_line = document.getElementById("myModal_line");
+          
+          // Get the image and insert it inside the modal - use its "alt" text as a caption
+          var img_line = document.getElementById("modalImg_line");
+          var modalImg_line = document.getElementById("img_line");
+          var captionText_line = document.getElementById("caption_line");
+          img_line.onclick = function(){
+            modal_line.style.display = "block";
+            modalImg_line.src = this.src;
+            captionText_line.innerHTML = this.alt;
+          }
+          
+          // Get the <span> element that closes the modal
+          var span_line = document.getElementById("close_line");
+          
+          // When the user clicks on <span> (x), close the modal
+          span_line.onclick = function() { 
+            modal_line.style.display = "none";
+          }
+          </script>
+        
       </td>
     </tr>
 </table>
 <script>
-  // trigger every 15 seconds
-  window.setInterval(pub_events_reload, 10000);
-  window.setInterval(get_status_updates, 10000);
-
-  const video_checkbox = document.getElementById("video_analytics_automatic");
-  video_checkbox.addEventListener("change", () => {
-    // Do something when the checkbox is checked.
-    video_analytics_checked(video_checkbox)
-  });
+  // trigger every 5 seconds
+  window.setInterval(sync_status, 5000);
 
 </script>
 {% endblock %}

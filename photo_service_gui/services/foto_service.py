@@ -234,7 +234,10 @@ class FotoService:
         else:
             informasjon = f"Lastet opp {i_photo_count} nye bilder til Google Cloud Storage: {informasjon}"
 
-        EventsAdapter().add_video_service_message(informasjon)
+        if i_photo_count > 0:
+            EventsAdapter().add_video_service_message(
+                f"Bilder lastet opp: {i_photo_count}"
+            )
 
         return informasjon
 
