@@ -58,8 +58,8 @@ class VideoEvents(web.View):
 
     async def post(self) -> web.Response:
         """Post route function that updates video events."""
+        response = {"pub_message": "", "video_analytics": "", "video_status": ""}
         try:
-            response = {"pub_message": "", "video_analytics": "", "video_status": ""}
             form = await self.request.post()
             user = await check_login(self)
             logging.debug(f"User: {user}")
