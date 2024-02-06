@@ -141,7 +141,7 @@ class EventsAdapter:
             video_status.append(f"{time_text} {message}")
             for my_message in old_status:
                 video_status.append(my_message)
-                if i > 20:
+                if i > 10:
                     break
                 i += 1
 

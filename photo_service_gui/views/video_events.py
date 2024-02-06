@@ -1,4 +1,5 @@
 """Resource module for video_event resources."""
+import json
 import logging
 
 from aiohttp import web
@@ -58,7 +59,7 @@ class VideoEvents(web.View):
     async def post(self) -> web.Response:
         """Post route function that updates video events."""
         try:
-            result = ""
+            response = {"pub_message": "", "video_analytics": "", "video_status": ""}
             form = await self.request.post()
             user = await check_login(self)
             logging.debug(f"User: {user}")
@@ -71,23 +72,21 @@ class VideoEvents(web.View):
             if "pub_message" in form.keys():
                 event_id = str(form["event_id"])
                 res = await FotoService().push_new_photos_from_file(event_id)
-                result = f" {res}"
+                response["pub_message"] = res
             if "video_analytics_start" in form.keys():
                 event_id = str(form["event_id"])
-                result = start_video_analytics(event_id)
-            if "video_analytics_stop" in form.keys():
-                result = stop_video_analytics()
+                response["video_analytics"] = start_video_analytics(event_id)
+            elif "video_analytics_stop" in form.keys():
+                response["video_analytics"] = stop_video_analytics()
             if "video_status" in form.keys():
                 result_list = EventsAdapter().get_video_service_messages()
-                tmp_result = ""
                 for res in result_list:
-                    tmp_result += f"{res}<br>"
-                result = tmp_result
-
+                    response["video_status"] += f"{res}<br>"
         except Exception as e:
-            result = f"Det har oppstått en feil: {e}"
+            response["video_status"] = f"Det har oppstått en feil: {e}"
             logging.error(f"Video events update - {e}")
-        return web.Response(text=str(result))
+        json_response = json.dumps(response)
+        return web.Response(body=json_response)
 
 
 def start_video_analytics(event_id: str) -> str:

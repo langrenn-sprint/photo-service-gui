@@ -227,13 +227,8 @@ class FotoService:
                     json.dumps(pub_message)
                 )
                 logging.debug(f"Published message {result} to pubsub.")
-                informasjon += f" {os.path.basename(group['main'])}."
+                informasjon = url_main
                 i_photo_count += 1
-        if i_photo_count == 0:
-            informasjon = "Ingen nye bilder å laste opp."
-        else:
-            informasjon = f"Lastet opp {i_photo_count} nye bilder til Google Cloud Storage: {informasjon}"
-
         if i_photo_count > 0:
             EventsAdapter().add_video_service_message(
                 f"Bilder lastet opp: {i_photo_count}"

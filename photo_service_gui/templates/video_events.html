@@ -39,8 +39,13 @@
         function mySync(xhttp) {
           try {
             // load new info
-            const info = xhttp.response;
-            document.getElementById("send_result").innerHTML = info;
+            const jsonDoc = JSON.parse(xhttp.response);
+            const video_status = jsonDoc.video_status;
+            document.getElementById("send_result").innerHTML = video_status;
+            const pub_message = jsonDoc.pub_message;
+            if (pub_message != "") {
+              document.getElementById("latest_photo").src = pub_message;
+            }
           }
           catch(err) {
               alert(err);
@@ -60,50 +65,39 @@
       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
       xhttp.send(formData);
     }
+
   </script>
 
   <table>
+    <tr>
+      <td colspan="2">
+        <table> 
+          <tr>  
+            <td>
+              <b>Run video analytics</b>
+              <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}>
+            </td>
+            <td>
+              <b>Run Pubsub (send photos)</b>
+              <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox">
+            </td>
+          </tr>
+        </table>
+        </td>
+    </tr>
     <tr id="headerblack">
       <td>Service status</td>
       <td>Line crossing configuration</td>
     </tr>
     <tr height="500">
       <td valign="top">
-        <table> 
-        <tr>  
-          <td>
-            Run video analytics
-            <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}>
-          </td>
-          <td>
-            Run Pubsub (send photos)
-            <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox">
-          </td>
-        </tr>
-      </table>
+        <img id="latest_photo" src="{{ line_config_file }}" title="Latest photo from vision AI detection" style="width:400px">
+        <br>
         <span id="send_result"></span>
       </td>
       <td valign="top">
-        <form action=/video_events method=post>
-          <input type="hidden" name="event_id" value="{{ event_id }}">
-          <table> 
-            <tr>
-              <td>Trigger line config</td>
-              <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> (eks: 0.1:0.8:0.9:0.8)</td>
-            </tr>
-            <tr>
-              <td>Video url</td>
-              <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="50"></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td><input type="submit" name="update_config" value="  Lagre  "></td>
-            </tr>
-          </table>
-        </form>
-        <br>
         <!-- Trigger the Modal -->
-        <img id="modalImg_line" src="{{ line_config_file }}" alt="Click to view big size" style="width:400px">
+        <img id="modalImg_line" src="{{ line_config_file }}" title="Click to view big size" style="width:400px">
         <!-- The Modal -->
         <div id="myModal_line" class="modal">
           <!-- The Close Button -->
@@ -113,29 +107,24 @@
           <!-- Modal Caption (Image Text) -->
           <div id="caption_line"></div>
         </div>
-        <script>
-          // Get the modal
-          var modal_line = document.getElementById("myModal_line");
-          
-          // Get the image and insert it inside the modal - use its "alt" text as a caption
-          var img_line = document.getElementById("modalImg_line");
-          var modalImg_line = document.getElementById("img_line");
-          var captionText_line = document.getElementById("caption_line");
-          img_line.onclick = function(){
-            modal_line.style.display = "block";
-            modalImg_line.src = this.src;
-            captionText_line.innerHTML = this.alt;
-          }
-          
-          // Get the <span> element that closes the modal
-          var span_line = document.getElementById("close_line");
-          
-          // When the user clicks on <span> (x), close the modal
-          span_line.onclick = function() { 
-            modal_line.style.display = "none";
-          }
-          </script>
-        
+        <br>
+        <form action=/video_events method=post>
+          <input type="hidden" name="event_id" value="{{ event_id }}">
+          <table> 
+            <tr>
+              <td>Trigger line coordinates</td>
+              <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> <small>(eks: 0.1:0.8:0.9:0.8)</small></td>
+            </tr>
+            <tr>
+              <td>Video url</td>
+              <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="40"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" name="update_config" value="  Lagre  "></td>
+            </tr>
+          </table>
+        </form>
       </td>
     </tr>
 </table>
@@ -143,6 +132,26 @@
   // trigger every 5 seconds
   window.setInterval(sync_status, 5000);
 
+  // Get the modal
+  var modal_line = document.getElementById("myModal_line");
+  
+  // Get the image and insert it inside the modal - use its "alt" text as a caption
+  var img_line = document.getElementById("modalImg_line");
+  var modalImg_line = document.getElementById("img_line");
+  var captionText_line = document.getElementById("caption_line");
+  img_line.onclick = function() {
+    modal_line.style.display = "block";
+    modalImg_line.src = this.src;
+    captionText_line.innerHTML = this.alt;
+  }
+  
+  // Get the <span> element that closes the modal
+  var span_line = document.getElementById("close_line");
+  
+  // When the user clicks on <span> (x), close the modal
+  span_line.onclick = function() { 
+    modal_line.style.display = "none";
+  }
 </script>
 {% endblock %}
 </div>

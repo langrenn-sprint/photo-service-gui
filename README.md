@@ -108,6 +108,9 @@ poetry run adev runserver -p 8096 photo_service_gui
 docker-compose up user-service event-service competition-format-service mongodb
 ```
 
+## start server uten reload (for live kjøring - unngår reload når bilder lagres)
+poetry run adev runserver --no-livereload -p 8096 photo_service_gui
+
 Dokumentasjon: <https://langrenn-sprint.github.io/docs/>
 
 Når du endrer koden i photo_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
@@ -120,6 +123,7 @@ Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>
 Google Photos API: <https://developers.google.com/photos/library/guides/get-started>
 
 # testfiler for video
+VIDEO_URL=http://10.0.0.6:8080/video
 VIDEO_URL=20240113_110011_KJ.mp4
 VIDEO_URL=20240113_105758_KJ.mp4
 VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
