@@ -15,11 +15,9 @@ from .views import (
     Login,
     Logout,
     Main,
-    PhotoPush,
     PhotosAdm,
     PhotosEdit,
     PhotoSync,
-    PhotoUpdate,
     Ping,
     VideoEvents,
 )
@@ -67,10 +65,8 @@ async def create_app() -> web.Application:
             web.view("/logout", Logout),
             web.view("/ping", Ping),
             web.view("/photos_edit", PhotosEdit),
-            web.view("/photo_push", PhotoPush),
             web.view("/photo_sync", PhotoSync),
             web.view("/photos_adm", PhotosAdm),
-            web.view("/photo_update", PhotoUpdate),
             web.view("/video_events", VideoEvents),
         ]
     )
