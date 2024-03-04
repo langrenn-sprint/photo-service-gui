@@ -1,7 +1,6 @@
 """Utilities module for gui services."""
 import logging
 
-from aiohttp import web
 from aiohttp_session import get_session, new_session
 
 from photo_service_gui.services import (
@@ -39,7 +38,7 @@ async def check_login(self) -> dict:
     loggedin = UserAdapter().isloggedin(session)
     if not loggedin:
         informasjon = "Logg inn for å se denne siden"
-        raise web.HTTPSeeOther(location=f"/login?informasjon={informasjon}")  # type: ignore
+        raise Exception(informasjon)
 
     return {
         "name": session["name"],
