@@ -127,3 +127,7 @@ VIDEO_URL=http://10.0.0.6:8080/video
 VIDEO_URL=20240113_110011_KJ.mp4
 VIDEO_URL=20240113_105758_KJ.mp4
 VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
+VIDEO_URL=/Users/t520834/github/vision-ai-service/20240113_105758_KJ.mp4
+VIDEO_URL=rtsp://stream:Video1@10.0.0.18:88/videoMain
+VIDEO_URL=rtsp://stream:Video1@192.168.1.160:88/videoSub
+VIDEO_URL=http://192.168.1.152:8080/video
