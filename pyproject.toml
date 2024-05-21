@@ -63,7 +63,7 @@ pytest-cov = "^4.1.0"
 pytest-docker = "^2.0.1"
 pytest-dotenv = "^0.5.2"
 pytest-mock = "^3.12.0"
-requests = "^2.31.0"
+requests = "^2.32.0"
 safety = "^2.4.0b2"
 poetry = "^1.7.1"
 
