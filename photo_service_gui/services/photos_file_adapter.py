@@ -1,4 +1,5 @@
 """Module adapter for photos on file storage."""
+
 import logging
 import os
 from typing import List

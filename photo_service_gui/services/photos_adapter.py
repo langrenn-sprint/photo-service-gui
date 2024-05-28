@@ -1,4 +1,5 @@
 """Module for photos adapter."""
+
 import copy
 import logging
 import os

@@ -1,4 +1,5 @@
 """Album data class module."""
+
 from marshmallow import fields, post_load, Schema
 
 from .changelog import Changelog

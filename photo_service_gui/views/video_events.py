@@ -1,4 +1,5 @@
 """Resource module for video_event resources."""
+
 import json
 import logging
 

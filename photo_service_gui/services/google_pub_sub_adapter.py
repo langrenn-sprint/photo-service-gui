@@ -1,4 +1,5 @@
 """Module for google pub/sub adapter."""
+
 import json
 import logging
 import os

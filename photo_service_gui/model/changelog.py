@@ -1,4 +1,5 @@
 """Changelog data class module."""
+
 from marshmallow import fields, Schema
 
 

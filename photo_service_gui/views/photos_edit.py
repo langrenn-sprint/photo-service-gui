@@ -1,4 +1,5 @@
 """Resource module for photo edit view."""
+
 import logging
 
 from aiohttp import web

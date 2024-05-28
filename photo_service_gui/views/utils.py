@@ -1,4 +1,5 @@
 """Utilities module for gui services."""
+
 import logging
 
 from aiohttp_session import get_session, new_session
