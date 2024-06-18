@@ -8,6 +8,7 @@ services:
     environment:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - ERROR_FILE=error.log
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
       - GOOGLE_PHOTO_CREDENTIALS_FILE=${GOOGLE_PHOTO_CREDENTIALS_FILE}
       - GOOGLE_PUBSUB_SUBSCRIPTION_ID=${GOOGLE_PUBSUB_SUBSCRIPTION_ID}
@@ -29,8 +30,8 @@ services:
       - USERS_HOST_PORT=8080
     volumes:
       - type: bind
-        source: .
-        target: /app
+        source: ./error.log
+        target: /app/error.log
     depends_on:
       - "event-service"
       - "user-service"

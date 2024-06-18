@@ -1,4 +1,5 @@
 """Module for google photos adapter."""
+
 import json
 import logging
 import os

@@ -1,4 +1,5 @@
 """Module for foto service."""
+
 import datetime
 import json
 import logging

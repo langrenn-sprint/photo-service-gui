@@ -1,4 +1,5 @@
 """Module for image services."""
+
 import logging
 
 from google.cloud import vision

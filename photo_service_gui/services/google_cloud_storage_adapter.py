@@ -1,4 +1,5 @@
 """Module for google cloud storage adapter."""
+
 import logging
 import os
 

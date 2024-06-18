@@ -1,4 +1,5 @@
 """Package for all views."""
+
 from .liveness import Ping
 from .login import Login
 from .logout import Logout
