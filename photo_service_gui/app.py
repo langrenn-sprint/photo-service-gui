@@ -25,7 +25,7 @@ from .views import (
 )
 
 load_dotenv()
-ERROR_FILE = str(os.getenv("ERROR_FILE"))
+ERROR_FILE = os.getenv("ERROR_FILE", "error.log")
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
 PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
 logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
