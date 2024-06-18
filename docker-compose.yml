@@ -8,11 +8,6 @@ services:
     environment:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
-      - ERROR_FILE=error.log
-      - GLOBAL_SETTINGS_FILE=photo_service_gui/config/global_settings.json
-      - VIDEO_STATUS_FILE=photo_service_gui/config/video_status.json
-      - PHOTOS_FILE_PATH=photo_service_gui/files
-      - PHOTOS_URL_PATH=../files
       - GOOGLE_OAUTH_CLIENT_ID=${GOOGLE_OAUTH_CLIENT_ID}
       - GOOGLE_PHOTO_CREDENTIALS_FILE=${GOOGLE_PHOTO_CREDENTIALS_FILE}
       - GOOGLE_PUBSUB_SUBSCRIPTION_ID=${GOOGLE_PUBSUB_SUBSCRIPTION_ID}

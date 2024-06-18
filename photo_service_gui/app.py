@@ -25,7 +25,6 @@ from .views import (
 )
 
 load_dotenv()
-ERROR_FILE = os.getenv("ERROR_FILE", "error.log")
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
 PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
 logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
@@ -52,7 +51,7 @@ async def create_app() -> web.Application:
 
     # Set up logging - errors to separate file
     logging.basicConfig(level=LOGGING_LEVEL)
-    file_handler = RotatingFileHandler(ERROR_FILE, maxBytes=1024 * 1024, backupCount=5)
+    file_handler = RotatingFileHandler("error.log", maxBytes=1024 * 1024, backupCount=5)
     file_handler.setLevel(logging.ERROR)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     file_handler.setFormatter(formatter)
