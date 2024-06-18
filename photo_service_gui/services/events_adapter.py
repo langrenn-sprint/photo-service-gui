@@ -116,9 +116,8 @@ class EventsAdapter:
             Exception: If an error occurs while reading the .env file.
         """
         env_param = str(os.getenv(param_name))
-        if env_param:
+        if env_param and (env_param != "None"):
             return env_param
-
         env_file_path = os.path.join(os.getcwd(), ".env")
         try:
             with open(env_file_path, "r") as file:
@@ -146,10 +145,9 @@ class EventsAdapter:
                 settings = json.load(json_file)
                 global_setting = settings[param_name]
         except Exception as e:
-            logging.error(
-                f"Global setting {param_name} not found. File path {config_file} - {e}"
-            )
-            raise Exception from e
+            err_info = f"Global setting {param_name} not found. File path {config_file} - {e}"
+            logging.error(err_info)
+            raise Exception(err_info) from e
         return global_setting
 
     def get_global_setting_bool(self, param_name: str) -> bool:

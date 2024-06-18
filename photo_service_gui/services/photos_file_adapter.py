@@ -6,9 +6,9 @@ from typing import List
 
 from .events_adapter import EventsAdapter
 
-PHOTOS_FILE_PATH = EventsAdapter().get_global_setting("PHOTOS_FILE_PATH")
+PHOTOS_FILE_PATH = EventsAdapter().get_env("PHOTOS_FILE_PATH")
 PHOTOS_ARCHIVE_PATH = f"{PHOTOS_FILE_PATH}/archive"
-PHOTOS_URL_PATH = EventsAdapter().get_global_setting("PHOTOS_URL_PATH")
+PHOTOS_URL_PATH = EventsAdapter().get_env("PHOTOS_URL_PATH")
 
 
 class PhotosFileAdapter:

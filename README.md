@@ -61,12 +61,11 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
-PHOTOS_FILE_PATH=photo_service_gui/files
 VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
 GLOBAL_SETTINGS_FILE=photo_service_gui/config/global_settings.json
 VIDEO_STATUS_FILE=photo_service_gui/config/video_status.json
-
-```
+PHOTOS_FILE_PATH=photo_service_gui/files
+PHOTOS_URL_PATH=../files```
 
 ### Rydde opp i docker stuff
 docker system prune
