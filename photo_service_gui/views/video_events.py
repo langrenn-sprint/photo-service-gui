@@ -79,7 +79,7 @@ class VideoEvents(web.View):
             elif "video_analytics_stop" in form.keys():
                 response["video_analytics"] = stop_video_analytics()
             if "video_status" in form.keys():
-                result_list = EventsAdapter().get_video_service_messages()
+                result_list = EventsAdapter().get_video_service_status_messages()
                 for res in result_list:
                     response["video_status"] += f"{res}<br>"
         except Exception as e:
@@ -91,17 +91,19 @@ class VideoEvents(web.View):
 
 def start_video_analytics(event_id: str) -> str:
     """Start video analytics."""
-    analytics_running = EventsAdapter().get_global_setting("VIDEO_ANALYTICS_RUNNING")
-    if analytics_running == "true":
+    analytics_running = EventsAdapter().get_global_setting_bool(
+        "VIDEO_ANALYTICS_RUNNING"
+    )
+    if analytics_running:
         return "Video analytics already running"
     else:
-        EventsAdapter().update_global_setting("VIDEO_ANALYTICS_START", "true")
+        EventsAdapter().update_global_setting("VIDEO_ANALYTICS_START", "True")
     return "Video analytics started"
 
 
 def stop_video_analytics() -> str:
     """Stop video analytics."""
-    EventsAdapter().update_global_setting("VIDEO_ANALYTICS_STOP", "true")
+    EventsAdapter().update_global_setting("VIDEO_ANALYTICS_STOP", "True")
     return "Stop video analytics initiert."
 
 
@@ -112,5 +114,5 @@ def update_config(form: dict) -> str:
     )
     EventsAdapter().update_global_setting("VIDEO_URL", str(form["video_url"]))
 
-    EventsAdapter().update_global_setting("DRAW_TRIGGER_LINE", "true")
+    EventsAdapter().update_global_setting("DRAW_TRIGGER_LINE", "True")
     return "Config updated - reload if new trigger line photo not is visible"

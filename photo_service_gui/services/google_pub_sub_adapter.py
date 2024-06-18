@@ -6,7 +6,7 @@ import os
 from google.api_core import retry
 from google.cloud import pubsub_v1  # type: ignore[attr-defined]
 
-project_id = os.getenv("GOOGLE_PUBSUB_PROJECT_ID")
+project_id = os.getenv("GOOGLE_CLOUD_PROJECT")
 topic_id = os.getenv("GOOGLE_PUBSUB_TOPIC_ID")
 subscription_id = os.getenv("GOOGLE_PUBSUB_SUBSCRIPTION_ID")
 num_messages = os.getenv("GOOGLE_PUBSUB_NUM_MESSAGES", 10)

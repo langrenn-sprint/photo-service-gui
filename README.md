@@ -51,7 +51,6 @@ FERNET_KEY=23EHUWpP_MyKey_MyKeyhxndWqyc0vO-MyKeySMyKey=
 GOOGLE_APPLICATION_CREDENTIALS=/Users/name/github/secrets/application_default_credentials.json
 GOOGLE_CLOUD_PROJECT=sigma-celerity-257719
 GOOGLE_PUBSUB_NUM_MESSAGES=1
-GOOGLE_PUBSUB_PROJECT_ID=sigma-celerity-257719
 GOOGLE_PUBSUB_TOPIC_ID=langrenn-sprint
 GOOGLE_PUBSUB_SUBSCRIPTION_ID=langrenn-sprint-sub
 GOOGLE_STORAGE_BUCKET=langrenn-sprint
@@ -62,10 +61,11 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
-CAMERA_LOCATION=Finish
-TRIGGER_LINE_XYXY=0.15:0.70:1:0.70
-DETECTION_BOX_MINIMUM_SIZE=0.08
 PHOTOS_FILE_PATH=photo_service_gui/files
+VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
+GLOBAL_SETTINGS_FILE=photo_service_gui/config/global_settings.json
+VIDEO_STATUS_FILE=photo_service_gui/config/video_status.json
+
 ```
 
 ### Rydde opp i docker stuff
