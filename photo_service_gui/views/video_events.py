@@ -16,6 +16,10 @@ from .utils import (
     get_event,
 )
 
+PHOTOS_URL_PATH = "files"
+TRIGGER_LINE_CONFIG_FILE = EventsAdapter().get_global_setting("TRIGGER_LINE_CONFIG_FILE")
+TRIGGER_LINE_CONFIG_URL = f"{PHOTOS_URL_PATH}/{TRIGGER_LINE_CONFIG_FILE}"
+
 
 class VideoEvents(web.View):
     """Class representing the video_event view."""
@@ -40,9 +44,7 @@ class VideoEvents(web.View):
                     "event_id": event_id,
                     "informasjon": informasjon,
                     "username": user["name"],
-                    "line_config_file": EventsAdapter().get_global_setting(
-                        "LINE_CONFIG_FILE_URL"
-                    ),
+                    "line_config_file": TRIGGER_LINE_CONFIG_URL,
                     "trigger_line_xyxyn": EventsAdapter().get_global_setting(
                         "TRIGGER_LINE_XYXYN"
                     ),

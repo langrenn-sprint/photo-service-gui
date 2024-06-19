@@ -86,13 +86,15 @@
         </td>
     </tr>
     <tr id="headerblack">
-      <td>Service status</td>
+      <td>Service status ({{ photo_queue|length }} bilder i kø)</td>
       <td>Line crossing configuration</td>
     </tr>
     <tr height="500">
       <td valign="top">
-        <img id="latest_photo" src="{{ line_config_file }}" title="Latest photo from vision AI detection" style="width:400px">
-        <br>
+        {% if photo_queue %}
+          <img id="latest_photo" src="{{ photo_queue[0] }}" title="Latest photo from vision AI detection" style="width:400px">
+          <br>
+        {% endif %}
         <span id="send_result"></span>
       </td>
       <td valign="top">
