@@ -17,7 +17,9 @@ from .utils import (
 )
 
 PHOTOS_URL_PATH = "files"
-TRIGGER_LINE_CONFIG_FILE = EventsAdapter().get_global_setting("TRIGGER_LINE_CONFIG_FILE")
+TRIGGER_LINE_CONFIG_FILE = EventsAdapter().get_global_setting(
+    "TRIGGER_LINE_CONFIG_FILE"
+)
 TRIGGER_LINE_CONFIG_URL = f"{PHOTOS_URL_PATH}/{TRIGGER_LINE_CONFIG_FILE}"
 
 
