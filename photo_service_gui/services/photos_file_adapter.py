@@ -4,7 +4,7 @@ import logging
 import os
 from typing import List
 
-PHOTOS_FILE_PATH = "photo_service_gui/files"
+PHOTOS_FILE_PATH = f"{os.getcwd()}/photo_service_gui/files"
 PHOTOS_ARCHIVE_PATH = f"{PHOTOS_FILE_PATH}/archive"
 PHOTOS_URL_PATH = "files"
 
