@@ -1,6 +1,5 @@
 """Module for status adapter."""
 
-import json
 import logging
 import os
 
@@ -32,7 +31,8 @@ class StatusAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/status?count={count}&event_id={event['id']}&type={type}", headers=headers
+                f"{PHOTO_SERVICE_URL}/status?count={count}&event_id={event['id']}&type={type}",
+                headers=headers,
             ) as resp:
                 if resp.status == 200:
                     status = await resp.json()
@@ -41,17 +41,15 @@ class StatusAdapter:
                 else:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise Exception(
-                        f"Error - {resp.status}: {body['detail']}."
-                    )
+                    raise Exception(f"Error - {resp.status}: {body['detail']}.")
         return status
 
     async def create_status(
-            self, token: str, event: dict, type: str, message: str
+        self, token: str, event: dict, type: str, message: str
     ) -> str:
         """Create new status function."""
         servicename = "create_status"
-        time = EventsAdapter().get_local_time(event)
+        time = EventsAdapter().get_local_time(event, "log")
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),

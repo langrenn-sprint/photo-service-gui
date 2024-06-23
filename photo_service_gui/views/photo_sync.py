@@ -45,7 +45,9 @@ class PhotoSync(web.View):
             except Exception as e:
                 informasjon = f"Det har oppstått en feil ved synkronisering. {e}"
                 action = ""
-            g_albums = await GooglePhotosAdapter().get_albums(user["g_photos_token"])
+            g_albums = await GooglePhotosAdapter().get_albums(
+                user["token"], event, user["g_photos_token"]
+            )
             return await aiohttp_jinja2.render_template_async(
                 "photo_sync.html",
                 self.request,

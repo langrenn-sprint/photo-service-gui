@@ -73,9 +73,12 @@ class AiImageService:
 
         return _tags
 
-    def analyze_photo_with_google_for_langrenn(self, image_uri: str) -> dict:
+    async def analyze_photo_with_google_for_langrenn(
+        self, token: str, event: dict, image_uri: str
+    ) -> dict:
         """Send infile to Vision API, return dict with langrenn info."""
         logging.info(f"Enter vision, image {image_uri}")
+        conf_limit = await ConfigAdapter().get_config(token, event, "CONFIDENCE_LIMIT")
         _tags = {}
         count_persons = 0
 
@@ -98,10 +101,7 @@ class AiImageService:
             logging.debug(
                 "Found object: {} (confidence: {})".format(object_.name, object_.score)
             )
-            if (
-                float(ConfigAdapter().get_config("CONFIDENCE_LIMIT"))
-                < object_.score
-            ):
+            if float(conf_limit) < object_.score:
                 if object_.name == "Person":
                     count_persons = count_persons + 1
         _tags["persons"] = count_persons
@@ -114,12 +114,7 @@ class AiImageService:
             for block in page.blocks:
                 for paragraph in block.paragraphs:
                     for word in paragraph.words:
-                        if (
-                            float(
-                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
-                            )
-                            < word.confidence
-                        ):
+                        if float(conf_limit) < word.confidence:
                             word_text = "".join(
                                 [symbol.text for symbol in word.symbols]
                             )
@@ -145,11 +140,12 @@ class AiImageService:
 
         return _tags
 
-    def analyze_photo_with_google_for_langrenn_v2(
-        self, image_uri: str, crop_uri: str
+    async def analyze_photo_with_google_for_langrenn_v2(
+        self, token: str, event: dict, image_uri: str, crop_uri: str
     ) -> dict:
         """Send infile to Vision API, return dict with langrenn info."""
         logging.info(f"Enter vision, image {image_uri}")
+        conf_limit = await ConfigAdapter().get_config(token, event, "CONFIDENCE_LIMIT")
         _tags = {}
         count_persons = 0
 
@@ -174,10 +170,7 @@ class AiImageService:
             logging.debug(
                 "Found object: {} (confidence: {})".format(object_.name, object_.score)
             )
-            if (
-                float(ConfigAdapter().get_config("CONFIDENCE_LIMIT"))
-                < object_.score
-            ):
+            if float(conf_limit) < object_.score:
                 if object_.name == "Person":
                     count_persons = count_persons + 1
         _tags["persons"] = count_persons
@@ -190,12 +183,7 @@ class AiImageService:
             for block in page.blocks:
                 for paragraph in block.paragraphs:
                     for word in paragraph.words:
-                        if (
-                            float(
-                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
-                            )
-                            < word.confidence
-                        ):
+                        if float(conf_limit) < word.confidence:
                             word_text = "".join(
                                 [symbol.text for symbol in word.symbols]
                             )
@@ -226,12 +214,7 @@ class AiImageService:
             for block in page.blocks:
                 for paragraph in block.paragraphs:
                     for word in paragraph.words:
-                        if (
-                            float(
-                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
-                            )
-                            < word.confidence
-                        ):
+                        if float(conf_limit) < word.confidence:
                             word_text = "".join(
                                 [symbol.text for symbol in word.symbols]
                             )

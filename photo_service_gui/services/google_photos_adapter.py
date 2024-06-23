@@ -13,8 +13,6 @@ from multidict import MultiDict
 
 from .config_adapter import ConfigAdapter
 
-GOOGLE_PHOTO_SERVER = ConfigAdapter().get_config("GOOGLE_PHOTO_SERVER")
-GOOGLE_PHOTO_SCOPE = ConfigAdapter().get_config("GOOGLE_PHOTO_SCOPE")
 GOOGLE_PHOTO_CREDENTIALS_FILE = str(os.getenv("GOOGLE_PHOTO_CREDENTIALS_FILE"))
 
 
@@ -22,11 +20,14 @@ class GooglePhotosAdapter:
     """Class representing google photos."""
 
     async def upload_photo_to_google(
-        self, g_token: str, photo_list: list, album_id: str
+        self, token: str, event: dict, g_token: str, photo_list: list, album_id: str
     ) -> str:
         """Upload photo to a specific album in google photos."""
         i = 0
         servicename = "upload_photo_to_album"
+        GOOGLE_PHOTO_SERVER = await ConfigAdapter().get_config(
+            token, event, "GOOGLE_PHOTO_SERVER"
+        )
 
         try:
             for photo in photo_list:
@@ -87,12 +88,17 @@ class GooglePhotosAdapter:
         informasjon = f"Lastet opp {i} bilder"
         return informasjon
 
-    async def get_album_items(self, g_token: str, album_id: str) -> List:
+    async def get_album_items(
+        self, token: str, event: dict, g_token: str, album_id: str
+    ) -> List:
         """Get all items for an album."""
         album_items = []
         morePages = True
         pageToken = ""
         servicename = "get_album_items"
+        GOOGLE_PHOTO_SERVER = await ConfigAdapter().get_config(
+            token, event, "GOOGLE_PHOTO_SERVER"
+        )
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -126,10 +132,15 @@ class GooglePhotosAdapter:
             album_items.extend(tmp_album_items["mediaItems"])
         return album_items
 
-    async def get_album(self, g_token: str, album_id: str) -> Dict:
+    async def get_album(
+        self, token: str, event: dict, g_token: str, album_id: str
+    ) -> Dict:
         """Get one album."""
         album = {}
         servicename = "get_album"
+        GOOGLE_PHOTO_SERVER = await ConfigAdapter().get_config(
+            token, event, "GOOGLE_PHOTO_SERVER"
+        )
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -149,10 +160,13 @@ class GooglePhotosAdapter:
                     raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {body}.")
         return album
 
-    async def get_albums(self, g_token: str) -> List:
+    async def get_albums(self, token: str, event: dict, g_token: str) -> List:
         """Get all albums."""
         albums = []
         servicename = "get_albums"
+        GOOGLE_PHOTO_SERVER = await ConfigAdapter().get_config(
+            token, event, "GOOGLE_PHOTO_SERVER"
+        )
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -172,10 +186,15 @@ class GooglePhotosAdapter:
                     raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {body}.")
         return albums
 
-    async def get_auth_request_url(self, redirect_url: str, event_id: str) -> str:
+    async def get_auth_request_url(
+        self, token: str, event: dict, redirect_url: str
+    ) -> str:
         """Get auth URL for request to read from Photos API."""
         # Use the client_secret.json file to identify the application requesting
         # authorization. The client ID (from that file) and access scopes are required.
+        GOOGLE_PHOTO_SCOPE = await ConfigAdapter().get_config(
+            token, event, "GOOGLE_PHOTO_SCOPE"
+        )
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             GOOGLE_PHOTO_CREDENTIALS_FILE, scopes=GOOGLE_PHOTO_SCOPE
         )
@@ -191,14 +210,17 @@ class GooglePhotosAdapter:
         authorization_url, state = flow.authorization_url(
             access_type="offline",
             login_hint="info.renn.langrenn.kjelsaas@gmail.com",
-            state=event_id,
+            state=event["id"],
         )
         return authorization_url
 
-    def get_g_token(self, redirect_url: str, event_id: str, user: dict) -> str:
+    async def get_g_token(self, user: dict, event: dict, redirect_url: str) -> str:
         """Get token for request to read from Photos API."""
+        GOOGLE_PHOTO_SCOPE = await ConfigAdapter().get_config(
+            user["token"], event, "GOOGLE_PHOTO_SCOPE"
+        )
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
-            GOOGLE_PHOTO_CREDENTIALS_FILE, scopes=GOOGLE_PHOTO_SCOPE, state=event_id
+            GOOGLE_PHOTO_CREDENTIALS_FILE, scopes=GOOGLE_PHOTO_SCOPE, state=event["id"]
         )
         flow.redirect_uri = redirect_url
         flow.fetch_token(code=user["g_client_id"])

@@ -7,6 +7,7 @@ from aiohttp import web
 from .utils import (
     check_login_google,
     get_auth_url_google_photos,
+    get_event,
     login_google_photos,
 )
 
@@ -23,13 +24,14 @@ class PhotosAdm(web.View):
         except Exception:
             event_id = ""
         try:
+            user = await check_login_google(self, event_id)
+            event = await get_event(user, event_id)
+        except Exception as e:
+            return web.HTTPSeeOther(location=f"{e}")
+        try:
             action = self.request.rel_url.query["action"]
         except Exception:
             action = ""
-        try:
-            user = await check_login_google(self, event_id)
-        except Exception as e:
-            return web.HTTPSeeOther(location=f"{e}")
 
         try:
             if not user["g_auth_photos"]:
@@ -39,7 +41,7 @@ class PhotosAdm(web.View):
                     user["g_scope"] = self.request.rel_url.query["scope"]
                     user["g_client_id"] = self.request.rel_url.query["code"]
                     result = await login_google_photos(
-                        self, WEBSERVER_PHOTO_URL, event_id, user
+                        self, WEBSERVER_PHOTO_URL, event, user
                     )
                     if result == 200:
                         # reload user session information
@@ -51,7 +53,7 @@ class PhotosAdm(web.View):
                 else:
                     # case (step 1): initiate authorization for google photo
                     auth_url = await get_auth_url_google_photos(
-                        self, WEBSERVER_PHOTO_URL, event_id
+                        self, user["token"], event, WEBSERVER_PHOTO_URL
                     )
                     if auth_url:
                         return web.HTTPSeeOther(location=f"{auth_url}")

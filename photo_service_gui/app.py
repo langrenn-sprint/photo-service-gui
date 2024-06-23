@@ -13,7 +13,6 @@ from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from dotenv import load_dotenv
 import jinja2
 
-from .services import ConfigAdapter
 from .views import (
     Login,
     Logout,
@@ -88,6 +87,4 @@ async def create_app() -> web.Application:
     app.router.add_static("/static/", path=static_dir, name="static")
     app.router.add_static("/files/", path=files_dir, name="files")
 
-    ConfigAdapter.load_config(gs_config_file)
-    
     return app

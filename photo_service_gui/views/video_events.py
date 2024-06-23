@@ -18,10 +18,6 @@ from .utils import (
 )
 
 PHOTOS_URL_PATH = "files"
-TRIGGER_LINE_CONFIG_FILE = ConfigAdapter().get_config(
-    "TRIGGER_LINE_CONFIG_FILE"
-)
-TRIGGER_LINE_CONFIG_URL = f"{PHOTOS_URL_PATH}/{TRIGGER_LINE_CONFIG_FILE}"
 
 
 class VideoEvents(web.View):
@@ -38,6 +34,11 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
+            TRIGGER_LINE_CONFIG_FILE = await ConfigAdapter().get_config(
+                user["token"], event, "TRIGGER_LINE_CONFIG_FILE"
+            )
+            TRIGGER_LINE_CONFIG_URL = f"{PHOTOS_URL_PATH}/{TRIGGER_LINE_CONFIG_FILE}"
+
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
                 "video_events.html",
@@ -48,13 +49,15 @@ class VideoEvents(web.View):
                     "informasjon": informasjon,
                     "username": user["name"],
                     "line_config_file": TRIGGER_LINE_CONFIG_URL,
-                    "trigger_line_xyxyn": ConfigAdapter().get_config(
-                        "TRIGGER_LINE_XYXYN"
+                    "trigger_line_xyxyn": await ConfigAdapter().get_config(
+                        user["token"], event, "TRIGGER_LINE_XYXYN"
                     ),
                     "photo_queue": PhotosFileAdapter().get_all_photo_urls(),
-                    "video_url": ConfigAdapter().get_config("VIDEO_URL"),
-                    "video_analytics_running": ConfigAdapter().get_config(
-                        "VIDEO_ANALYTICS_RUNNING"
+                    "video_url": await ConfigAdapter().get_config(
+                        user["token"], event, "VIDEO_URL"
+                    ),
+                    "video_analytics_running": await ConfigAdapter().get_config(
+                        user["token"], event, "VIDEO_ANALYTICS_RUNNING"
                     ),
                 },
             )
@@ -81,14 +84,22 @@ class VideoEvents(web.View):
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
             if "pub_message" in form.keys():
-                res = await FotoService().push_new_photos_from_file(user["token"], event)
+                res = await FotoService().push_new_photos_from_file(
+                    user["token"], event
+                )
                 response["pub_message"] = res
             if "video_analytics_start" in form.keys():
-                response["video_analytics"] = start_video_analytics(event_id)
+                response["video_analytics"] = await start_video_analytics(
+                    user["token"], event
+                )
             elif "video_analytics_stop" in form.keys():
-                response["video_analytics"] = stop_video_analytics()
+                response["video_analytics"] = await stop_video_analytics(
+                    user["token"], event
+                )
             if "video_status" in form.keys():
-                result_list = StatusAdapter().get_status(user["token"], event, 25)
+                result_list = await StatusAdapter().get_status(
+                    user["token"], event, "video_status", 25
+                )
                 for res in result_list:
                     response["video_status"] += f"{res}<br>"
         except Exception as e:
@@ -98,30 +109,33 @@ class VideoEvents(web.View):
         return web.Response(body=json_response)
 
 
-def start_video_analytics(event_id: str) -> str:
+async def start_video_analytics(token: str, event: dict) -> str:
     """Start video analytics."""
-    analytics_running = ConfigAdapter().get_config_bool(
-        "VIDEO_ANALYTICS_RUNNING"
+    analytics_running = await ConfigAdapter().get_config_bool(
+        token, event, "VIDEO_ANALYTICS_RUNNING"
     )
     if analytics_running:
         return "Video analytics already running"
     else:
-        ConfigAdapter().update_config("VIDEO_ANALYTICS_START", "True")
+        await ConfigAdapter().update_config(
+            token, event, "VIDEO_ANALYTICS_START", "True"
+        )
     return "Video analytics started"
 
 
-def stop_video_analytics() -> str:
+async def stop_video_analytics(token: str, event: dict) -> str:
     """Stop video analytics."""
-    ConfigAdapter().update_config("VIDEO_ANALYTICS_STOP", "True")
+    await ConfigAdapter().update_config(token, event, "VIDEO_ANALYTICS_STOP", "True")
     return "Stop video analytics initiert."
 
 
-def update_config(form: dict) -> str:
+async def update_config(token: str, event: dict, form: dict) -> str:
     """Draw trigger line with ultraltyics."""
-    ConfigAdapter().update_config(
-        "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
+    await ConfigAdapter().update_config(
+        token, event, "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
     )
-    ConfigAdapter().update_config("VIDEO_URL", str(form["video_url"]))
-
-    ConfigAdapter().update_config("DRAW_TRIGGER_LINE", "True")
+    await ConfigAdapter().update_config(
+        token, event, "VIDEO_URL", str(form["video_url"])
+    )
+    await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
     return "Config updated - reload if new trigger line photo not is visible"

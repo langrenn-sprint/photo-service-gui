@@ -19,7 +19,7 @@ class ConfigAdapter:
 
     async def get_config(self, token: str, event: dict, key: str) -> str:
         """Get config by google id function."""
-        config = {}
+        config = ""
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -30,7 +30,8 @@ class ConfigAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/config?key={key}&event_id={event['id']}", headers=headers
+                f"{PHOTO_SERVICE_URL}/config?key={key}&event_id={event['id']}",
+                headers=headers,
             ) as resp:
                 if resp.status == 200:
                     config = await resp.json()
@@ -39,14 +40,12 @@ class ConfigAdapter:
                 else:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise Exception(
-                        f"Error - {resp.status}: {body['detail']}."
-                    )
+                    raise Exception(f"Error - {resp.status}: {body['detail']}.")
         return config
 
-    def get_config_bool(self, token: str, event: dict, key: str) -> bool:
+    async def get_config_bool(self, token: str, event: dict, key: str) -> bool:
         """Get config boolean value."""
-        string_value = self.get_config(token, event, key)
+        string_value = await self.get_config(token, event, key)
         boolean_value = False
         if string_value in ["True", "true", "1"]:
             boolean_value = True
@@ -109,8 +108,11 @@ class ConfigAdapter:
                 raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {resp}.")
         return resp.status
 
-    async def init_config(self, token: str, event: dict, config_file: str) -> str:
+    async def init_config(self, token: str, event: dict) -> None:
         """Load default config function - read from file."""
+        PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
+        config_file = f"{PROJECT_ROOT}/config/global_settings.json"
+
         try:
             with open(config_file, "r") as json_file:
                 settings = json.load(json_file)
@@ -136,7 +138,6 @@ class ConfigAdapter:
             "value": value,
         }
 
-
         async with ClientSession() as session:
             async with session.put(
                 f"{PHOTO_SERVICE_URL}/config", headers=headers, json=request_body
@@ -153,4 +154,3 @@ class ConfigAdapter:
                     )
             logging.debug(f"Updated config: {id} - res {resp.status}")
         return str(resp.status)
-

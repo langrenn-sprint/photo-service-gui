@@ -57,7 +57,9 @@ class FotoService:
         self, token: str, g_token: str, event: dict, g_album_id: str
     ) -> int:
         """Create album for synk."""
-        g_album = await GooglePhotosAdapter().get_album(g_token, g_album_id)
+        g_album = await GooglePhotosAdapter().get_album(
+            token, event, g_token, g_album_id
+        )
 
         # check if album already has been synced, if not create new
         album = await AlbumsAdapter().get_album_by_g_id(token, g_album_id)
@@ -121,7 +123,7 @@ class FotoService:
         sync_albums = await AlbumsAdapter().get_all_albums(user["token"], event["id"])
         for sync_album in sync_albums:
             album_items = await GooglePhotosAdapter().get_album_items(
-                user["g_photos_token"], sync_album.g_id
+                user["token"], event, user["g_photos_token"], sync_album.g_id
             )
             for g_photo in album_items:  # type: ignore
                 creation_time = g_photo["mediaMetadata"]["creationTime"]
@@ -152,7 +154,9 @@ class FotoService:
                         "is_start_registration": sync_album.is_start_registration,
                         "starred": False,
                         "event_id": event["id"],
-                        "creation_time": format_zulu_time(creation_time),
+                        "creation_time": format_zulu_time(
+                            user["token"], event, creation_time
+                        ),
                         "information": sync_album.title,
                         "race_id": "",
                         "raceclass": "",
@@ -167,7 +171,7 @@ class FotoService:
                     request_body[
                         "ai_information"
                     ] = AiImageService().analyze_photo_with_google_for_langrenn(
-                        f"{g_photo['baseUrl']}=w800-h800"
+                        user["token"], event, f"{g_photo['baseUrl']}=w800-h800"
                     )
 
                     photo_id = await PhotosAdapter().create_photo(
@@ -206,7 +210,7 @@ class FotoService:
                 # analyze photo with Vision AI
                 ai_information = (
                     AiImageService().analyze_photo_with_google_for_langrenn_v2(
-                        url_main, url_crop
+                        token, event, url_main, url_crop
                     )
                 )
 
@@ -233,11 +237,8 @@ class FotoService:
                 informasjon = url_main
                 i_photo_count += 1
         if i_photo_count > 0:
-            StatusAdapter().create_status(
-                token,
-                event,
-                "video_status"
-                f"Bilder lastet opp: {i_photo_count}"
+            await StatusAdapter().create_status(
+                token, event, "video_status", f"Bilder lastet opp: {i_photo_count}"
             )
 
         return informasjon
@@ -263,12 +264,12 @@ def group_photos(photo_list: List[str]) -> Dict[str, Dict[str, str]]:
     return photo_dict
 
 
-def format_zulu_time(timez: str) -> str:
+async def format_zulu_time(token: str, event: dict, timez: str) -> str:
     """Convert from zulu time to normalized time - string formats."""
     # TODO: Move to properties
     pattern = "%Y-%m-%dT%H:%M:%SZ"
-    TIME_ZONE_OFFSET_G_PHOTOS = ConfigAdapter().get_config(
-        "TIME_ZONE_OFFSET_G_PHOTOS"
+    TIME_ZONE_OFFSET_G_PHOTOS = await ConfigAdapter().get_config(
+        token, event, "TIME_ZONE_OFFSET_G_PHOTOS"
     )
     try:
         t1 = datetime.datetime.strptime(timez, pattern)

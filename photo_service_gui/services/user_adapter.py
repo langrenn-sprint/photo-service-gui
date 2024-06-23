@@ -157,7 +157,7 @@ class UserAdapter:
         return 200
 
     def login_google_photos(
-        self, redirect_url: str, event_id: str, user: dict, cookiestorage: Session
+        self, redirect_url: str, event: dict, user: dict, cookiestorage: Session
     ) -> int:
         """Login google photos, check that scope is correct."""
         # store to session variable
@@ -172,7 +172,7 @@ class UserAdapter:
         if "photoslibrary" in user["g_scope"]:
             cookiestorage["g_auth_photos"] = True
             cookiestorage["g_photos_token"] = GooglePhotosAdapter().get_g_token(
-                redirect_url, event_id, user
+                user, event, redirect_url
             )
             return 200
         else:

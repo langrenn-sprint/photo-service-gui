@@ -14,6 +14,7 @@ from aiohttp import web
 from multidict import MultiDict
 
 from .competition_format_adapter import CompetitionFormatAdapter
+from .config_adapter import ConfigAdapter
 
 EVENTS_HOST_SERVER = os.getenv("EVENTS_HOST_SERVER", "localhost")
 EVENTS_HOST_PORT = os.getenv("EVENTS_HOST_PORT", "8082")
@@ -230,6 +231,10 @@ class EventsAdapter:
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
+        # initialize config for event
+        event = await self.get_event(token, id)
+        await ConfigAdapter().init_config(token, event)
+
         return id
 
     async def delete_event(self, token: str, id: str) -> str:

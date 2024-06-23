@@ -11,25 +11,25 @@ from photo_service_gui.services import (
 )
 
 
-async def get_auth_url_google_photos(self, redirect_url: str, event_id: str) -> str:
+async def get_auth_url_google_photos(
+    self, token: str, event: dict, redirect_url: str
+) -> str:
     """Check authorization for google photos and return url - blank if authorized."""
     session = await get_session(self.request)
     authorized = UserAdapter().isloggedin_google_photos(session)
     if not authorized:
         authorization_request_url = await GooglePhotosAdapter().get_auth_request_url(
-            redirect_url, event_id
+            token, event, redirect_url
         )
     else:
         authorization_request_url = ""
     return authorization_request_url
 
 
-async def login_google_photos(
-    self, redirect_url: str, event_id: str, user: dict
-) -> int:
+async def login_google_photos(self, redirect_url: str, event: dict, user: dict) -> int:
     """Check scope authorization for google photos and store in session."""
     session = await new_session(self.request)
-    result = UserAdapter().login_google_photos(redirect_url, event_id, user, session)
+    result = UserAdapter().login_google_photos(redirect_url, event, user, session)
     return result
 
 
