@@ -6,7 +6,7 @@ from google.cloud import vision
 import requests  # type: ignore
 from requests.exceptions import ConnectionError, Timeout  # type: ignore
 
-from .events_adapter import EventsAdapter
+from .config_adapter import ConfigAdapter
 
 
 class AiImageService:
@@ -99,7 +99,7 @@ class AiImageService:
                 "Found object: {} (confidence: {})".format(object_.name, object_.score)
             )
             if (
-                float(EventsAdapter().get_global_setting("CONFIDENCE_LIMIT"))
+                float(ConfigAdapter().get_config("CONFIDENCE_LIMIT"))
                 < object_.score
             ):
                 if object_.name == "Person":
@@ -116,7 +116,7 @@ class AiImageService:
                     for word in paragraph.words:
                         if (
                             float(
-                                EventsAdapter().get_global_setting("CONFIDENCE_LIMIT")
+                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
                             )
                             < word.confidence
                         ):
@@ -175,7 +175,7 @@ class AiImageService:
                 "Found object: {} (confidence: {})".format(object_.name, object_.score)
             )
             if (
-                float(EventsAdapter().get_global_setting("CONFIDENCE_LIMIT"))
+                float(ConfigAdapter().get_config("CONFIDENCE_LIMIT"))
                 < object_.score
             ):
                 if object_.name == "Person":
@@ -192,7 +192,7 @@ class AiImageService:
                     for word in paragraph.words:
                         if (
                             float(
-                                EventsAdapter().get_global_setting("CONFIDENCE_LIMIT")
+                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
                             )
                             < word.confidence
                         ):
@@ -228,7 +228,7 @@ class AiImageService:
                     for word in paragraph.words:
                         if (
                             float(
-                                EventsAdapter().get_global_setting("CONFIDENCE_LIMIT")
+                                ConfigAdapter().get_config("CONFIDENCE_LIMIT")
                             )
                             < word.confidence
                         ):

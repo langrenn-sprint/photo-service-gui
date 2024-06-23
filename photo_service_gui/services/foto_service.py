@@ -11,12 +11,14 @@ import piexif
 
 from .ai_image_service import AiImageService
 from .albums_adapter import Album, AlbumsAdapter
+from .config_adapter import ConfigAdapter
 from .events_adapter import EventsAdapter
 from .google_cloud_storage_adapter import GoogleCloudStorageAdapter
 from .google_photos_adapter import GooglePhotosAdapter
 from .google_pub_sub_adapter import GooglePubSubAdapter
 from .photos_adapter import PhotosAdapter
 from .photos_file_adapter import PhotosFileAdapter
+from .status_adapter import StatusAdapter
 
 
 class FotoService:
@@ -186,7 +188,7 @@ class FotoService:
         )
         return informasjon
 
-    async def push_new_photos_from_file(self, event_id: str) -> str:
+    async def push_new_photos_from_file(self, token: str, event: dict) -> str:
         """Push photos to cloud storage, analyze and publish."""
         i_photo_count = 0
         informasjon = ""
@@ -211,7 +213,7 @@ class FotoService:
                 pub_message = {
                     "ai_information": ai_information,
                     "crop_url": url_crop,
-                    "event_id": event_id,
+                    "event_id": event["id"],
                     "photo_info": get_image_description(group["main"]),
                     "photo_url": url_main,
                 }
@@ -231,7 +233,10 @@ class FotoService:
                 informasjon = url_main
                 i_photo_count += 1
         if i_photo_count > 0:
-            EventsAdapter().add_video_service_message(
+            StatusAdapter().create_status(
+                token,
+                event,
+                "video_status"
                 f"Bilder lastet opp: {i_photo_count}"
             )
 
@@ -262,7 +267,7 @@ def format_zulu_time(timez: str) -> str:
     """Convert from zulu time to normalized time - string formats."""
     # TODO: Move to properties
     pattern = "%Y-%m-%dT%H:%M:%SZ"
-    TIME_ZONE_OFFSET_G_PHOTOS = EventsAdapter().get_global_setting(
+    TIME_ZONE_OFFSET_G_PHOTOS = ConfigAdapter().get_config(
         "TIME_ZONE_OFFSET_G_PHOTOS"
     )
     try:

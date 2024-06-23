@@ -11,10 +11,10 @@ from aiohttp import web
 import google_auth_oauthlib.flow
 from multidict import MultiDict
 
-from .events_adapter import EventsAdapter
+from .config_adapter import ConfigAdapter
 
-GOOGLE_PHOTO_SERVER = EventsAdapter().get_global_setting("GOOGLE_PHOTO_SERVER")
-GOOGLE_PHOTO_SCOPE = EventsAdapter().get_global_setting("GOOGLE_PHOTO_SCOPE")
+GOOGLE_PHOTO_SERVER = ConfigAdapter().get_config("GOOGLE_PHOTO_SERVER")
+GOOGLE_PHOTO_SCOPE = ConfigAdapter().get_config("GOOGLE_PHOTO_SCOPE")
 GOOGLE_PHOTO_CREDENTIALS_FILE = str(os.getenv("GOOGLE_PHOTO_CREDENTIALS_FILE"))
 
 
