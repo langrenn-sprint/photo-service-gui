@@ -30,7 +30,38 @@ class ConfigAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/config?key={key}&event_id={event['id']}",
+                f"{PHOTO_SERVICE_URL}/config?key={key}&eventI={event['id']}",
+                headers=headers,
+            ) as resp:
+                if resp.status == 200:
+                    config = await resp.json()
+                elif resp.status == 401:
+                    raise Exception(f"Login expired: {resp}")
+                else:
+                    body = await resp.json()
+                    logging.error(f"{servicename} failed - {resp.status} - {body}")
+                    raise Exception(f"Error - {resp.status}: {body['detail']}.")
+        return config
+
+    async def get_all_configs(self, token: str, event: dict) -> list:
+        """Get config by google id function."""
+        config = []
+        headers = MultiDict(
+            [
+                (hdrs.CONTENT_TYPE, "application/json"),
+                (hdrs.AUTHORIZATION, f"Bearer {token}"),
+            ]
+        )
+        servicename = "get_all_configs"
+        if event:
+            url = f"{PHOTO_SERVICE_URL}/configs?eventId={event['id']}"
+        else:
+            url = f"{PHOTO_SERVICE_URL}/configs"
+        breakpoint()
+
+        async with ClientSession() as session:
+            async with session.get(
+                url,
                 headers=headers,
             ) as resp:
                 if resp.status == 200:
@@ -67,10 +98,11 @@ class ConfigAdapter:
             "key": key,
             "value": value,
         }
+        json_body = json.dumps(request_body)
 
         async with ClientSession() as session:
             async with session.post(
-                f"{PHOTO_SERVICE_URL}/config", headers=headers, json=request_body
+                f"{PHOTO_SERVICE_URL}/config", headers=headers, json=json_body
             ) as resp:
                 if resp.status == 201:
                     logging.debug(f"result - got response {resp}")
@@ -117,7 +149,7 @@ class ConfigAdapter:
             with open(config_file, "r") as json_file:
                 settings = json.load(json_file)
                 for key, value in settings.items():
-                    await self.update_config(token, event, key, value)
+                    await self.create_config(token, event, key, value)
         except Exception as e:
             err_info = f"Error linitializing config from {config_file} - {e}"
             logging.error(err_info)

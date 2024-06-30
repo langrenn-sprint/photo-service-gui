@@ -1,0 +1,43 @@
+{% extends "open_base.html" %}
+{% block titlecontainer %}
+<div class="w3-80">
+{% endblock %}
+
+{% block titleheader %}
+  Video events
+{% endblock %}
+
+{% block headercontainer %}Config <img id=header_icon src="../static/icon_settings.png"> {% endblock %}
+
+{% block titlemain %}
+  <img id=menu_icon src="../static/icon_settings.png"> Config
+{% endblock %}
+
+{% block menuitems %}{% endblock %}
+
+{% block content %}
+<! --- Edit menu --->
+  <table>
+    <tr id=headerblue align=right>
+      <td>
+        <form action=/config method=post>
+          <input type="hidden" name=event_id value="{{ event_id }}">
+          <input type="submit" name=reset_config value="  Nullstill config  ">
+        </form>
+      </td>
+  </table>
+  <p>
+    <span id="informasjon"></span>
+  </p>
+  <table cellpadding="4">
+    <tr id="headerblack">
+      <td>Config for event {{ event.name }}, {{ event.date_of_event }}</td>
+      <td></td>
+    </tr>
+    <tr>
+        <td>{{ event_config }}</td>
+        <td></td>
+      </tr>
+</table>
+{% endblock %}
+</div>

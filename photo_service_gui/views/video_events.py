@@ -97,7 +97,7 @@ class VideoEvents(web.View):
                     user["token"], event
                 )
             if "video_status" in form.keys():
-                result_list = await StatusAdapter().get_status(
+                result_list = await StatusAdapter().get_status_by_type(
                     user["token"], event, "video_status", 25
                 )
                 for res in result_list:

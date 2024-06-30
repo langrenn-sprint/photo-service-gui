@@ -18,8 +18,34 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 class StatusAdapter:
     """Class representing status."""
 
-    async def get_status(self, token: str, event: dict, type: str, count: int) -> list:
+    async def get_status(self, token: str, event: dict, count: int) -> list:
         """Get latest status messages."""
+        status = []
+        headers = MultiDict(
+            [
+                (hdrs.CONTENT_TYPE, "application/json"),
+                (hdrs.AUTHORIZATION, f"Bearer {token}"),
+            ]
+        )
+        servicename = "get_status"
+
+        async with ClientSession() as session:
+            async with session.get(
+                f"{PHOTO_SERVICE_URL}/status?count={count}&event_id={event['id']}",
+                headers=headers,
+            ) as resp:
+                if resp.status == 200:
+                    status = await resp.json()
+                elif resp.status == 401:
+                    raise Exception(f"Login expired: {resp}")
+                else:
+                    body = await resp.json()
+                    logging.error(f"{servicename} failed - {resp.status} - {body}")
+                    raise Exception(f"Error - {resp.status}: {body['detail']}.")
+        return status
+
+    async def get_status_by_type(self, token: str, event: dict, type: str, count: int) -> list:
+        """Get latest status messages for a given type."""
         status = []
         headers = MultiDict(
             [
@@ -57,6 +83,7 @@ class StatusAdapter:
             ]
         )
         request_body = {
+            "event_id": event["id"],
             "time": time,
             "type": type,
             "message": message,

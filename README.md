@@ -100,7 +100,7 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 ```Shell
 source .env
 poetry run adev runserver -p 8096 photo_service_gui
-docker-compose up user-service event-service competition-format-service mongodb
+docker-compose up photo-service user-service event-service photo-service competition-format-service mongodb
 ```
 
 ## start server uten reload (for live kjøring - unngår reload når bilder lagres)
