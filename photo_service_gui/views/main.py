@@ -54,8 +54,8 @@ class Main(web.View):
         user = await check_login(self)
         try:
             if "get_events" in form.keys():
-                serverUrl = form["serverUrl"]
-                informasjon = await EventsAdapter().sync_events(user["token"], serverUrl)  # type: ignore
+                server_url = form["server_url"]
+                informasjon = await EventsAdapter().sync_events(user["token"], server_url)  # type: ignore
             elif "json_events" in form.keys():
                 informasjon = await EventsAdapter().create_events_json(user["token"], form["eventsJson"])  # type: ignore
             elif "delete_event" in form.keys():

@@ -81,14 +81,14 @@ class FotoService:
                 "",
                 g_album["title"],
             )
-            resC = await AlbumsAdapter().create_album(token, album)
-            logging.debug(f"Created album, local copy {resC}")
+            res_c = await AlbumsAdapter().create_album(token, album)
+            logging.debug(f"Created album, local copy {res_c}")
         return 200
 
     async def update_race_info(self, token: str, event_id: str, form: dict) -> str:
         """Update race information in phostos, biblist."""
         informasjon = ""
-        iCount = 0
+        i_count = 0
         for key in form.keys():
             if key.startswith("biblist_"):
                 try:
@@ -101,14 +101,14 @@ class FotoService:
                         result = await PhotosAdapter().update_photo(
                             token, photo["id"], photo
                         )
-                        iCount += 1
+                        i_count += 1
                         logging.debug(
                             f"Updated photo with id {photo_id} for event {event_id} - {result}"
                         )
                 except Exception as e:
                     logging.error(f"Error reading biblist - {form[key]}: {e}")
                     informasjon += "En Feil oppstod. "
-        informasjon = f"Oppdatert {iCount} bilder."
+        informasjon = f"Oppdatert {i_count} bilder."
         return informasjon
 
     async def sync_photos_from_google(
@@ -182,10 +182,10 @@ class FotoService:
 
             # update album register
             sync_album.last_sync_time = EventsAdapter().get_local_datetime_now(event)
-            resU = await AlbumsAdapter().update_album(
+            res_u = await AlbumsAdapter().update_album(
                 user["token"], sync_album.id, sync_album
             )
-            logging.debug(f"Synked album - {sync_album.g_id}, stored locally {resU}")
+            logging.debug(f"Synked album - {sync_album.g_id}, stored locally {res_u}")
 
         informasjon = (
             f"Synkronisert bilder fra Google. {i_u} oppdatert og {i_c} opprettet."
@@ -237,8 +237,11 @@ class FotoService:
                 informasjon = url_main
                 i_photo_count += 1
         if i_photo_count > 0:
+            status_type = await ConfigAdapter().get_config(
+                token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
+            )
             await StatusAdapter().create_status(
-                token, event, "video_status", f"Bilder lastet opp: {i_photo_count}"
+                token, event, status_type, f"Bilder lastet opp: {i_photo_count}"
             )
 
         return informasjon
@@ -268,13 +271,13 @@ async def format_zulu_time(token: str, event: dict, timez: str) -> str:
     """Convert from zulu time to normalized time - string formats."""
     # TODO: Move to properties
     pattern = "%Y-%m-%dT%H:%M:%SZ"
-    TIME_ZONE_OFFSET_G_PHOTOS = await ConfigAdapter().get_config(
+    time_zone_offset = await ConfigAdapter().get_config(
         token, event, "TIME_ZONE_OFFSET_G_PHOTOS"
     )
     try:
         t1 = datetime.datetime.strptime(timez, pattern)
         # calculate new time
-        delta_seconds = int(TIME_ZONE_OFFSET_G_PHOTOS) * 3600  # type: ignore
+        delta_seconds = int(time_zone_offset) * 3600  # type: ignore
         t2 = t1 + datetime.timedelta(seconds=delta_seconds)
     except ValueError:
         logging.debug(f"Got error parsing time {ValueError}")

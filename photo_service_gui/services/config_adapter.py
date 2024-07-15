@@ -1,5 +1,6 @@
 """Module for config adapter."""
 
+import copy
 import json
 import logging
 import os
@@ -30,7 +31,7 @@ class ConfigAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/config?key={key}&eventI={event['id']}",
+                f"{PHOTO_SERVICE_URL}/config?key={key}&eventId={event['id']}",
                 headers=headers,
             ) as resp:
                 if resp.status == 200:
@@ -41,7 +42,7 @@ class ConfigAdapter:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
                     raise Exception(f"Error - {resp.status}: {body['detail']}.")
-        return config
+        return config["value"]  # type: ignore
 
     async def get_all_configs(self, token: str, event: dict) -> list:
         """Get config by google id function."""
@@ -57,7 +58,6 @@ class ConfigAdapter:
             url = f"{PHOTO_SERVICE_URL}/configs?eventId={event['id']}"
         else:
             url = f"{PHOTO_SERVICE_URL}/configs"
-        breakpoint()
 
         async with ClientSession() as session:
             async with session.get(
@@ -93,16 +93,16 @@ class ConfigAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        request_body = {
+        config = {
             "event_id": event["id"],
             "key": key,
             "value": value,
         }
-        json_body = json.dumps(request_body)
+        request_body = copy.deepcopy(config)
 
         async with ClientSession() as session:
             async with session.post(
-                f"{PHOTO_SERVICE_URL}/config", headers=headers, json=json_body
+                f"{PHOTO_SERVICE_URL}/config", headers=headers, json=request_body
             ) as resp:
                 if resp.status == 201:
                     logging.debug(f"result - got response {resp}")
@@ -155,7 +155,9 @@ class ConfigAdapter:
             logging.error(err_info)
             raise Exception(err_info) from e
 
-    async def update_config(self, token: str, event: dict, key: str, value: str) -> str:
+    async def update_config(
+        self, token: str, event: dict, key: str, new_value: str
+    ) -> str:
         """Update config function."""
         servicename = "update_config"
         headers = MultiDict(
@@ -167,7 +169,7 @@ class ConfigAdapter:
         request_body = {
             "event_id": event["id"],
             "key": key,
-            "value": value,
+            "value": new_value,
         }
 
         async with ClientSession() as session:

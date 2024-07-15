@@ -34,10 +34,10 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
-            TRIGGER_LINE_CONFIG_FILE = await ConfigAdapter().get_config(
+            trigger_line_file = await ConfigAdapter().get_config(
                 user["token"], event, "TRIGGER_LINE_CONFIG_FILE"
             )
-            TRIGGER_LINE_CONFIG_URL = f"{PHOTOS_URL_PATH}/{TRIGGER_LINE_CONFIG_FILE}"
+            trigger_line_file_url = f"{PHOTOS_URL_PATH}/{trigger_line_file}"
 
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
@@ -48,7 +48,7 @@ class VideoEvents(web.View):
                     "event_id": event_id,
                     "informasjon": informasjon,
                     "username": user["name"],
-                    "line_config_file": TRIGGER_LINE_CONFIG_URL,
+                    "line_config_file": trigger_line_file_url,
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
                         user["token"], event, "TRIGGER_LINE_XYXYN"
                     ),
@@ -97,8 +97,11 @@ class VideoEvents(web.View):
                     user["token"], event
                 )
             if "video_status" in form.keys():
+                status_type = await ConfigAdapter().get_config(
+                    user["token"], event, "VIDEO_ANALYTICS_STATUS_TYPE"
+                )
                 result_list = await StatusAdapter().get_status_by_type(
-                    user["token"], event, "video_status", 25
+                    user["token"], event, status_type, 25
                 )
                 for res in result_list:
                     response["video_status"] += f"{res}<br>"

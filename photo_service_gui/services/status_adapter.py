@@ -1,5 +1,6 @@
 """Module for status adapter."""
 
+import copy
 import logging
 import os
 
@@ -31,7 +32,7 @@ class StatusAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/status?count={count}&event_id={event['id']}",
+                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}",
                 headers=headers,
             ) as resp:
                 if resp.status == 200:
@@ -44,7 +45,9 @@ class StatusAdapter:
                     raise Exception(f"Error - {resp.status}: {body['detail']}.")
         return status
 
-    async def get_status_by_type(self, token: str, event: dict, type: str, count: int) -> list:
+    async def get_status_by_type(
+        self, token: str, event: dict, type: str, count: int
+    ) -> list:
         """Get latest status messages for a given type."""
         status = []
         headers = MultiDict(
@@ -57,7 +60,7 @@ class StatusAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/status?count={count}&event_id={event['id']}&type={type}",
+                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}&type={type}",
                 headers=headers,
             ) as resp:
                 if resp.status == 200:
@@ -82,12 +85,13 @@ class StatusAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        request_body = {
+        status_dict = {
             "event_id": event["id"],
             "time": time,
             "type": type,
             "message": message,
         }
+        request_body = copy.deepcopy(status_dict)
 
         async with ClientSession() as session:
             async with session.post(
@@ -109,7 +113,7 @@ class StatusAdapter:
         return id
 
     async def delete_all_status(self, token: str, event: dict) -> int:
-        """Delete status function."""
+        """Delete all status function."""
         servicename = "delete_status"
         headers = MultiDict(
             [
