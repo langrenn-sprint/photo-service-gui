@@ -61,7 +61,6 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
-VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
 
 ### Rydde opp i docker stuff
 docker system prune
@@ -121,7 +120,7 @@ Google Photos API: <https://developers.google.com/photos/library/guides/get-star
 ## testfiler for video
 
 VIDEO_URL=<http://10.0.0.6:8080/video>
-VIDEO_URL=20240113_110011_KJ.mp4
+VIDEO_URL=https://harnaes.no/maalfoto/2023SkiMaal.mp4
 VIDEO_URL=20240113_105758_KJ.mp4
 VIDEO_URL=<https://harnaes.no/maalfoto/2023SkiMaal.mp4>
 VIDEO_URL=/Users/t520834/github/vision-ai-service/20240113_105758_KJ.mp4

@@ -79,7 +79,7 @@ class VideoEvents(web.View):
 
             logging.debug(f"User: {user}")
             if "update_config" in form.keys():
-                informasjon = update_config(form)  # type: ignore
+                informasjon = await update_config(user["token"], event, form)  # type: ignore
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
