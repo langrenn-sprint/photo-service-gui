@@ -14,7 +14,6 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
       - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT}
       - GOOGLE_PUBSUB_NUM_MESSAGES=${GOOGLE_PUBSUB_NUM_MESSAGES}
-      - GOOGLE_PUBSUB_PROJECT_ID==${GOOGLE_PUBSUB_PROJECT_ID}
       - GOOGLE_PUBSUB_TOPIC_ID==${GOOGLE_PUBSUB_TOPIC_ID}
       - GOOGLE_PUBSUB_SUBSCRIPTION_ID==${GOOGLE_PUBSUB_SUBSCRIPTION_ID}
       - GOOGLE_STORAGE_BUCKET==${GOOGLE_STORAGE_BUCKET}
@@ -34,10 +33,10 @@ services:
         source: ./error.log
         target: /app/error.log
     depends_on:
-      - "event-service"
-      - "photo-service"
-      - "user-service"
-      - "mongodb"
+      - event-service
+      - photo-service
+      - user-service
+      - mongodb
   event-service:
     image: ghcr.io/langrenn-sprint/event-service:latest
     ports:
@@ -56,8 +55,8 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
-      - "user-service"
-      - "mongodb"
+      - user-service
+      - mongodb
   competition-format-service:
     image: ghcr.io/langrenn-sprint/competition-format-service:latest
     ports:
@@ -95,8 +94,8 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
-      - "user-service"
-      - "mongodb"
+      - user-service
+      - mongodb
   user-service:
     image: ghcr.io/langrenn-sprint/user-service:latest
     ports:
