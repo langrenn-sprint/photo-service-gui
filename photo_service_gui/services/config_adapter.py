@@ -136,7 +136,9 @@ class ConfigAdapter:
             if resp.status == 204:
                 logging.debug(f"result - got response {resp}")
             else:
-                logging.error(f"{servicename} failed - {resp.status} - {resp}")
+                logging.error(
+                    f"{servicename} failed for id {id} - {resp.status} - {resp}"
+                )
                 raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {resp}.")
         return resp.status
 

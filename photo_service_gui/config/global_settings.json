@@ -19,7 +19,7 @@
     "VIDEO_ANALYTICS_STATUS_TYPE": "video_status",
     "DRAW_TRIGGER_LINE": "False",
     "SHOW_VIDEO": "False",
-    "VIDEO_URL": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    "VIDEO_URL": "https://harnaes.no/maalfoto/2023SkiMaal.mp4",
     "DETECTION_BOX_MINIMUM_SIZE": "0.08",
     "DETECTION_BOX_MAXIMUM_SIZE": "0.9"
 }
