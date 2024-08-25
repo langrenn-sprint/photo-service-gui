@@ -31,7 +31,7 @@ class GooglePubSubAdapter:
             future = publisher.publish(topic_path, data)
         except Exception as err:
             logging.error(f"{servicename}, data: {data_str}. Error: {err}")
-            raise err
+            raise Exception(f"Error in {servicename}: {err}") from err
         return future.result()
 
     async def pull_messages(self) -> list:
@@ -72,6 +72,6 @@ class GooglePubSubAdapter:
                 )
         except Exception as err:
             logging.error(f"{servicename}. Error: {err}")
-            raise err
+            raise Exception(f"Error pulling messages: {err}") from err
 
         return message_body

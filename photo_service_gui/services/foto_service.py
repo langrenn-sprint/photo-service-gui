@@ -221,6 +221,12 @@ class FotoService:
                     "photo_info": get_image_description(group["main"]),
                     "photo_url": url_main,
                 }
+
+                # publish info to pubsub
+                result = await GooglePubSubAdapter().publish_message(
+                    json.dumps(pub_message)
+                )
+
                 # archive photos
                 PhotosFileAdapter().move_photo_to_archive(
                     os.path.basename(group["main"])
@@ -229,10 +235,6 @@ class FotoService:
                     os.path.basename(group["crop"])
                 )
 
-                # publish info to pubsub
-                result = await GooglePubSubAdapter().publish_message(
-                    json.dumps(pub_message)
-                )
                 logging.debug(f"Published message {result} to pubsub.")
                 informasjon = url_main
                 i_photo_count += 1

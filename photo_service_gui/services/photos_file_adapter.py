@@ -42,9 +42,14 @@ class PhotosFileAdapter:
 
     def move_photo_to_archive(self, filename: str) -> None:
         """Move photo to archive."""
+        source_file = f"{PHOTOS_FILE_PATH}/{filename}"
+        destination_file = os.path.join(PHOTOS_ARCHIVE_PATH, os.path.basename(filename))
+
         try:
-            os.rename(
-                f"{PHOTOS_FILE_PATH}/{filename}", f"{PHOTOS_ARCHIVE_PATH}/{filename}"
-            )
+            os.rename(source_file, destination_file)
+        except FileNotFoundError:
+            print("Destination folder not found. Creating...")
+            os.makedirs(PHOTOS_ARCHIVE_PATH)
+            os.rename(source_file, destination_file)
         except Exception as e:
             logging.error(f"Error moving photo to archive: {e}")
