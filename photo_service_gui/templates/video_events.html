@@ -67,7 +67,9 @@
     }
 
   </script>
-
+  {% if video_analytics_available == "False" %}
+    <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
+  {% endif %}
   <table>
     <tr>
       <td colspan="2">
@@ -75,7 +77,11 @@
           <tr>  
             <td>
               <b>Run video analytics</b>
-              <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" {% if video_analytics_running == "true" %} checked {% endif %}>
+              {% if video_analytics_running == "True" %}
+                  <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" checked>
+              {% else %}
+                <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox">
+              {% endif %}
             </td>
             <td>
               <b>Run Pubsub (send photos)</b>

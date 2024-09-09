@@ -56,6 +56,9 @@ class VideoEvents(web.View):
                     "video_url": await ConfigAdapter().get_config(
                         user["token"], event, "VIDEO_URL"
                     ),
+                    "video_analytics_available": await ConfigAdapter().get_config(
+                        user["token"], event, "VIDEO_ANALYTICS_AVAILABLE"
+                    ),
                     "video_analytics_running": await ConfigAdapter().get_config(
                         user["token"], event, "VIDEO_ANALYTICS_RUNNING"
                     ),
