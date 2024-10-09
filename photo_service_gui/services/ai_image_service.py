@@ -146,8 +146,13 @@ class AiImageService:
         """Send infile to Vision API, return dict with langrenn info."""
         logging.info(f"Enter vision, image {image_uri}")
         conf_limit = await ConfigAdapter().get_config(token, event, "CONFIDENCE_LIMIT")
-        _tags = {}
-        count_persons = 0
+        _tags = {
+            "persons": 0,
+            "ai_numbers": [],
+            "ai_text": [],
+            "ai_crop_numbers": [],
+            "ai_crop_text": [],
+        }
 
         try:
             # Instantiates a client
@@ -166,6 +171,7 @@ class AiImageService:
 
         # Performs object detection on the image file
         objects = client.object_localization(image=image).localized_object_annotations
+        count_persons = 0
         for object_ in objects:
             logging.debug(
                 "Found object: {} (confidence: {})".format(object_.name, object_.score)

@@ -204,15 +204,32 @@ class FotoService:
             group = new_photos_grouped[x]
             if group["main"] and group["crop"]:
                 # upload photo to cloud storage
-                url_main = GoogleCloudStorageAdapter().upload_blob(group["main"], "")
-                url_crop = GoogleCloudStorageAdapter().upload_blob(group["crop"], "")
+                try:
+                    url_main = GoogleCloudStorageAdapter().upload_blob(
+                        group["main"], ""
+                    )
+                    url_crop = GoogleCloudStorageAdapter().upload_blob(
+                        group["crop"], ""
+                    )
+                except Exception as e:
+                    error_text = (
+                        f"Error uploading to Google photos. Files {group} - {e}"
+                    )
+                    logging.error(error_text)
+                    logging.error(
+                        f"Current directory {os.getcwd()} - content {os.listdir()}"
+                    )
+                    raise Exception(error_text) from e
 
                 # analyze photo with Vision AI
-                ai_information = (
-                    AiImageService().analyze_photo_with_google_for_langrenn_v2(
+                try:
+                    ai_information = await AiImageService().analyze_photo_with_google_for_langrenn_v2(
                         token, event, url_main, url_crop
                     )
-                )
+                except Exception as e:
+                    error_text = f"AiImageService - Error analysing photos {url_main} and {url_crop} - {e}"
+                    logging.error(error_text)
+                    raise Exception(error_text) from e
 
                 pub_message = {
                     "ai_information": ai_information,
@@ -223,9 +240,16 @@ class FotoService:
                 }
 
                 # publish info to pubsub
-                result = await GooglePubSubAdapter().publish_message(
-                    json.dumps(pub_message)
-                )
+                try:
+                    result = await GooglePubSubAdapter().publish_message(
+                        json.dumps(pub_message)
+                    )
+                except Exception as e:
+                    error_text = (
+                        f"GooglePubSub - error publishing message {pub_message} - {e}"
+                    )
+                    logging.error(error_text)
+                    raise Exception(error_text) from e
 
                 # archive photos
                 PhotosFileAdapter().move_photo_to_archive(
