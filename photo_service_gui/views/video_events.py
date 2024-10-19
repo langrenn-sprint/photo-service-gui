@@ -17,8 +17,6 @@ from .utils import (
     get_event,
 )
 
-PHOTOS_URL_PATH = "files"
-
 
 class VideoEvents(web.View):
     """Class representing the video_event view."""
@@ -34,10 +32,9 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
-            trigger_line_file = await ConfigAdapter().get_config(
-                user["token"], event, "TRIGGER_LINE_CONFIG_FILE"
+            trigger_line_file_url = await PhotosFileAdapter().get_trigger_line_file_url(
+                user["token"], event
             )
-            trigger_line_file_url = f"{PHOTOS_URL_PATH}/{trigger_line_file}"
 
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(

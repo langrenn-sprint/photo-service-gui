@@ -19,7 +19,7 @@ class ConfigAdapter:
     """Class representing config."""
 
     async def get_config(self, token: str, event: dict, key: str) -> str:
-        """Get config by google id function."""
+        """Get config by key function."""
         config = ""
         headers = MultiDict(
             [
