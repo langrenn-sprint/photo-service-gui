@@ -206,10 +206,10 @@ class FotoService:
                 # upload photo to cloud storage
                 try:
                     url_main = GoogleCloudStorageAdapter().upload_blob(
-                        group["main"], ""
+                        group["main"], "photos"
                     )
                     url_crop = GoogleCloudStorageAdapter().upload_blob(
-                        group["crop"], ""
+                        group["crop"], "photos"
                     )
                 except Exception as e:
                     error_text = (
@@ -260,15 +260,14 @@ class FotoService:
                 )
 
                 logging.debug(f"Published message {result} to pubsub.")
-                informasjon = url_main
                 i_photo_count += 1
-        if i_photo_count > 0:
-            status_type = await ConfigAdapter().get_config(
-                token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
-            )
-            await StatusAdapter().create_status(
-                token, event, status_type, f"Bilder lastet opp: {i_photo_count}"
-            )
+
+                status_type = await ConfigAdapter().get_config(
+                    token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
+                )
+                await StatusAdapter().create_status(
+                    token, event, status_type, f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage."
+                )
 
         return informasjon
 
