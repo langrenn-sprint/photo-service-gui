@@ -104,7 +104,8 @@ class VideoEvents(web.View):
                     user["token"], event, status_type, 25
                 )
                 for res in result_list:
-                    response["video_status"] += f"{res['time']} - {res['message']}<br>"  # type: ignore
+                    info_time = f"<a title={res['time']}>{res['time'][-8:]}"
+                    response["video_status"] += f"{info_time} - {res['message']}<br>"  # type: ignore
         except Exception as e:
             response["video_status"] = f"Det har oppstått en feil: {e}"
             logging.error(f"Video events update - {e}")

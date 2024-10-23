@@ -266,7 +266,10 @@ class FotoService:
                     token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
                 )
                 await StatusAdapter().create_status(
-                    token, event, status_type, f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage."
+                    token,
+                    event,
+                    status_type,
+                    f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage.",
                 )
 
         return informasjon
