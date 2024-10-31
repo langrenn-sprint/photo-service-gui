@@ -13,74 +13,77 @@
   <img id=menu_icon src="../static/icon_live.png"> {{ lopsinfo }}
 {% endblock %}
 {% block content %}
+
+<! --- Information --->
+<div id=spacer></div>
 <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
 <div id=info-zone class="collapse">
-  <ul id=info-zone>
-    <li><b>Google photos</b> - for å inkludere bilder som ligger i google photos. Importen inkluderer intelligent bildeanalyse og forsøker å koble informasjon om deltaker og race til bildet.</li><br>
-    <li><b>Video analytics</b> - deteksjon av passeringer i løypa/mål. Skjermbilde av passeringen lagres og det gjøres identifikasjon av løperne på bildet (basert på startnummer og passeringstid).</li><br>
-  </ul>
+  - <b>Google photos</b> - for å inkludere bilder som ligger i google photos. Importen inkluderer intelligent bildeanalyse og forsøker å koble informasjon om deltaker og race til bildet.<br>
+  - <b>Video analytics</b> - deteksjon av passeringer i løypa/mål. Skjermbilde av passeringen lagres og det gjøres identifikasjon av løperne på bildet (basert på startnummer og passeringstid).<br>
 </div>
-<div id=spacer>&nbsp;</div>
+<div id=spacer></div>
+<! --- End Information --->
+
 <br>
-    <table>
-      {% for oneevent in events %}
-      <tr>
-        <td colspan=2 id=headerblue>
-          <b>{{ oneevent.date_of_event }}: {{ oneevent.name }}, {{ oneevent.organiser }} <a target=_new href="{{ oneevent.webpage }}">(mer info)</a></b>
-        </td>
-        <td id=headerblue align="right">
-          {% if username != "Gjest" %}
-            <form action="/" method="post">
-              <input type="submit" name=delete_event value="  Slett event ">
-              <input type="hidden" name=event_id value={{ oneevent.id }}>
-            </form>
-          {% endif %}
-      </tr>
-      <tr valign="top">
-          <td align="center">
-            <a href=photos_adm?event_id={{ oneevent.id }}><img id=frontpage_icon title="Foto admin" src="../static/icon_photos.png"><br>Google photos</a>
+<table>
+  {% for oneevent in events %}
+  <tr>
+    <td colspan=2 id=headerblue>
+      <b>{{ oneevent.date_of_event }}: {{ oneevent.name }}, {{ oneevent.organiser }} <a target=_new href="{{ oneevent.webpage }}">(mer info)</a></b>
+    </td>
+    <td id=headerblue align="right">
+      {% if username != "Gjest" %}
+        <form action="/" method="post">
+          <input type="submit" name=delete_event value="  Slett event ">
+          <input type="hidden" name=event_id value={{ oneevent.id }}>
+        </form>
+      {% endif %}
+  </tr>
+  <tr valign="top">
+      <td align="center">
+        <a href=photos_adm?event_id={{ oneevent.id }}><img id=frontpage_icon title="Foto admin" src="../static/icon_photos.png"><br>Google photos</a>
+      </td>
+      <td align="center">
+        <a href=video_events?event_id={{ oneevent.id }}><img id=frontpage_icon title="Vision service - styre video deteksjon i løypa/ved målgang" src="../static/icon_timing.png"><br>Video deteksjon</a>
+      </td>
+      <td align="center">
+        <a href=config?event_id={{ oneevent.id }}><img id=frontpage_icon title="Vision service - konfigurasjon" src="../static/icon_settings.png"><br>Innstillinger</a>
+    </td>
+  </tr>
+  <tr>
+    <td colspan=3 id=spacer></td>
+  </tr>
+  {% endfor %}
+</table>
+  {% if username != "Gjest" %}
+    <form action="/" method="post">
+      <table cellpadding=4>
+        <tr>
+          <td colspan=2 id=headerblue>
+            <b>Importer events fra ekstern langrenn-sprint server</b>
           </td>
-          <td align="center">
-            <a href=video_events?event_id={{ oneevent.id }}><img id=frontpage_icon title="Vision service - styre video deteksjon i løypa/ved målgang" src="../static/icon_timing.png"><br>Video deteksjon</a>
-          </td>
-          <td align="center">
-            <a href=config?event_id={{ oneevent.id }}><img id=frontpage_icon title="Vision service - konfigurasjon" src="../static/icon_settings.png"><br>Innstillinger</a>
+        </tr>
+        <tr>
+          <td>Url</td>
+          <td><input type="url" name="server_url" value="http://10.0.0.20:8080" size="50"></td>
+        </tr>
+        <tr>
+        <td></td>
+        <td>
+          <input type="submit" name=get_events value="  Hent og lagre  ">
         </td>
       </tr>
       <tr>
-        <td colspan=3 id=spacer></td>
+        <td>Json med event-details</td>
+        <td><input type="text" name="eventsJson" value="" size="100"></td>
       </tr>
-      {% endfor %}
+      <tr>
+        <td></td>
+        <td>
+          <input type="submit" name=json_events value="  Lagre  ">
+        </td>
+      </tr>
     </table>
-    {% if username != "Gjest" %}
-      <form action="/" method="post">
-        <table cellpadding=4>
-          <tr>
-            <td colspan=2 id=headerblue>
-              <b>Importer events fra ekstern langrenn-sprint server</b>
-            </td>
-          </tr>
-          <tr>
-            <td>Url</td>
-            <td><input type="url" name="server_url" value="http://10.0.0.20:8080" size="50"></td>
-          </tr>
-          <tr>
-          <td></td>
-          <td>
-            <input type="submit" name=get_events value="  Hent og lagre  ">
-          </td>
-        </tr>
-        <tr>
-          <td>Json med event-details</td>
-          <td><input type="text" name="eventsJson" value="" size="100"></td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>
-            <input type="submit" name=json_events value="  Lagre  ">
-          </td>
-        </tr>
-      </table>
-      </form>
-    {% endif %}
+    </form>
+  {% endif %}
 {% endblock %}

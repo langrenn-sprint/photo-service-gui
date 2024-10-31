@@ -49,7 +49,6 @@ class VideoEvents(web.View):
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
                         user["token"], event, "TRIGGER_LINE_XYXYN"
                     ),
-                    "photo_queue": PhotosFileAdapter().get_all_photo_urls(),
                     "video_url": await ConfigAdapter().get_config(
                         user["token"], event, "VIDEO_URL"
                     ),
@@ -67,7 +66,12 @@ class VideoEvents(web.View):
 
     async def post(self) -> web.Response:
         """Post route function that updates video events."""
-        response = {"pub_message": "", "video_analytics": "", "video_status": ""}
+        response = {
+            "pub_message": "",
+            "video_analytics": "",
+            "video_status": "",
+            "photo_queue": [],
+        }
         try:
             form = await self.request.post()
             user = await check_login(self)
@@ -84,10 +88,9 @@ class VideoEvents(web.View):
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
             if "pub_message" in form.keys():
-                res = await FotoService().push_new_photos_from_file(
+                response["pub_message"] = await FotoService().push_new_photos_from_file(
                     user["token"], event
                 )
-                response["pub_message"] = res
             if "video_analytics_start" in form.keys():
                 response["video_analytics"] = await start_video_analytics(
                     user["token"], event
@@ -97,20 +100,28 @@ class VideoEvents(web.View):
                     user["token"], event
                 )
             if "video_status" in form.keys():
-                status_type = await ConfigAdapter().get_config(
-                    user["token"], event, "VIDEO_ANALYTICS_STATUS_TYPE"
+                response["video_status"] = await get_analytics_status(
+                    user["token"], event
                 )
-                result_list = await StatusAdapter().get_status_by_type(
-                    user["token"], event, status_type, 25
-                )
-                for res in result_list:
-                    info_time = f"<a title={res['time']}>{res['time'][-8:]}"
-                    response["video_status"] += f"{info_time} - {res['message']}<br>"  # type: ignore
+            if "photo_queue" in form.keys():
+                response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
         except Exception as e:
             response["video_status"] = f"Det har oppstått en feil: {e}"
             logging.error(f"Video events update - {e}")
         json_response = json.dumps(response)
         return web.Response(body=json_response)
+
+
+async def get_analytics_status(token: str, event: dict) -> str:
+    """Get video analytics status messages."""
+    response = ""
+    result_list = await StatusAdapter().get_status_by_type(
+        token, event, "VIDEO_ANALYTICS_STATUS_TYPE", 25
+    )
+    for res in result_list:
+        info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"  # type: ignore
+        response += f"{info_time} - {res['message']}<br>"  # type: ignore
+    return response
 
 
 async def start_video_analytics(token: str, event: dict) -> str:

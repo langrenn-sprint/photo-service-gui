@@ -12,12 +12,25 @@
 {% block titlemain %}
   <img id=menu_icon src="../static/icon_photos.png"> Video events
 {% endblock %}
-
 {% block menuitems %}{% endblock %}
-
 {% block content %}
-  <script>
 
+  <! --- Information --->
+  <div id=spacer></div>
+  <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
+  <div id=info-zone class="collapse">
+    <b>Om tjenesten</b>
+    <br> - Del 1: Video events tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
+    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. 
+    <br> - Del 2 av tjenesten (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
+    mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
+    <br><b>Configuration</b> - Mulighet for å skru av og på tjenestene (video analytics og pubsub) samt å stille inn video url og linje-koordinater.
+    <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).<br>
+  </div>
+  <div id=spacer></div>
+  <! --- End Information --->
+
+  <script>
     /* this function will sync (update+get) status updates with backend */
     function sync_status() {
       try {
@@ -33,6 +46,7 @@
         else {
           formData = formData + "&video_analytics_stop=true"
         }
+        formData = formData + "&photo_queue=true"
         
         loadDoc("POST", "/video_events", mySync, formData);
 
@@ -45,6 +59,15 @@
             const pub_message = jsonDoc.pub_message;
             if (pub_message != "") {
               document.getElementById("latest_photo").src = pub_message;
+            }
+            const photo_queue = jsonDoc.photo_queue;
+            if (photo_queue != "") {
+              document.getElementById("photo_queue_count").innerHTML = photo_queue.length;
+              document.getElementById("photo_queue_latest").src = photo_queue[0];
+            }
+            else {
+              document.getElementById("photo_queue_count").innerHTML = "0";
+              document.getElementById("photo_queue_latest").src = "";
             }
           }
           catch(err) {
@@ -67,99 +90,110 @@
     }
 
   </script>
+
   {% if video_analytics_available == "False" %}
     <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
   {% endif %}
   <table>
+    <tr id="headerblack">
+      <td width="500"><b>Configuration</b></td>
+      <td>&nbsp;</td>
+      <td><b>Service status</b></td>
+    </tr>
     <tr>
-      <td colspan="2">
+      <td valign="top">
         <table> 
-          <tr>  
-            <td>
-              <b>Run video analytics</b>
-              {% if video_analytics_running == "True" %}
-                  <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox" checked>
-              {% else %}
-                <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" value="video_analytics_checkbox">
-              {% endif %}
+          <tr>
+            <td colspan="2">
+              <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" 
+                value="video_analytics_checkbox" {% if video_analytics_running == "True" %}checked{% endif %}>
+              <b>Run video detection</b> (identify line crossings)
             </td>
-            <td>
-              <b>Run Pubsub (send photos)</b>
+          </tr>
+          <tr>
+            <td colspan="2">
               <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox">
+              <b>Run Pubsub</b> (send photos to Google cloud)
+            </td>
+          </tr>
+          <tr>
+            <td colspan="2">
+              <b><br>Video settings</b>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <!-- Trigger the Modal -->
+              <img id="modalImg_line" src="{{ line_config_file }}" title="Click to view big size" style="width:400px">
+              <!-- The Modal -->
+              <div id="myModal_line" class="modal">
+                <!-- The Close Button -->
+                <span id="close_line" class="close">&times;</span>
+                <!-- Modal Content (The Image) -->
+                <img class="modal-content" id="img_line">
+                <!-- Modal Caption (Image Text) -->
+                <div id="caption_line"></div>
+              </div>
+            </td>
+          </tr>
+          <form action=/video_events method=post>
+          <tr>
+            <td>Line</td>
+            <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> <small>(line coordinates, eks: 0.1:0.8:0.9:0.8)</small></td>
+          </tr>
+          <tr>
+            <td>Url</td>
+            <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="40"></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><input type="submit" name="update_config" value="  Lagre  "></td>
+          </tr>
+          </form>
+          <tr>
+            <td colspan="2">
+              <br>Photos in queue for upload to Google: <b><span id=photo_queue_count>0</span></b>
+            </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>
+              <img id="photo_queue_latest" src="" title="Latest photo from vision AI detection" style="width:400px">
             </td>
           </tr>
         </table>
-        </td>
-    </tr>
-    <tr id="headerblack">
-      <td>Service status ({{ photo_queue|length }} bilder i kø)</td>
-      <td>Line crossing configuration</td>
-    </tr>
-    <tr height="500">
+      </td>
+      <td>&nbsp;</td>
       <td valign="top">
-        {% if photo_queue %}
-          <img id="latest_photo" src="{{ photo_queue[0] }}" title="Latest photo from vision AI detection" style="width:400px">
-          <br>
-        {% endif %}
         <span id="send_result"></span>
       </td>
-      <td valign="top">
-        <!-- Trigger the Modal -->
-        <img id="modalImg_line" src="{{ line_config_file }}" title="Click to view big size" style="width:400px">
-        <!-- The Modal -->
-        <div id="myModal_line" class="modal">
-          <!-- The Close Button -->
-          <span id="close_line" class="close">&times;</span>
-          <!-- Modal Content (The Image) -->
-          <img class="modal-content" id="img_line">
-          <!-- Modal Caption (Image Text) -->
-          <div id="caption_line"></div>
-        </div>
-        <br>
-        <form action=/video_events method=post>
-          <input type="hidden" name="event_id" value="{{ event_id }}">
-          <table> 
-            <tr>
-              <td>Trigger line coordinates</td>
-              <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> <small>(eks: 0.1:0.8:0.9:0.8)</small></td>
-            </tr>
-            <tr>
-              <td>Video url</td>
-              <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}" size="40"></td>
-            </tr>
-            <tr>
-              <td></td>
-              <td><input type="submit" name="update_config" value="  Lagre  "></td>
-            </tr>
-          </table>
-        </form>
-      </td>
     </tr>
-</table>
-<script>
-  // trigger every 5 seconds
-  window.setInterval(sync_status, 5000);
+  </table>
+  <script>
+    // trigger every 5 seconds
+    window.setInterval(sync_status, 5000);
 
-  // Get the modal
-  var modal_line = document.getElementById("myModal_line");
-  
-  // Get the image and insert it inside the modal - use its "alt" text as a caption
-  var img_line = document.getElementById("modalImg_line");
-  var modalImg_line = document.getElementById("img_line");
-  var captionText_line = document.getElementById("caption_line");
-  img_line.onclick = function() {
-    modal_line.style.display = "block";
-    modalImg_line.src = this.src;
-    captionText_line.innerHTML = this.alt;
-  }
-  
-  // Get the <span> element that closes the modal
-  var span_line = document.getElementById("close_line");
-  
-  // When the user clicks on <span> (x), close the modal
-  span_line.onclick = function() { 
-    modal_line.style.display = "none";
-  }
-</script>
+    // Get the modal
+    var modal_line = document.getElementById("myModal_line");
+    
+    // Get the image and insert it inside the modal - use its "alt" text as a caption
+    var img_line = document.getElementById("modalImg_line");
+    var modalImg_line = document.getElementById("img_line");
+    var captionText_line = document.getElementById("caption_line");
+    img_line.onclick = function() {
+      modal_line.style.display = "block";
+      modalImg_line.src = this.src;
+      captionText_line.innerHTML = this.alt;
+    }
+    
+    // Get the <span> element that closes the modal
+    var span_line = document.getElementById("close_line");
+    
+    // When the user clicks on <span> (x), close the modal
+    span_line.onclick = function() { 
+      modal_line.style.display = "none";
+    }
+  </script>
 {% endblock %}
 </div>

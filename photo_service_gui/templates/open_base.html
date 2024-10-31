@@ -8,14 +8,13 @@
     {% else %}
       <link rel="stylesheet" type="text/css" href="../static/styles_lyn.css">
     {% endif %}
-    {% block stylesheet %}{% endblock %}
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 
     <meta http-equiv="refresh" content="{% block refresh %}{% endblock %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>
-      document.cookie = "g_state=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-      document.cookie = "g_state=; max-age=0; path=/;";
-    </script>
     <script type="text/javascript">
       function confirm_delete(message) {
         return window.confirm(message);
@@ -91,11 +90,11 @@
       {% block titlecontainer %}{% endblock %}
       <div id=spacer></div>
       <div class="w3-container" id=info>{{ informasjon }}</div>
-    {% block content %}{% endblock %}
-    <div id=bigspacer></div>
-  </div>
-  <div class="w3-footer-sticky" id=footeradmin>
-    <a href="https://github.com/langrenn-sprint">langrenn-sprint</a> - utviklet av Lyn ski og Kjelsås langrenn
-  </div>
-</body>
+      {% block content %}{% endblock %}
+      <div id=bigspacer></div>
+    </div>
+    <div class="w3-footer-sticky" id=footeradmin>
+      <a href="https://github.com/langrenn-sprint">langrenn-sprint</a> - utviklet av Lyn ski og Kjelsås langrenn
+    </div>
+  </body>
 </html>

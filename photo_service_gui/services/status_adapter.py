@@ -9,6 +9,7 @@ from aiohttp import hdrs
 from aiohttp import web
 from multidict import MultiDict
 
+from .config_adapter import ConfigAdapter
 from .events_adapter import EventsAdapter
 
 PHOTOS_HOST_SERVER = os.getenv("PHOTOS_HOST_SERVER", "localhost")
@@ -57,10 +58,11 @@ class StatusAdapter:
             ]
         )
         servicename = "get_status"
+        status_type = await ConfigAdapter().get_config(token, event, type)
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}&type={type}",
+                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}&type={status_type}",
                 headers=headers,
             ) as resp:
                 if resp.status == 200:
