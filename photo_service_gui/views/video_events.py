@@ -81,7 +81,6 @@ class VideoEvents(web.View):
             except Exception:
                 event_id = ""
 
-            logging.debug(f"User: {user}")
             if "update_config" in form.keys():
                 informasjon = await update_config(user["token"], event, form)  # type: ignore
                 return web.HTTPSeeOther(
