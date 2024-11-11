@@ -32,10 +32,6 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
-            trigger_line_file_url = await PhotosFileAdapter().get_trigger_line_file_url(
-                user["token"], event
-            )
-
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
                 "video_events.html",
@@ -45,7 +41,6 @@ class VideoEvents(web.View):
                     "event_id": event_id,
                     "informasjon": informasjon,
                     "username": user["name"],
-                    "line_config_file": trigger_line_file_url,
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
                         user["token"], event, "TRIGGER_LINE_XYXYN"
                     ),
@@ -71,6 +66,7 @@ class VideoEvents(web.View):
             "video_analytics": "",
             "video_status": "",
             "photo_queue": [],
+            "trigger_line_url": "",
         }
         try:
             form = await self.request.post()
@@ -104,9 +100,15 @@ class VideoEvents(web.View):
                 )
             if "photo_queue" in form.keys():
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
+                response[
+                    "trigger_line_url"
+                ] = await PhotosFileAdapter().get_trigger_line_file_url(
+                    user["token"], event
+                )
         except Exception as e:
             response["video_status"] = f"Det har oppstått en feil: {e}"
             logging.error(f"Video events update - {e}")
+
         json_response = json.dumps(response)
         return web.Response(body=json_response)
 
@@ -152,4 +154,4 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         token, event, "VIDEO_URL", str(form["video_url"])
     )
     await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
-    return "Config updated - reload if new trigger line photo not is visible"
+    return "Video settings updated."

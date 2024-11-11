@@ -67,7 +67,15 @@
             }
             else {
               document.getElementById("photo_queue_count").innerHTML = "0";
-              document.getElementById("photo_queue_latest").src = "";
+              document.getElementById("photo_queue_latest").src = "../static/no_image.png";
+            }
+
+            const trigger_line_url = jsonDoc.trigger_line_url;
+            if (trigger_line_url != "") {
+              document.getElementById("trigger_line_photo").src = trigger_line_url;
+            }
+            else {
+              document.getElementById("trigger_line_photo").src = "../static/no_image.png";
             }
           }
           catch(err) {
@@ -125,7 +133,7 @@
             <td></td>
             <td>
               <!-- Trigger the Modal -->
-              <img id="modalImg_line" src="{{ line_config_file }}" title="Click to view big size" style="width:400px">
+              <img id="trigger_line_photo" src="../static/no_image.png" title="Click to view big size" style="width:400px">
               <!-- The Modal -->
               <div id="myModal_line" class="modal">
                 <!-- The Close Button -->
@@ -162,7 +170,7 @@
           <tr>
             <td></td>
             <td>
-              <img id="photo_queue_latest" src="" title="Latest photo from vision AI detection" style="width:400px">
+              <img id="photo_queue_latest" src="../static/no_image.png" title="Latest photo from vision AI detection" style="width:400px">
             </td>
           </tr>
         </table>
@@ -181,12 +189,12 @@
     var modal_line = document.getElementById("myModal_line");
     
     // Get the image and insert it inside the modal - use its "alt" text as a caption
-    var img_line = document.getElementById("modalImg_line");
-    var modalImg_line = document.getElementById("img_line");
+    var img_line = document.getElementById("trigger_line_photo");
+    var trigger_line_photo = document.getElementById("img_line");
     var captionText_line = document.getElementById("caption_line");
     img_line.onclick = function() {
       modal_line.style.display = "block";
-      modalImg_line.src = this.src;
+      trigger_line_photo.src = this.src;
       captionText_line.innerHTML = this.alt;
     }
     
