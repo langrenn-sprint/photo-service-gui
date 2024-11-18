@@ -53,6 +53,12 @@ class VideoEvents(web.View):
                     "video_analytics_running": await ConfigAdapter().get_config(
                         user["token"], event, "VIDEO_ANALYTICS_RUNNING"
                     ),
+                    "sim_list": await ConfigAdapter().get_config(
+                        user["token"], event, "SIMULATION_START_LIST_FILE"
+                    ),
+                    "sim_fastest_time": await ConfigAdapter().get_config(
+                        user["token"], event, "SIMULATION_FASTEST_TIME"
+                    ),
                 },
             )
         except Exception as e:
@@ -146,12 +152,26 @@ async def stop_video_analytics(token: str, event: dict) -> str:
 
 
 async def update_config(token: str, event: dict, form: dict) -> str:
-    """Draw trigger line with ultraltyics."""
-    await ConfigAdapter().update_config(
-        token, event, "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
-    )
-    await ConfigAdapter().update_config(
-        token, event, "VIDEO_URL", str(form["video_url"])
-    )
-    await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
-    return "Video settings updated."
+    """Draw trigger line or initiate simulation."""
+    informasjon = ""
+    if "trigger_line_xyxyn" in form.keys():
+        await ConfigAdapter().update_config(
+            token, event, "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
+        )
+        await ConfigAdapter().update_config(
+            token, event, "VIDEO_URL", str(form["video_url"])
+        )
+        await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
+        informasjon = "Video settings updated."
+    elif "sim_list" in form.keys():
+        await ConfigAdapter().update_config(
+            token, event, "SIMULATION_START_LIST_FILE", str(form["sim_list"])
+        )
+        await ConfigAdapter().update_config(
+            token, event, "SIMULATION_FASTEST_TIME", str(form["sim_fastest_time"])
+        )
+        await ConfigAdapter().update_config(
+            token, event, "SIMULATION_CROSSINGS_START", "True"
+        )
+        informasjon = "Simulering av passeringer er initiert."
+    return informasjon
