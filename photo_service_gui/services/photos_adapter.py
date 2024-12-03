@@ -203,6 +203,8 @@ class PhotosAdapter:
             logging.debug(f"Delete photo: {id} - res {resp.status}")
             if resp.status == 204:
                 logging.debug(f"result - got response {resp}")
+            elif resp.status == 401:
+                raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
             else:
                 logging.error(f"{servicename} failed - {resp.status} - {resp}")
                 raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {resp}.")
