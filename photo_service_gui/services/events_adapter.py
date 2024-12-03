@@ -148,6 +148,12 @@ class EventsAdapter:
         """Import events from remote server and store in local db."""
         servicename = "sync_events"
         information = "Importerer events."
+        current_events = await self.get_all_events(token)
+        current_event_ids = []
+        for event in current_events:
+            current_event_ids.append(event["id"])
+
+
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
@@ -162,9 +168,10 @@ class EventsAdapter:
                     # import events to local database
                     if events:
                         for event in events:
-                            information += await EventsAdapter().create_event(
-                                token, event
-                            )
+                            if event["id"] not in current_event_ids:
+                                information += await EventsAdapter().create_event(
+                                    token, event
+                                )
                 elif resp.status == 401:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:

@@ -251,13 +251,17 @@ class FotoService:
                     logging.error(error_text)
                     raise Exception(error_text) from e
 
-                # archive photos
-                PhotosFileAdapter().move_photo_to_archive(
-                    os.path.basename(group["main"])
-                )
-                PhotosFileAdapter().move_photo_to_archive(
-                    os.path.basename(group["crop"])
-                )
+                # archive photos - ignore errors
+                try:
+                    PhotosFileAdapter().move_photo_to_archive(
+                        os.path.basename(group["main"])
+                    )
+                    PhotosFileAdapter().move_photo_to_archive(
+                        os.path.basename(group["crop"])
+                    )
+                except Exception as e:
+                    error_text = f"Error moving files to archive {e}"
+                    logging.error(error_text)
 
                 logging.debug(f"Published message {result} to pubsub.")
                 i_photo_count += 1
