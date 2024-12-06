@@ -33,7 +33,11 @@
 
   <script>
     /* this function will sync (update+get) status updates with backend */
+    let syncRunning = false;
     function sync_status() {
+      if (syncRunning) return; // Exit if already running
+      syncRunning = true;
+
       try {
         var formData = "video_status=true&event_id={{ event_id }}"
         var checkBoxPub = document.getElementById("pub_events_automatic");
@@ -57,10 +61,6 @@
             const jsonDoc = JSON.parse(xhttp.response);
             const video_status = jsonDoc.video_status;
             document.getElementById("send_result").innerHTML = video_status;
-            const pub_message = jsonDoc.pub_message;
-            if (pub_message != "") {
-              document.getElementById("latest_photo").src = pub_message;
-            }
             const photo_queue = jsonDoc.photo_queue;
             if (photo_queue != "") {
               document.getElementById("photo_queue_count").innerHTML = photo_queue.length;
@@ -86,6 +86,9 @@
       }
       catch(err) {
           alert(err);
+      } finally {
+        syncRunning = false; // Ensure flag is cleared even on errors
+        setTimeout(sync_status, 10000);
       }
     }
 
@@ -207,9 +210,9 @@
       </td>
     </tr>
 </table>
-  <script>
-    // trigger every 5 seconds
-    window.setInterval(sync_status, 5000);
+<script>
+    // Initial call to start the cycle
+    setTimeout(sync_status, 5000);
 
     // Get the modal
     var modal_line = document.getElementById("myModal_line");

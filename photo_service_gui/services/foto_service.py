@@ -195,87 +195,106 @@ class FotoService:
     async def push_new_photos_from_file(self, token: str, event: dict) -> str:
         """Push photos to cloud storage, analyze and publish."""
         i_photo_count = 0
+        i_error_count = 0
         informasjon = ""
-        new_photos = PhotosFileAdapter().get_all_photos()
+        service_name = "push_new_photos_from_file"
+        status_type = await ConfigAdapter().get_config(
+            token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
+        )
 
-        # loop photos and group crops with main photo - only upload complete pairs
-        new_photos_grouped = group_photos(new_photos)
-        for x in new_photos_grouped:
-            group = new_photos_grouped[x]
-            if group["main"] and group["crop"]:
-                # upload photo to cloud storage
+        pubsub_running = await ConfigAdapter().get_config_bool(
+            token, event, "PUBSUB_RUNNING"
+        )
+        if pubsub_running:
+            return "Video analytics already running"
+        else:
+            await ConfigAdapter().update_config(token, event, "PUBSUB_RUNNING", "True")
+
+            # loop photos and group crops with main photo - only upload complete pairs
+            new_photos = PhotosFileAdapter().get_all_photos()
+            new_photos_grouped = group_photos(new_photos)
+            logging.error(f"Start push - {len(new_photos_grouped)}")
+            for x in new_photos_grouped:
                 try:
-                    url_main = GoogleCloudStorageAdapter().upload_blob(
-                        group["main"], "photos"
-                    )
-                    url_crop = GoogleCloudStorageAdapter().upload_blob(
-                        group["crop"], "photos"
-                    )
+                    logging.error(f"X - {x}")
+                    group = new_photos_grouped[x]
+                    if group["main"] and group["crop"]:
+                        # upload photo to cloud storage
+                        try:
+                            url_main = GoogleCloudStorageAdapter().upload_blob(
+                                group["main"], "photos"
+                            )
+                            url_crop = GoogleCloudStorageAdapter().upload_blob(
+                                group["crop"], "photos"
+                            )
+                        except Exception as e:
+                            error_text = (
+                                f"Error uploading to Google photos. Files {group} - {e}"
+                            )
+                            logging.error(error_text)
+                            raise Exception(error_text) from e
+
+                        # analyze photo with Vision AI
+                        try:
+                            ai_information = await AiImageService().analyze_photo_with_google_for_langrenn_v2(
+                                token, event, url_main, url_crop
+                            )
+                        except Exception as e:
+                            error_text = f"AiImageService - Error analysing photos {url_main} and {url_crop} - {e}"
+                            logging.error(error_text)
+                            raise Exception(error_text) from e
+
+                        pub_message = {
+                            "ai_information": ai_information,
+                            "crop_url": url_crop,
+                            "event_id": event["id"],
+                            "photo_info": get_image_description(group["main"]),
+                            "photo_url": url_main,
+                        }
+
+                        # publish info to pubsub
+                        try:
+                            result = await GooglePubSubAdapter().publish_message(
+                                json.dumps(pub_message)
+                            )
+                        except Exception as e:
+                            error_text = f"GooglePubSub - error publishing message {pub_message} - {e}"
+                            logging.error(error_text)
+                            raise Exception(error_text) from e
+
+                        # archive photos - ignore errors
+                        try:
+                            PhotosFileAdapter().move_photo_to_archive(
+                                os.path.basename(group["main"])
+                            )
+                            PhotosFileAdapter().move_photo_to_archive(
+                                os.path.basename(group["crop"])
+                            )
+                        except Exception as e:
+                            error_text = f"Error moving files {group} to archive {e}"
+                            logging.error(error_text)
+
+                        logging.debug(f"Published message {result} to pubsub.")
+                        i_photo_count += 1
+
+                        await StatusAdapter().create_status(
+                            token,
+                            event,
+                            status_type,
+                            f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage.",
+                        )
                 except Exception as e:
-                    error_text = (
-                        f"Error uploading to Google photos. Files {group} - {e}"
-                    )
+                    error_text = f"{service_name} - Error handling {group} - {e}"
+                    i_error_count += 1
                     logging.error(error_text)
-                    logging.error(
-                        f"Current directory {os.getcwd()} - content {os.listdir()}"
-                    )
-                    raise Exception(error_text) from e
-
-                # analyze photo with Vision AI
-                try:
-                    ai_information = await AiImageService().analyze_photo_with_google_for_langrenn_v2(
-                        token, event, url_main, url_crop
-                    )
-                except Exception as e:
-                    error_text = f"AiImageService - Error analysing photos {url_main} and {url_crop} - {e}"
-                    logging.error(error_text)
-                    raise Exception(error_text) from e
-
-                pub_message = {
-                    "ai_information": ai_information,
-                    "crop_url": url_crop,
-                    "event_id": event["id"],
-                    "photo_info": get_image_description(group["main"]),
-                    "photo_url": url_main,
-                }
-
-                # publish info to pubsub
-                try:
-                    result = await GooglePubSubAdapter().publish_message(
-                        json.dumps(pub_message)
-                    )
-                except Exception as e:
-                    error_text = (
-                        f"GooglePubSub - error publishing message {pub_message} - {e}"
-                    )
-                    logging.error(error_text)
-                    raise Exception(error_text) from e
-
-                # archive photos - ignore errors
-                try:
-                    PhotosFileAdapter().move_photo_to_archive(
-                        os.path.basename(group["main"])
-                    )
-                    PhotosFileAdapter().move_photo_to_archive(
-                        os.path.basename(group["crop"])
-                    )
-                except Exception as e:
-                    error_text = f"Error moving files to archive {e}"
-                    logging.error(error_text)
-
-                logging.debug(f"Published message {result} to pubsub.")
-                i_photo_count += 1
-
-                status_type = await ConfigAdapter().get_config(
-                    token, event, "VIDEO_ANALYTICS_STATUS_TYPE"
-                )
-                await StatusAdapter().create_status(
-                    token,
-                    event,
-                    status_type,
-                    f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage.",
-                )
-
+        await ConfigAdapter().update_config(token, event, "PUBSUB_RUNNING", "False")
+        informasjon = f"PubSub - Pushed {i_photo_count}, errors: {i_error_count}"
+        await StatusAdapter().create_status(
+            token,
+            event,
+            status_type,
+            informasjon,
+        )
         return informasjon
 
 

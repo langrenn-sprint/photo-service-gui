@@ -153,7 +153,6 @@ class EventsAdapter:
         for event in current_events:
             current_event_ids.append(event["id"])
 
-
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
