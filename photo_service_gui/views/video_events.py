@@ -59,6 +59,9 @@ class VideoEvents(web.View):
                     "sim_fastest_time": await ConfigAdapter().get_config(
                         user["token"], event, "SIMULATION_FASTEST_TIME"
                     ),
+                    "pubsub_sleep_time_millis": await ConfigAdapter().get_config(
+                        user["token"], event, "PUBSUB_SLEEP_TIME_MILLIS"
+                    ),
                 },
             )
         except Exception as e:

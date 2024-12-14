@@ -259,7 +259,6 @@ class FotoService:
                             )
                         except Exception as e:
                             error_text = f"GooglePubSub - error publishing message {pub_message} - {e}"
-                            logging.error(error_text)
                             raise Exception(error_text) from e
 
                         # archive photos - ignore errors
@@ -271,30 +270,24 @@ class FotoService:
                                 os.path.basename(group["crop"])
                             )
                         except Exception as e:
-                            error_text = f"Error moving files {group} to archive {e}"
+                            error_text = f"{service_name} - Error moving files {group} to archive {e}"
                             logging.error(error_text)
 
                         logging.debug(f"Published message {result} to pubsub.")
                         i_photo_count += 1
 
-                        await StatusAdapter().create_status(
-                            token,
-                            event,
-                            status_type,
-                            f"<a href={url_main}>Bilde</a> lastet opp til Google Cloud Storage.",
-                        )
                 except Exception as e:
-                    error_text = f"{service_name} - Error handling {group} - {e}"
+                    error_text = f"{service_name} - Error handling files {group} - {e}"
                     i_error_count += 1
                     logging.error(error_text)
-        await ConfigAdapter().update_config(token, event, "PUBSUB_RUNNING", "False")
-        informasjon = f"PubSub - Pushed {i_photo_count}, errors: {i_error_count}"
-        await StatusAdapter().create_status(
-            token,
-            event,
-            status_type,
-            informasjon,
-        )
+            await ConfigAdapter().update_config(token, event, "PUBSUB_RUNNING", "False")
+            informasjon = f"PubSub - Pushed {i_photo_count}, errors: {i_error_count}"
+            await StatusAdapter().create_status(
+                token,
+                event,
+                status_type,
+                informasjon,
+            )
         return informasjon
 
 
