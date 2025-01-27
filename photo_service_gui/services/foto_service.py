@@ -222,10 +222,10 @@ class FotoService:
                         # upload photo to cloud storage
                         try:
                             url_main = GoogleCloudStorageAdapter().upload_blob(
-                                group["main"], "photos"
+                                group["main"]
                             )
                             url_crop = GoogleCloudStorageAdapter().upload_blob(
-                                group["crop"], "photos"
+                                group["crop"]
                             )
                         except Exception as e:
                             error_text = (

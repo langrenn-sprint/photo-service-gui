@@ -14,6 +14,7 @@
     "GOOGLE_PHOTO_SCOPE": "https://www.googleapis.com/auth/photoslibrary",
     "TRIGGER_LINE_XYXYN": "0:0.75:1:0.75",
     "TRIGGER_LINE_CONFIG_FILE": "Trigger_line_config.jpg",
+    "DETECTION_ZONE": "[(0.1, 0.1), (0.9, 0.9)]",
     "CAMERA_LOCATION": "Finish",
     "VIDEO_ANALYTICS_AVAILABLE": "False",
     "VIDEO_ANALYTICS_START": "False",

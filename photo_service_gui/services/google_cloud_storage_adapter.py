@@ -12,7 +12,7 @@ GOOGLE_STORAGE_SERVER = os.getenv("GOOGLE_STORAGE_SERVER")
 class GoogleCloudStorageAdapter:
     """Class representing google cloud storage."""
 
-    def upload_blob(self, source_file_name, folder_name) -> str:
+    def upload_blob(self, source_file_name) -> str:
         """Uploads a file to the bucket, return URL to uploaded file."""
         servicename = "GoogleCloudStorageAdapter.upload_blob"
         try:
