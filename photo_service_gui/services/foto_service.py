@@ -213,10 +213,9 @@ class FotoService:
             # loop photos and group crops with main photo - only upload complete pairs
             new_photos = PhotosFileAdapter().get_all_photos()
             new_photos_grouped = group_photos(new_photos)
-            logging.error(f"Start push - {len(new_photos_grouped)}")
+            logging.info(f"Starting to push {len(new_photos_grouped)} photos")
             for x in new_photos_grouped:
                 try:
-                    logging.error(f"X - {x}")
                     group = new_photos_grouped[x]
                     if group["main"] and group["crop"]:
                         # upload photo to cloud storage
