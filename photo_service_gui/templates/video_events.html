@@ -40,9 +40,12 @@
 
       try {
         var formData = "video_status=true&event_id={{ event_id }}"
-        var checkBoxPub = document.getElementById("pub_events_automatic");
+        var checkBoxPub = document.getElementById("integration_automatic");
         if (checkBoxPub.checked) {
-          formData = formData + "&pub_message=true"
+          formData = formData + "&integration_start=true"
+        }
+        else {
+          formData = formData + "&integration_stop=true"
         }
         var checkBoxAna = document.getElementById("video_analytics_automatic");
         if (checkBoxAna.checked) {
@@ -88,7 +91,7 @@
           alert(err);
       } finally {
         syncRunning = false; // Ensure flag is cleared even on errors
-        setTimeout(sync_status, {{ pubsub_sleep_time_millis }});
+        setTimeout(sync_status, 4000);
       }
     }
 
@@ -102,10 +105,6 @@
     }
 
   </script>
-
-  {% if video_analytics_available == "False" %}
-    <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
-  {% endif %}
   <table>
     <tr id="headerblack">
       <td width="500"><b>Configuration</b></td>
@@ -118,14 +117,20 @@
           <tr>
             <td colspan="2">
               <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" 
-                value="video_analytics_checkbox" {% if video_analytics_running == "True" %}checked{% endif %}>
+                value="video_analytics_checkbox" {% if service_status.video_analytics_running == "True" %}checked{% endif %}>
               <b>Run video detection</b> (identify line crossings)
+              {% if service_status.video_analytics_available == "False" %}
+                <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
+              {% endif %}
             </td>
           </tr>
           <tr>
             <td colspan="2">
-              <input type="checkbox" id="pub_events_automatic" name="pub_events_checkbox" value="pub_events_checkbox">
-              <b>Run Pubsub</b> (send photos to Google cloud)
+              <input type="checkbox" id="integration_automatic" name="integration_checkbox" value="integration_checkbox">
+              <b>Run integration</b> (send photos to Google cloud)
+              {% if service_status.integration_available == "False" %}
+                <span id=info>Warning! Integration service is not detected. Analytics can not be run.</span>
+              {% endif %}
             </td>
           </tr>
           <tr>
@@ -212,8 +217,7 @@
 </table>
 <script>
     // Initial call to start the cycle
-    setTimeout(sync_status, {{ pubsub_sleep_time_millis }});
-
+    setTimeout(sync_status, 4000);
     // Get the modal
     var modal_line = document.getElementById("myModal_line");
     

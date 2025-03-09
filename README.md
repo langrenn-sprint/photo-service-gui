@@ -48,15 +48,6 @@ EVENTS_HOST_PORT=8082
 PHOTOS_HOST_SERVER=localhost
 PHOTOS_HOST_PORT=8092
 FERNET_KEY=23EHUWpP_MyKey_MyKeyhxndWqyc0vO-MyKeySMyKey=
-GOOGLE_APPLICATION_CREDENTIALS=/Users/name/github/secrets/application_default_credentials.json
-GOOGLE_CLOUD_PROJECT=sigma-celerity-257719
-GOOGLE_PUBSUB_NUM_MESSAGES=1
-GOOGLE_PUBSUB_TOPIC_ID=langrenn-sprint
-GOOGLE_PUBSUB_SUBSCRIPTION_ID=langrenn-sprint-sub
-GOOGLE_STORAGE_BUCKET=langrenn-sprint
-GOOGLE_STORAGE_SERVER=https://storage.googleapis.com
-GOOGLE_OAUTH_CLIENT_ID=12345My-ClientId12345.apps.googleusercontent.com
-SERVICEBUS_NAMESPACE_CONNECTION_STR=connection string
 JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
@@ -103,18 +94,18 @@ poetry run adev runserver --no-livereload -p 8096 photo_service_gui
 docker-compose up photo-service user-service event-service competition-format-service mongodb
 ```
 
-## start server uten reload (for live kjøring - unngår reload når bilder lagres)
+### If required - virtual environment
 
-poetry run adev runserver --no-livereload -p 8096 photo_service_gui
-
-Dokumentasjon: <https://langrenn-sprint.github.io/docs/>
-
-Når du endrer koden i photo_service_gui, vil webserveren laste applikasjonen på nytt autoamtisk ved lagring.
+Install: curl <https://pyenv.run> | bash
+Create: python -m venv .vienv (replace .venv with your preferred name)
+Install python 3.12: pyenv install 3.12
+Activate:
+source .vienv/bin/activate
 
 ## Referanser
 
+Dokumentasjon: <https://langrenn-sprint.github.io/docs/>
 aiohttp: <https://docs.aiohttp.org/>
-
 Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>
 Google Photos API: <https://developers.google.com/photos/library/guides/get-started>
 

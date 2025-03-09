@@ -8,7 +8,6 @@ import aiohttp_jinja2
 
 from photo_service_gui.services import (
     ConfigAdapter,
-    FotoService,
     PhotosFileAdapter,
     StatusAdapter,
 )
@@ -47,20 +46,12 @@ class VideoEvents(web.View):
                     "video_url": await ConfigAdapter().get_config(
                         user["token"], event, "VIDEO_URL"
                     ),
-                    "video_analytics_available": await ConfigAdapter().get_config(
-                        user["token"], event, "VIDEO_ANALYTICS_AVAILABLE"
-                    ),
-                    "video_analytics_running": await ConfigAdapter().get_config(
-                        user["token"], event, "VIDEO_ANALYTICS_RUNNING"
-                    ),
+                    "service_status": await get_service_status(user["token"], event),
                     "sim_list": await ConfigAdapter().get_config(
                         user["token"], event, "SIMULATION_START_LIST_FILE"
                     ),
                     "sim_fastest_time": await ConfigAdapter().get_config(
                         user["token"], event, "SIMULATION_FASTEST_TIME"
-                    ),
-                    "pubsub_sleep_time_millis": await ConfigAdapter().get_config(
-                        user["token"], event, "PUBSUB_SLEEP_TIME_MILLIS"
                     ),
                 },
             )
@@ -91,8 +82,12 @@ class VideoEvents(web.View):
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
-            if "pub_message" in form.keys():
-                response["pub_message"] = await FotoService().push_new_photos_from_file(
+            if "integration_start" in form.keys():
+                response["integration_start"] = await start_integration(
+                    user["token"], event
+                )
+            if "integration_stop" in form.keys():
+                response["integration_stop"] = await stop_integration(
                     user["token"], event
                 )
             if "video_analytics_start" in form.keys():
@@ -125,26 +120,32 @@ class VideoEvents(web.View):
 async def get_analytics_status(token: str, event: dict) -> str:
     """Get video analytics status messages."""
     response = ""
-    result_list = await StatusAdapter().get_status_by_type(
-        token, event, "VIDEO_ANALYTICS_STATUS_TYPE", 25
-    )
+    result_list = await StatusAdapter().get_status(token, event, 25)
     for res in result_list:
         info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"  # type: ignore
         response += f"{info_time} - {res['message']}<br>"  # type: ignore
     return response
 
 
+async def start_integration(token: str, event: dict) -> str:
+    """Start video analytics."""
+    await ConfigAdapter().update_config(
+        token, event, "INTEGRATION_SERVICE_START", "True"
+    )
+    return "Integration started"
+
+
+async def stop_integration(token: str, event: dict) -> str:
+    """Stop video analytics."""
+    await ConfigAdapter().update_config(
+        token, event, "INTEGRATION_SERVICE_START", "False"
+    )
+    return "Stop video analytics initiert."
+
+
 async def start_video_analytics(token: str, event: dict) -> str:
     """Start video analytics."""
-    analytics_running = await ConfigAdapter().get_config_bool(
-        token, event, "VIDEO_ANALYTICS_RUNNING"
-    )
-    if analytics_running:
-        return "Video analytics already running"
-    else:
-        await ConfigAdapter().update_config(
-            token, event, "VIDEO_ANALYTICS_START", "True"
-        )
+    await ConfigAdapter().update_config(token, event, "VIDEO_ANALYTICS_START", "True")
     return "Video analytics started"
 
 
@@ -178,3 +179,41 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         )
         informasjon = "Simulering av passeringer er initiert."
     return informasjon
+
+
+async def get_service_status(token: str, event: dict) -> dict:
+    """Get config details from db."""
+    integration_available = await ConfigAdapter().get_config(
+        token, event, "INTEGRATION_SERVICE_AVAILABLE"
+    )
+    integration_running = await ConfigAdapter().get_config_bool(
+        token, event, "INTEGRATION_SERVICE_RUNNING"
+    )
+    integration_start = await ConfigAdapter().get_config_bool(
+        token, event, "INTEGRATION_SERVICE_START"
+    )
+    integration_mode = await ConfigAdapter().get_config(
+        token, event, "INTEGRATION_SERVICE_MODE"
+    )
+    video_analytics_running = await ConfigAdapter().get_config_bool(
+        token, event, "VIDEO_ANALYTICS_RUNNING"
+    )
+    video_analytics_start = await ConfigAdapter().get_config_bool(
+        token, event, "VIDEO_ANALYTICS_START"
+    )
+    video_analytics_stop = await ConfigAdapter().get_config_bool(
+        token, event, "VIDEO_ANALYTICS_STOP"
+    )
+    video_analytics_available = await ConfigAdapter().get_config(
+        token, event, "VIDEO_ANALYTICS_AVAILABLE"
+    )
+    return {
+        "integration_available": integration_available,
+        "integration_running": integration_running,
+        "integration_start": integration_start,
+        "integration_mode": integration_mode,
+        "video_analytics_running": video_analytics_running,
+        "video_analytics_start": video_analytics_start,
+        "video_analytics_stop": video_analytics_stop,
+        "video_analytics_available": video_analytics_available,
+    }
