@@ -117,7 +117,7 @@
           <tr>
             <td colspan="2">
               <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" 
-                value="video_analytics_checkbox" {% if service_status.video_analytics_running == "True" %}checked{% endif %}>
+                value="video_analytics_checkbox" {% if service_status.video_analytics_running %}checked{% endif %}>
               <b>Run video detection</b> (identify line crossings)
               {% if service_status.video_analytics_available == "False" %}
                 <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
@@ -126,11 +126,13 @@
           </tr>
           <tr>
             <td colspan="2">
-              <input type="checkbox" id="integration_automatic" name="integration_checkbox" value="integration_checkbox">
+              <input type="checkbox" id="integration_automatic" name="integration_checkbox" 
+                value="integration_checkbox" {% if service_status.integration_start %}checked{% endif %}>
               <b>Run integration</b> (send photos to Google cloud)
               {% if service_status.integration_available == "False" %}
                 <span id=info>Warning! Integration service is not detected. Analytics can not be run.</span>
               {% endif %}
+              {{ service_status }}
             </td>
           </tr>
           <tr>

@@ -28,6 +28,14 @@ Hovedfunksjonen til photo-service-gui er å analysere video og generere events p
 % poetry install
 ```
 
+### If required - virtual environment
+
+Install: curl <https://pyenv.run> | bash
+Create: python -m venv .vienv (replace .venv with your preferred name)
+Install python 3.12: pyenv install 3.12
+Activate:
+source .vienv/bin/activate
+
 ## oppdatere
 
 ```Shell
@@ -87,7 +95,7 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 
 ## Start lokal webserver mha aiohttp-devtools(adev)
 
-```Shell
+```zsh
 source .env
 poetry run adev runserver -p 8096 photo_service_gui
 poetry run adev runserver --no-livereload -p 8096 photo_service_gui
