@@ -181,21 +181,6 @@ class EventsAdapter:
                     )
         return information
 
-    async def create_events_json(self, token: str, events_json: str) -> str:
-        """Create events from json string."""
-        servicename = "create_events_json"
-        information = ""
-        try:
-            events = json.loads(events_json)
-        except Exception as e:
-            logging.error(f"{servicename} failed - {e}")
-            raise web.HTTPBadRequest(reason=f"{servicename} failed - {e}") from e
-        if events:
-            for event in events:
-                information += await EventsAdapter().create_event(token, event)
-
-        return information
-
     async def create_event(self, token: str, event: dict) -> str:
         """Create new event function."""
         servicename = "create_event"

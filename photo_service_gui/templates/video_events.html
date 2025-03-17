@@ -107,7 +107,7 @@
   </script>
   <table>
     <tr id="headerblack">
-      <td width="500"><b>Configuration</b></td>
+      <td><b>Configuration</b></td>
       <td>&nbsp;</td>
       <td><b>Service status</b></td>
     </tr>
@@ -128,11 +128,12 @@
             <td colspan="2">
               <input type="checkbox" id="integration_automatic" name="integration_checkbox" 
                 value="integration_checkbox" {% if service_status.integration_start %}checked{% endif %}>
-              <b>Run integration</b> (send photos to Google cloud)
+              <b>Run integration</b> (sync to Google cloud)
               {% if service_status.integration_available == "False" %}
                 <span id=info>Warning! Integration service is not detected. Analytics can not be run.</span>
-              {% endif %}
-              {{ service_status }}
+                {% else %}
+                <span id=info>Mode: {{ service_status.integration_mode }}</span>
+                {% endif %}
             </td>
           </tr>
           <tr>

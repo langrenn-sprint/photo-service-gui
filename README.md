@@ -31,10 +31,10 @@ Hovedfunksjonen til photo-service-gui er å analysere video og generere events p
 ### If required - virtual environment
 
 Install: curl <https://pyenv.run> | bash
-Create: python -m venv .vienv (replace .venv with your preferred name)
+Create: python -m venv .venv (replace .venv with your preferred name)
 Install python 3.12: pyenv install 3.12
 Activate:
-source .vienv/bin/activate
+source .venv/bin/activate
 
 ## oppdatere
 
@@ -60,6 +60,7 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
+LOCAL_PHOTO_DIRECTORY=/home/github/photo-service-gui/photo_service_gui/files
 
 ### Rydde opp i docker stuff
 docker system prune
@@ -99,16 +100,16 @@ Denne fila _skal_ ligge i .dockerignore og .gitignore
 source .env
 poetry run adev runserver -p 8096 photo_service_gui
 poetry run adev runserver --no-livereload -p 8096 photo_service_gui
-docker-compose up photo-service user-service event-service competition-format-service mongodb
+docker-compose up photo-service user-service event-service competition-format-service integration-service mongodb
 ```
 
 ### If required - virtual environment
 
 Install: curl <https://pyenv.run> | bash
-Create: python -m venv .vienv (replace .venv with your preferred name)
+Create: python -m venv .venv (replace .venv with your preferred name)
 Install python 3.12: pyenv install 3.12
 Activate:
-source .vienv/bin/activate
+source .venv/bin/activate
 
 ## Referanser
 

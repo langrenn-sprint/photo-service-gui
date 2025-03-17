@@ -111,9 +111,6 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-.vienv
-vienv/
-vienv.bak/
 photo_service_gui/files/*.jpg
 photo_service_gui/files/archive/*.jpg
 docs/

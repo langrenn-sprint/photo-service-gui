@@ -1,6 +1,7 @@
 {
     "TIME_ZONE_OFFSET_G_PHOTOS": 2,
     "CONFIDENCE_LIMIT": "0.7",
+    "DATE_PATTERNS": "%Y-%m-%dT%H:%M:%S;%Y:%m:%d %H:%M:%S;%d.%m.%Y %H:%M:%S;%Y%m%d %H:%M:%S",
     "PHOTO_THUMB_SIZE": "240",
     "PHOTO_THUMB_WIDTH": "240",
     "PHOTO_THUMB_HEIGTH": "160",
@@ -29,6 +30,15 @@
     "DRAW_TRIGGER_LINE": "False",
     "SHOW_VIDEO": "False",
     "VIDEO_URL": "https://harnaes.no/maalfoto/2023SkiMaal.mp4",
+    "AUTOMATIC_TIME_EVENTS": "True",
+    "GOOGLE_PUBSUB_PROJECT_ID": "sigma-celerity-257719",
+    "GOOGLE_PUBSUB_TOPIC_ID": "langrenn-sprint",
+    "GOOGLE_PUBSUB_SUBSCRIPTION_ID": "langrenn-sprint-sub",
+    "GOOGLE_STORAGE_BUCKET": "langrenn-sprint",
+    "GOOGLE_STORAGE_SERVER": "https://storage.googleapis.com",
+    "RACE_DURATION_ESTIMATE": 300,
+    "RACE_TIME_DEVIATION_ALLOWED": 600,
+    "RACE_DURATION_LATEST5": "[0, 0, 0, 0, 0]",
     "SIMULATION_CROSSINGS_START": "False",
     "SIMULATION_START_LIST_FILE": "tests/files/startliste.csv",
     "SIMULATION_FASTEST_TIME": "300"
