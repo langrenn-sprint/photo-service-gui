@@ -3,14 +3,15 @@
 import json
 import logging
 
-from aiohttp import web
 import aiohttp_jinja2
+from aiohttp import web
 
 from photo_service_gui.services import (
     ConfigAdapter,
     PhotosFileAdapter,
     StatusAdapter,
 )
+
 from .utils import (
     check_login,
     get_event,
@@ -56,7 +57,7 @@ class VideoEvents(web.View):
                 },
             )
         except Exception as e:
-            logging.error(f"Error: {e}. Redirect to main page.")
+            logging.exception("Error. Redirect to main page.")
             return web.HTTPSeeOther(location=f"/?informasjon={e}")
 
     async def post(self) -> web.Response:
@@ -71,47 +72,48 @@ class VideoEvents(web.View):
         try:
             form = await self.request.post()
             user = await check_login(self)
+            event = {}
             try:
                 event_id = str(form["event_id"])
                 event = await get_event(user, event_id)
             except Exception:
                 event_id = ""
 
-            if "update_config" in form.keys():
-                informasjon = await update_config(user["token"], event, form)  # type: ignore
+            if "update_config" in form:
+                informasjon = await update_config(user["token"], event, dict(form))
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}"
                 )
-            if "integration_start" in form.keys():
+            if "integration_start" in form:
                 response["integration_start"] = await start_integration(
                     user["token"], event
                 )
-            if "integration_stop" in form.keys():
+            if "integration_stop" in form:
                 response["integration_stop"] = await stop_integration(
                     user["token"], event
                 )
-            if "video_analytics_start" in form.keys():
+            if "video_analytics_start" in form:
                 response["video_analytics"] = await start_video_analytics(
                     user["token"], event
                 )
-            elif "video_analytics_stop" in form.keys():
+            elif "video_analytics_stop" in form:
                 response["video_analytics"] = await stop_video_analytics(
                     user["token"], event
                 )
-            if "video_status" in form.keys():
+            if "video_status" in form:
                 response["video_status"] = await get_analytics_status(
                     user["token"], event
                 )
-            if "photo_queue" in form.keys():
+            if "photo_queue" in form:
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
                 response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
                     user["token"], event
                 )
-        except Exception as e:
-            response["video_status"] = f"Det har oppstått en feil: {e}"
-            logging.error(f"Video events update - {e}")
+        except Exception:
+            response["video_status"] = "Det har oppstått en feil."
+            logging.exception("Video events update")
 
         json_response = json.dumps(response)
         return web.Response(body=json_response)
@@ -122,8 +124,8 @@ async def get_analytics_status(token: str, event: dict) -> str:
     response = ""
     result_list = await StatusAdapter().get_status(token, event, 25)
     for res in result_list:
-        info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"  # type: ignore
-        response += f"{info_time} - {res['message']}<br>"  # type: ignore
+        info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"
+        response += f"{info_time} - {res['message']}<br>"
     return response
 
 
@@ -158,7 +160,7 @@ async def stop_video_analytics(token: str, event: dict) -> str:
 async def update_config(token: str, event: dict, form: dict) -> str:
     """Draw trigger line or initiate simulation."""
     informasjon = ""
-    if "trigger_line_xyxyn" in form.keys():
+    if "trigger_line_xyxyn" in form:
         await ConfigAdapter().update_config(
             token, event, "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"])
         )
@@ -167,7 +169,7 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         )
         await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
         informasjon = "Video settings updated."
-    elif "sim_list" in form.keys():
+    elif "sim_list" in form:
         await ConfigAdapter().update_config(
             token, event, "SIMULATION_START_LIST_FILE", str(form["sim_list"])
         )

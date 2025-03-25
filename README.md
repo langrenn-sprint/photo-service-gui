@@ -6,46 +6,38 @@ Hovedfunksjonen til photo-service-gui er å analysere video og generere events p
 
 ## Slik går du fram for å kjøre dette lokalt
 
-## Utvikle og kjøre lokalt
+Example of usage:
 
-### Krav til programvare
-
-- [pyenv](https://github.com/pyenv/pyenv) (recommended)
-- [poetry](https://python-poetry.org/)
-- [nox](https://nox.thea.codes/en/stable/)
-- [nox-poetry](https://pypi.org/project/nox-poetry/)
-
-### Installere programvare og sette miljøvariable
-
-```Shell
-% git clone https://github.com/langrenn-sprint/photo-service-gui.git
-% cd photo-service-gui
-% pyenv install 3.11
-% pyenv local 3.11
-% pipx install poetry
-% pipx install nox
-% pipx inject nox nox-poetry
-% poetry install
+```Zsh
+% curl -H "Content-Type: application/json" \
+  -X POST \
+  --data '{"username":"admin","password":"passw123"}' \
+  http://localhost:8080/login
+% export ACCESS="" #token from response
+% curl -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $ACCESS" \
+  -X POST \
+  --data @tests/files/user.json \
+  http://localhost:8080/users
+% curl -H "Authorization: Bearer $ACCESS"  http://localhost:8080/users
 ```
 
-### If required - virtual environment
+## Architecture
 
-Install: curl <https://pyenv.run> | bash
-Create: python -m venv .venv (replace .venv with your preferred name)
-Install python 3.12: pyenv install 3.12
-Activate:
-source .venv/bin/activate
+Layers:
 
-## oppdatere
+- views: routing functions, maps representations to/from model
+- services: enforce validation, calls adapter-layer for storing/retrieving objects
+- models: model-classes
+- adapters: adapters to external services
 
-```Shell
-% poetry update / poetry add <module>
-```
+## Environment variables
 
-## Miljøvariable
+To run the service locally, you need to supply a set of environment variables. A simple way to solve this is to supply a .env file in the root directory.
 
-```Shell
-Du må sette opp ei .env fil med miljøvariable. Eksempel:
+A minimal .env:
+
+```Zsh
 JWT_SECRET=secret
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=password
@@ -61,6 +53,21 @@ LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
 LOCAL_PHOTO_DIRECTORY=/home/github/photo-service-gui/photo_service_gui/files
+
+### If required - virtual environment
+
+Install: curl <https://pyenv.run> | bash
+Create: python -m venv .venv (replace .venv with your preferred name)
+Install python 3.12: pyenv install 3.12
+Activate:
+source .venv/bin/activate
+
+## oppdatere
+
+```Shell
+% poetry update / poetry add <module>
+```
+
 
 ### Rydde opp i docker stuff
 docker system prune
@@ -78,45 +85,65 @@ sudo docker-compose up --build #bygge og debug modus
 sudo docker-compose stop #oppdatere images
 sudo docker-compose up -d #kjøre-modus
 
-### Innstillinger i google cloud
-- Create OAuth2.0 client Id: <https://console.cloud.google.com/apis/credentials>
-- Hints1: Javascript origins: http://localhost:8080 and http://localhost
-- Hints2: Redirect URI: http://localhost:8080/photos_adm and http://localhost/photos_adm
-- Download client_secret.json and save it in secrets folder, remember to add it to .env file
-- Set up conset screen
-- PUBSUB: Create topic and subscription
-- Install python libraries: pip install --upgrade google-cloud-pubsub
-- Set upp application default credentials: https://cloud.google.com/docs/authentication/provide-credentials-adc#how-to
-- Cloud storage: Bucket - https://storage.googleapis.com/langrenn-photo/result2.jpg
-  - Hint: Set to publicly available and allUsers principals, role Viewer
-
-Denne fila _skal_ ligge i .dockerignore og .gitignore
 ### Kjøre webserver lokalt
+## Requirement for development
+
+Install [uv](https://docs.astral.sh/uv/), e.g.:
+
+```Zsh
+% curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## Start lokal webserver mha aiohttp-devtools(adev)
+Then install the dependencies:
 
-```zsh
-source .env
-poetry run adev runserver -p 8096 photo_service_gui
-poetry run adev runserver --no-livereload -p 8096 photo_service_gui
-docker-compose up photo-service user-service event-service competition-format-service integration-service mongodb
+```Zsh
+% uv sync
 ```
 
-### If required - virtual environment
+## Running the API locally
 
-Install: curl <https://pyenv.run> | bash
-Create: python -m venv .venv (replace .venv with your preferred name)
-Install python 3.12: pyenv install 3.12
-Activate:
-source .venv/bin/activate
+Start the server locally:
 
-## Referanser
+```Zsh
+% uv run adev runserver -p 8080 photo_service_gui
+```
 
-Dokumentasjon: <https://langrenn-sprint.github.io/docs/>
-aiohttp: <https://docs.aiohttp.org/>
-Googel OAuth2: <https://developers.google.com/identity/protocols/oauth2>
-Google Photos API: <https://developers.google.com/photos/library/guides/get-started>
+## Running the API in a wsgi-server (gunicorn)
+
+```Zsh
+% uv run gunicorn photo_service_gui:create_app --bind localhost:8080 --worker-class aiohttp.GunicornWebWorker
+```
+
+## Running the wsgi-server in Docker
+
+To build and run the api in a Docker container:
+
+```Zsh
+% docker build -t langrenn-sprint/photo-service-gui:latest .
+% docker run --env-file .env -p 8080:8080 -d langrenn-sprint/photo-service-gui:latest
+```
+
+The easier way would be with docker-compose:
+
+```Zsh
+docker compose up --build
+```
+
+## Running tests
+
+We use [pytest](https://docs.pytest.org/en/latest/) for contract testing.
+
+To run linters, checkers and tests:
+
+```Zsh
+% uv run poe release
+```
+
+To run tests with logging, do:
+
+```Zsh
+% uv run pytest -m integration -- --log-cli-level=DEBUG
+```
 
 ## testfiler for video
 

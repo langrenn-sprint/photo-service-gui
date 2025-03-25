@@ -2,10 +2,11 @@
 
 import logging
 
-from aiohttp import web
 import aiohttp_jinja2
+from aiohttp import web
 
 from photo_service_gui.services import EventsAdapter, FotoService, PhotosAdapter
+
 from .utils import (
     check_login_google_photos,
     get_event,
@@ -36,7 +37,9 @@ class PhotosEdit(web.View):
 
         try:
             event = await get_event(user, event_id)
-            photos = await PhotosAdapter().get_all_photos(user["token"], event_id)
+            photos = await PhotosAdapter().get_all_photos(
+                user["token"], event_id
+            )
 
             return await aiohttp_jinja2.render_template_async(
                 "photos_edit.html",
@@ -53,32 +56,35 @@ class PhotosEdit(web.View):
                 },
             )
         except Exception as e:
-            logging.error(f"Error: {e}. Redirect to main page.")
+            logging.exception("Error. Redirect to main page.")
             return web.HTTPSeeOther(location=f"/?informasjon={e}")
 
     async def post(self) -> web.Response:
         """Post route function that updates a collection of photos."""
         informasjon = ""
-        form = await self.request.post()
-        event_id = str(form["event_id"])
-        user = await check_login_google_photos(self, event_id)
+        form = {}
+        event_id = ""
 
         try:
-            if "update_race_info" in form.keys():
+            form = await self.request.post()
+            event_id = str(form["event_id"])
+            user = await check_login_google_photos(self, event_id)
+            if "update_race_info" in form:
                 informasjon = await FotoService().update_race_info(
-                    user["token"], event_id, form  # type: ignore
+                    user["token"], event_id, dict(form)
                 )
-            elif "delete_all_local" in form.keys():
+            elif "delete_all_local" in form:
                 informasjon = await FotoService().delete_all_local_photos(
                     user["token"], event_id
                 )
         except Exception as e:
-            logging.error(f"Error: {e}")
+            logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
             error_reason = str(e)
             if error_reason.startswith("401"):
+                informasjon = "Ingen tilgang, vennligst logg inn på nytt."
                 return web.HTTPSeeOther(
-                    location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
+                    location=f"/login?informasjon={informasjon}"
                 )
 
         return web.HTTPSeeOther(

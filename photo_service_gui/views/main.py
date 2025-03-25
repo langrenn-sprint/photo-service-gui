@@ -2,10 +2,11 @@
 
 import logging
 
-from aiohttp import web
 import aiohttp_jinja2
+from aiohttp import web
 
 from photo_service_gui.services import EventsAdapter
+
 from .utils import check_login, check_login_open, get_event
 
 
@@ -44,7 +45,7 @@ class Main(web.View):
                 },
             )
         except Exception as e:
-            logging.error(f"Error: {e}. Redirect to login page.")
+            logging.exception("Error. Redirect to login page.")
             return web.HTTPSeeOther(location=f"/login?informasjon={e}")
 
     async def post(self) -> web.Response:
@@ -53,21 +54,24 @@ class Main(web.View):
         form = await self.request.post()
         user = await check_login(self)
         try:
-            if "get_events" in form.keys():
-                server_url = form["server_url"]
-                informasjon = await EventsAdapter().sync_events(user["token"], server_url)  # type: ignore
-            elif "delete_event" in form.keys():
-                informasjon = await EventsAdapter().delete_event(user["token"], form["event_id"])  # type: ignore
+            if "get_events" in form:
+                server_url = str(form["server_url"])
+                informasjon = await EventsAdapter().sync_events(
+                    user["token"], server_url
+                )
+            elif "delete_event" in form:
+                informasjon = await EventsAdapter().delete_event(
+                    user["token"], form["event_id"]  # type: ignore[no-untyped-call]
+                )
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):
                 return web.HTTPSeeOther(
-                    location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
+                    location=f"/login?informasjon=Vennligst logg inn på nytt. {e}"
                 )
-            else:
-                logging.error(f"Error: {e}")
-                informasjon = (
-                    f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
-                )
+            logging.exception("Error")
+            informasjon = (
+                f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
+            )
 
         return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

@@ -2,16 +2,17 @@
 
 import base64
 import logging
-from logging.handlers import RotatingFileHandler
 import os
 import time
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
-from aiohttp import web
 import aiohttp_jinja2
+import jinja2
+from aiohttp import web
 from aiohttp_session import get_session, setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from dotenv import load_dotenv
-import jinja2
 
 from .views import (
     Config,
@@ -27,7 +28,7 @@ from .views import (
 
 load_dotenv()
 LOGGING_LEVEL = os.getenv("LOGGING_LEVEL", "INFO")
-PROJECT_ROOT = os.path.join(os.getcwd(), "photo_service_gui")
+PROJECT_ROOT = f"{Path.cwd()}/photo_service_gui"
 logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
 gs_config_file = f"{PROJECT_ROOT}/config/global_settings.json"
 
@@ -35,9 +36,9 @@ gs_config_file = f"{PROJECT_ROOT}/config/global_settings.json"
 async def handler(request) -> web.Response:
     """Create a session handler."""
     session = await get_session(request)
-    last_visit = session["last_visit"] if "last_visit" in session else None
+    last_visit = session.get("last_visit", None)
     session["last_visit"] = time.time()
-    text = "Last visited: {}".format(last_visit)
+    text = f"Last visited: {last_visit}"
     return web.Response(text=text)
 
 
@@ -60,13 +61,13 @@ async def create_app() -> web.Application:
     logging.getLogger().addHandler(file_handler)
 
     # Set up template path
-    template_path = os.path.join(PROJECT_ROOT, "templates")
+    template_path = f"{PROJECT_ROOT}/templates"
     aiohttp_jinja2.setup(
         app,
         enable_async=True,
         loader=jinja2.FileSystemLoader(template_path),
     )
-    logging.debug(f"template_path: {template_path}")
+    logging.info(f"template_path: {template_path}")
 
     app.add_routes(
         [
@@ -81,8 +82,8 @@ async def create_app() -> web.Application:
             web.view("/video_events", VideoEvents),
         ]
     )
-    static_dir = os.path.join(PROJECT_ROOT, "static")
-    files_dir = os.path.join(PROJECT_ROOT, "files")
+    static_dir = f"{PROJECT_ROOT}/static"
+    files_dir = f"{PROJECT_ROOT}/files"
     logging.info(f"static_dir: {static_dir}")
     logging.info(f"files_dir: {files_dir}")
 

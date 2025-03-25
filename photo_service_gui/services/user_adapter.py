@@ -2,11 +2,11 @@
 
 import logging
 import os
-from typing import List
+from http import HTTPStatus
 
+import jwt
 from aiohttp import ClientSession, hdrs, web
 from aiohttp_session import Session
-import jwt
 from multidict import MultiDict
 
 from photo_service_gui.services import (
@@ -27,11 +27,10 @@ class UserAdapter:
         role: str,
         username: str,
         password: str,
-        cookiestorage: Session,
     ) -> str:
         """Create user function."""
         servicename = "create_user"
-        id = ""
+        result = ""
         request_body = {
             "role": role,
             "username": username,
@@ -47,19 +46,19 @@ class UserAdapter:
             async with session.post(
                 f"{USER_SERVICE_URL}/users", headers=headers, json=request_body
             ) as resp:
-                if resp.status == 201:
-                    logging.debug(f"create user - got response {resp}")
+                if resp.status == HTTPStatus.CREATED:
+                    logging.info(f"create user - got response {resp}")
                     location = resp.headers[hdrs.LOCATION]
-                    id = location.split(os.path.sep)[-1]
-                elif resp.status == 401:
+                    result = location.split(os.path.sep)[-1]
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:
                     logging.error(f"create_user failed - {resp.status}")
                     raise web.HTTPBadRequest(reason="Create user failed.")
 
-        return id
+        return result
 
-    async def delete_user(self, token: str, id: str) -> int:
+    async def delete_user(self, token: str, uid: str) -> int:
         """Delete user function."""
         servicename = "delete_user"
         headers = MultiDict(
@@ -68,21 +67,21 @@ class UserAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        url = f"{USER_SERVICE_URL}/users/{id}"
+        url = f"{USER_SERVICE_URL}/users/{uid}"
         async with ClientSession() as session:
             async with session.delete(url, headers=headers) as resp:
                 pass
-            logging.info(f"Delete user: {id} - res {resp.status}")
-            if resp.status == 204:
-                logging.debug(f"result - got response {resp}")
-            elif resp.status == 401:
+            logging.info(f"Delete user: {uid} - res {resp.status}")
+            if resp.status == HTTPStatus.NO_CONTENT:
+                logging.info(f"result - got response {resp}")
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
                 raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
             else:
                 logging.error(f"delete_user failed - {resp.status}, {resp}")
                 raise web.HTTPBadRequest(reason="Delete user failed.")
         return resp.status
 
-    async def get_all_users(self, token: str) -> List:
+    async def get_all_users(self, token: str) -> list:
         """Get all users function."""
         users = []
         headers = MultiDict(
@@ -97,9 +96,9 @@ class UserAdapter:
                 f"{USER_SERVICE_URL}/users", headers=headers
             ) as resp:
                 logging.info(f"get_all_users - got response {resp.status}")
-                if resp.status == 200:
+                if resp.status == HTTPStatus.OK:
                     users = await resp.json()
-                    logging.debug(f"users - got response {users}")
+                    logging.info(f"users - got response {users}")
                 else:
                     logging.error(f"Error {resp.status} getting users: {resp} ")
         return users
@@ -122,7 +121,7 @@ class UserAdapter:
             ) as resp:
                 result = resp.status
                 logging.info(f"do login - got response {result}")
-                if result == 200:
+                if result == HTTPStatus.OK:
                     body = await resp.json()
                     token = body["token"]
 
@@ -136,12 +135,12 @@ class UserAdapter:
                     cookiestorage["g_auth_photos"] = False
                     cookiestorage["g_scope"] = ""
                     cookiestorage["g_client_id"] = ""
-                    cookiestorage["g_photos_token"] = USER_SERVICE_URL  # type: ignore
+                    cookiestorage["g_photos_token"] = USER_SERVICE_URL
         return result
 
     def login_google(self, g_jwt: str, user: dict, cookiestorage: Session) -> int:
         """Login based upon google token."""
-        decoded_jwt = jwt.decode(g_jwt, options={"verify_signature": False})  # type: ignore
+        decoded_jwt = jwt.decode(g_jwt, options={"verify_signature": False})
 
         # store token to session variable
         cookiestorage["token"] = user["token"]
@@ -153,7 +152,7 @@ class UserAdapter:
         cookiestorage["g_auth_photos"] = user["g_auth_photos"]
         cookiestorage["g_scope"] = ""
         cookiestorage["g_client_id"] = ""
-        cookiestorage["g_photos_token"] = USER_SERVICE_URL  # type: ignore
+        cookiestorage["g_photos_token"] = USER_SERVICE_URL
         return 200
 
     def login_google_photos(
@@ -174,11 +173,10 @@ class UserAdapter:
             cookiestorage["g_photos_token"] = GooglePhotosAdapter().get_g_token(
                 user, event, redirect_url
             )
-            return 200
-        else:
-            # Unathorized
-            cookiestorage["g_auth_photos"] = False
-            return 401
+            return HTTPStatus.OK
+        # Unathorized
+        cookiestorage["g_auth_photos"] = False
+        return HTTPStatus.UNAUTHORIZED
 
     def isloggedin(self, cookiestorage: Session) -> bool:
         """Check if user is logged in function."""

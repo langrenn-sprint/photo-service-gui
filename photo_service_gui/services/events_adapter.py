@@ -1,26 +1,22 @@
 """Module for events adapter."""
 
 import copy
-from datetime import datetime
+import datetime
 import json
 import logging
 import os
-from typing import List
+from http import HTTPStatus
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from aiohttp import ClientSession
-from aiohttp import hdrs
-from aiohttp import web
+from aiohttp import ClientSession, hdrs, web
 from multidict import MultiDict
 
 from .competition_format_adapter import CompetitionFormatAdapter
-from .config_adapter import ConfigAdapter
 
 EVENTS_HOST_SERVER = os.getenv("EVENTS_HOST_SERVER", "localhost")
 EVENTS_HOST_PORT = os.getenv("EVENTS_HOST_PORT", "8082")
 EVENT_SERVICE_URL = f"http://{EVENTS_HOST_SERVER}:{EVENTS_HOST_PORT}"
-
-config_files_directory = f"{os.getcwd()}/photo_service_gui/config"
 
 
 class EventsAdapter:
@@ -35,24 +31,25 @@ class EventsAdapter:
             ]
         )
         url = f"{EVENT_SERVICE_URL}/events/{event_id}/generate-raceclasses"
-        async with ClientSession() as session:
-            async with session.post(url, headers=headers) as resp:
-                res = resp.status
-                logging.debug(f"generate_raceclasses result - got response {resp}")
-                if res == 201:
-                    pass
-                elif resp.status == 401:
-                    raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
-                else:
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
-                    )
-        information = "Opprettet klasser."
-        return information
+        async with ClientSession() as session, session.post(
+            url, headers=headers
+        ) as resp:
+            res = resp.status
+            logging.info(f"generate_raceclasses result - got response {resp}")
+            if res == HTTPStatus.CREATED:
+                pass
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"401 Unathorized - {servicename}"
+                raise web.HTTPBadRequest(reason=err_msg)
+            else:
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}."
+                )
+        return "Opprettet klasser."
 
-    async def get_all_events(self, token: str) -> List:
+    async def get_all_events(self, token: str) -> list:
         """Get all events function."""
         events = []
         headers = MultiDict(
@@ -62,21 +59,22 @@ class EventsAdapter:
             ]
         )
 
-        async with ClientSession() as session:
-            async with session.get(
-                f"{EVENT_SERVICE_URL}/events", headers=headers
-            ) as resp:
-                logging.debug(f"get_all_events - got response {resp.status}")
-                if resp.status == 200:
-                    events = await resp.json()
-                    logging.debug(f"events - got response {events}")
-                elif resp.status == 401:
-                    raise Exception(f"Login expired: {resp}")
-                else:
-                    logging.error(f"Error {resp.status} getting events: {resp} ")
+        async with ClientSession() as session, session.get(
+            f"{EVENT_SERVICE_URL}/events", headers=headers
+        ) as resp:
+            logging.info(f"get_all_events - got response {resp.status}")
+            if resp.status == HTTPStatus.OK:
+                events = await resp.json()
+                logging.info(f"events - got response {events}")
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"Login expired: {resp}"
+                raise Exception(err_msg)
+
+            else:
+                logging.error(f"Error {resp.status} getting events: {resp} ")
         return events
 
-    async def get_event(self, token: str, id: str) -> dict:
+    async def get_event(self, token: str, my_id: str) -> dict:
         """Get event function."""
         event = {}
         headers = MultiDict(
@@ -86,61 +84,65 @@ class EventsAdapter:
             ]
         )
 
-        async with ClientSession() as session:
-            async with session.get(
-                f"{EVENT_SERVICE_URL}/events/{id}", headers=headers
-            ) as resp:
-                logging.debug(f"get_event {id} - got response {resp.status}")
-                if resp.status == 200:
-                    event = await resp.json()
-                    logging.debug(f"event - got response {event}")
-                elif resp.status == 401:
-                    raise Exception(f"Login expired: {resp}")
-                else:
-                    servicename = "get_event"
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
-                    )
+        async with ClientSession() as session, session.get(
+            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers
+        ) as resp:
+            logging.info(f"get_event {my_id} - got response {resp.status}")
+            if resp.status == HTTPStatus.OK:
+                event = await resp.json()
+                logging.info(f"event - got response {event}")
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"Login expired: {resp}"
+                raise Exception(err_msg)
+
+            else:
+                servicename = "get_event"
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}."
+                )
         return event
 
-    def get_local_datetime_now(self, event: dict) -> datetime:
+    def get_local_datetime_now(self, event: dict) -> datetime.datetime:
         """Return local datetime object, time zone adjusted from event info."""
-        timezone = event["timezone"]
-        if timezone:
-            local_time_obj = datetime.now(ZoneInfo(timezone))
+        time_zone = event["timezone"]
+        if time_zone:
+            local_time_obj = datetime.datetime.now(ZoneInfo(time_zone))
         else:
-            local_time_obj = datetime.now()
+            local_time_obj = datetime.datetime.now(datetime.UTC)
         return local_time_obj
 
-    def get_local_time(self, event: dict, format: str) -> str:
+    def get_local_time(self, event: dict, time_format: str) -> str:
         """Return local time string, time zone adjusted from event info."""
-        local_time = ""
-        timezone = event["timezone"]
-        if timezone:
-            time_now = datetime.now(ZoneInfo(timezone))
-        else:
-            time_now = datetime.now()
+        lt = "" # local time
+        time_zone = event["timezone"]
+        tn = datetime.datetime.now(
+            ZoneInfo(time_zone)
+        )if time_zone else datetime.datetime.now(datetime.UTC)
 
-        if format == "HH:MM":
-            local_time = f"{time_now.strftime('%H')}:{time_now.strftime('%M')}"
-        elif format == "log":
-            local_time = f"{time_now.strftime('%Y')}-{time_now.strftime('%m')}-{time_now.strftime('%d')}T{time_now.strftime('%X')}"
+        if time_format == "HH:MM":
+            lt = f"{tn.strftime('%H')}:{tn.strftime('%M')}"
+        elif time_format == "log":
+            lt = f"{
+                tn.strftime('%Y')
+            }-{tn.strftime('%m')}-{tn.strftime('%d')}T{tn.strftime('%X')}"
         else:
-            local_time = time_now.strftime("%X")
-        return local_time
+            lt = tn.strftime("%X")
+        return lt
 
     def get_club_logo_url(self, club_name: str) -> str:
         """Get url to club logo - input is 4 first chars of club name."""
-        try:
-            club_name_short = club_name[:4]
-            with open(f"{config_files_directory}/sports_clubs.json") as json_file:
-                logo_urls = json.load(json_file)
-            logo_url = logo_urls[club_name_short]
-        except Exception as e:
-            logging.error(f"Club logo not found - {club_name}, error: {e}")
-            logo_url = ""
+        config_file = Path(f"{Path.cwd()}/photo_service_gui/config/sports_clubs.json")
+        logo_url = ""
+        if club_name:
+            try:
+                club_name_short = club_name[:4].ljust(4)
+                with config_file.open() as json_file:
+                    logo_urls = json.load(json_file)
+                logo_url = logo_urls[club_name_short]
+            except Exception:
+                logging.exception(f"Club logo not found - {club_name}")
         return logo_url
 
     # import events from remote server
@@ -149,9 +151,7 @@ class EventsAdapter:
         servicename = "sync_events"
         information = "Importerer events."
         current_events = await self.get_all_events(token)
-        current_event_ids = []
-        for event in current_events:
-            current_event_ids.append(event["id"])
+        current_event_ids = [event["id"] for event in current_events]
 
         headers = MultiDict(
             [
@@ -162,7 +162,7 @@ class EventsAdapter:
         async with ClientSession() as session:
             async with session.get(url, headers=headers) as resp:
                 res = resp.status
-                if res == 200:
+                if res == HTTPStatus.OK:
                     events = await resp.json()
                     # import events to local database
                     if events:
@@ -171,7 +171,7 @@ class EventsAdapter:
                                 information += await EventsAdapter().create_event(
                                     token, event
                                 )
-                elif resp.status == 401:
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:
                     body = await resp.json()
@@ -184,20 +184,23 @@ class EventsAdapter:
     async def create_event(self, token: str, event: dict) -> str:
         """Create new event function."""
         servicename = "create_event"
-
-        # create competition formats if nessesary
+        result = ""
+        # add default values for selected competition format
         competition_formats = await CompetitionFormatAdapter().get_competition_formats(
             token
         )
-        if len(competition_formats) == 0:
-            request_body = CompetitionFormatAdapter().get_default_competition_format(
-                "default_individual_sprint"
-            )
-            await CompetitionFormatAdapter().create_competition_format(
-                token, request_body
-            )
-
-        id = ""
+        for cf in competition_formats:
+            if cf["name"] == event["competition_format"]:
+                event["datatype"] = cf["datatype"]
+                if cf["datatype"] == "interval_start":
+                    event["intervals"] = cf["intervals"]
+                elif cf["datatype"] == "individual_sprint":
+                    event["time_between_groups"] = cf["time_between_groups"]
+                    event["time_between_rounds"] = cf["time_between_rounds"]
+                    event["time_between_heats"] = cf["time_between_heats"]
+                    event["max_no_of_contestants_in_race"] = cf[
+                        "max_no_of_contestants_in_race"
+                    ]
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -206,29 +209,25 @@ class EventsAdapter:
         )
         request_body = copy.deepcopy(event)
 
-        async with ClientSession() as session:
-            async with session.post(
+        async with ClientSession() as session, session.post(
                 f"{EVENT_SERVICE_URL}/events", headers=headers, json=request_body
             ) as resp:
-                if resp.status == 201:
-                    logging.debug(f"result - got response {resp}")
+                if resp.status == HTTPStatus.CREATED:
+                    logging.info(f"result - got response {resp}")
                     location = resp.headers[hdrs.LOCATION]
-                    id = location.split(os.path.sep)[-1]
-                elif resp.status == 401:
-                    raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
+                    result = location.split(os.path.sep)[-1]
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
+                    err_msg = f"401 Unathorized - {servicename}"
+                    raise web.HTTPBadRequest(reason=err_msg)
                 else:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
-        # initialize config for event
-        event = await self.get_event(token, id)
-        await ConfigAdapter().init_config(token, event)
+        return result
 
-        return id
-
-    async def delete_event(self, token: str, id: str) -> str:
+    async def delete_event(self, token: str, my_id: str) -> str:
         """Delete event function."""
         servicename = "delete_event"
         headers = MultiDict(
@@ -237,13 +236,12 @@ class EventsAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        url = f"{EVENT_SERVICE_URL}/events/{id}"
-        async with ClientSession() as session:
-            async with session.delete(url, headers=headers) as resp:
-                pass
-            logging.debug(f"Delete event: {id} - res {resp.status}")
-            if resp.status == 204:
-                logging.debug(f"result - got response {resp}")
+        url = f"{EVENT_SERVICE_URL}/events/{my_id}"
+        async with ClientSession() as session, session.delete(
+            url, headers=headers
+        ) as resp:
+            if resp.status == HTTPStatus.NO_CONTENT:
+                logging.info(f"result - got response {resp}")
             else:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
@@ -252,7 +250,7 @@ class EventsAdapter:
                 )
         return str(resp.status)
 
-    async def update_event(self, token: str, id: str, request_body: dict) -> str:
+    async def update_event(self, token: str, my_id: str, request_body: dict) -> str:
         """Update event function."""
         servicename = "update_event"
         headers = MultiDict(
@@ -262,19 +260,19 @@ class EventsAdapter:
             ]
         )
 
-        async with ClientSession() as session:
-            async with session.put(
-                f"{EVENT_SERVICE_URL}/events/{id}", headers=headers, json=request_body
-            ) as resp:
-                if resp.status == 204:
-                    logging.debug(f"update event - got response {resp}")
-                elif resp.status == 401:
-                    raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
-                else:
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
-                    )
-            logging.debug(f"Updated event: {id} - res {resp.status}")
-        return str(resp.status)
+        async with ClientSession() as session, session.put(
+            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers, json=request_body
+        ) as resp:
+            result = resp.status
+            if resp.status == HTTPStatus.NO_CONTENT:
+                logging.info(f"update event - got response {resp}")
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"401 Unathorized - {servicename}"
+                raise web.HTTPBadRequest(reason=err_msg)
+            else:
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}."
+                )
+        return str(result)

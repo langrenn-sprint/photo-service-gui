@@ -2,11 +2,9 @@
 
 import logging
 import os
-from typing import List, Optional
+from http import HTTPStatus
 
-from aiohttp import ClientSession
-from aiohttp import hdrs
-from aiohttp import web
+from aiohttp import ClientSession, hdrs, web
 from multidict import MultiDict
 
 from photo_service_gui.model import Album, AlbumSchema
@@ -19,10 +17,10 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 class AlbumsAdapter:
     """Class representing albums."""
 
-    async def get_all_albums(self, token: str, event_id: Optional[str]) -> List[Album]:
+    async def get_all_albums(self, token: str, event_id: str | None) -> list[Album]:
         """Get all albums function."""
         albums = []
-        logging.debug(f"Need to handle event_id {event_id}")
+        logging.info(f"Need to handle event_id {event_id}")
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -34,21 +32,19 @@ class AlbumsAdapter:
             async with session.get(
                 f"{PHOTO_SERVICE_URL}/albums", headers=headers
             ) as resp:
-                logging.debug(f"get_all_albums - got response {resp.status}")
-                if resp.status == 200:
+                logging.info(f"get_all_albums - got response {resp.status}")
+                if resp.status == HTTPStatus.OK:
                     albums = await resp.json()
-                    logging.debug(f"albums - got response {albums}")
-                elif resp.status == 401:
+                    logging.info(f"albums - got response {albums}")
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise Exception(f"Login expired: {resp}")
                 else:
                     logging.error(f"Error {resp.status} getting albums: {resp} ")
         # convert to Album type
-        ds_albums = []
         schema = AlbumSchema(many=True)
-        ds_albums = schema.load(albums)
-        return ds_albums
+        return schema.load(albums)  # type: ignore[no-untyped-call]
 
-    async def get_album(self, token: str, id: str) -> Album:
+    async def get_album(self, token: str, album_id: str) -> Album:
         """Get album function."""
         album = {}
         headers = MultiDict(
@@ -60,25 +56,24 @@ class AlbumsAdapter:
 
         async with ClientSession() as session:
             async with session.get(
-                f"{PHOTO_SERVICE_URL}/albums/{id}", headers=headers
+                f"{PHOTO_SERVICE_URL}/albums/{album_id}", headers=headers
             ) as resp:
-                logging.debug(f"get_album {id} - got response {resp.status}")
-                if resp.status == 200:
+                logging.info(f"get_album {album_id} - got response {resp.status}")
+                if resp.status == HTTPStatus.OK:
                     album = await resp.json()
-                    logging.debug(f"album - got response {album}")
-                elif resp.status == 401:
+                    logging.info(f"album - got response {album}")
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise Exception(f"Login expired: {resp}")
                 else:
                     servicename = "get_album"
                     body = await resp.json()
-                    logging.debug(f"{servicename} failed - {resp.status} - {body}")
+                    logging.info(f"{servicename} failed - {resp.status} - {body}")
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
-        ds_album = AlbumSchema().load(album)
-        return ds_album
+        return AlbumSchema().load(album)  # type: ignore[no-untyped-call]
 
-    async def get_album_by_g_id(self, token: str, g_id: str) -> Optional[Album]:
+    async def get_album_by_g_id(self, token: str, g_id: str) -> Album | None:
         """Get album by google id function."""
         album = {}
         headers = MultiDict(
@@ -93,27 +88,26 @@ class AlbumsAdapter:
             async with session.get(
                 f"{PHOTO_SERVICE_URL}/albums?gId={g_id}", headers=headers
             ) as resp:
-                logging.debug(f"get_album_by_g_id {g_id} - got response {resp.status}")
-                if resp.status == 200:
+                logging.info(f"get_album_by_g_id {g_id} - got response {resp.status}")
+                if resp.status == HTTPStatus.OK:
                     album = await resp.json()
-                elif resp.status == 401:
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise Exception(f"Login expired: {resp}")
-                elif resp.status == 500:
+                elif resp.status == HTTPStatus.INTERNAL_SERVER_ERROR:
                     # no album found
                     return None
                 else:
                     body = await resp.json()
-                    logging.debug(f"{servicename} failed - {resp.status} - {body}")
+                    logging.info(f"{servicename} failed - {resp.status} - {body}")
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
-        ds_album = AlbumSchema().load(album)
-        return ds_album
+        return AlbumSchema().load(album)  # type: ignore[no-untyped-call]
 
     async def create_album(self, token: str, album: Album) -> str:
         """Create new album function."""
         servicename = "create_album"
-        id = ""
+        result = ""
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -126,11 +120,11 @@ class AlbumsAdapter:
             async with session.post(
                 f"{PHOTO_SERVICE_URL}/albums", headers=headers, json=request_body
             ) as resp:
-                if resp.status == 201:
-                    logging.debug(f"result - got response {resp}")
+                if resp.status == HTTPStatus.CREATED:
+                    logging.info(f"result - got response {resp}")
                     location = resp.headers[hdrs.LOCATION]
-                    id = location.split(os.path.sep)[-1]
-                elif resp.status == 401:
+                    result = location.split(os.path.sep)[-1]
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:
                     body = await resp.json()
@@ -138,10 +132,9 @@ class AlbumsAdapter:
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
+        return result
 
-        return id
-
-    async def delete_album(self, token: str, id: str) -> int:
+    async def delete_album(self, token: str, album_id: str) -> int:
         """Delete album function."""
         servicename = "delete_album"
         headers = MultiDict(
@@ -150,19 +143,19 @@ class AlbumsAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ]
         )
-        url = f"{PHOTO_SERVICE_URL}/albums/{id}"
+        url = f"{PHOTO_SERVICE_URL}/albums/{album_id}"
         async with ClientSession() as session:
             async with session.delete(url, headers=headers) as resp:
                 pass
-            logging.debug(f"Delete album: {id} - res {resp.status}")
-            if resp.status == 204:
-                logging.debug(f"result - got response {resp}")
+            logging.info(f"Delete album: {album_id} - res {resp.status}")
+            if resp.status == HTTPStatus.NO_CONTENT:
+                logging.info(f"result - got response {resp}")
             else:
                 logging.error(f"{servicename} failed - {resp.status} - {resp}")
                 raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {resp}.")
         return resp.status
 
-    async def update_album(self, token: str, id: str, album: Album) -> str:
+    async def update_album(self, token: str, album_id: str, album: Album) -> str:
         """Update album function."""
         servicename = "update_album"
         headers = MultiDict(
@@ -175,11 +168,13 @@ class AlbumsAdapter:
 
         async with ClientSession() as session:
             async with session.put(
-                f"{PHOTO_SERVICE_URL}/albums/{id}", headers=headers, json=request_body
+                f"{
+                    PHOTO_SERVICE_URL
+                }/albums/{album_id}", headers=headers, json=request_body
             ) as resp:
-                if resp.status == 204:
-                    logging.debug(f"update album - got response {resp}")
-                elif resp.status == 401:
+                if resp.status == HTTPStatus.NO_CONTENT:
+                    logging.info(f"update album - got response {resp}")
+                elif resp.status == HTTPStatus.UNAUTHORIZED:
                     raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
                 else:
                     body = await resp.json()
@@ -187,5 +182,5 @@ class AlbumsAdapter:
                     raise web.HTTPBadRequest(
                         reason=f"Error - {resp.status}: {body['detail']}."
                     )
-            logging.debug(f"Updated album: {id} - res {resp.status}")
+            logging.info(f"Updated album: {album_id} - res {resp.status}")
         return str(resp.status)

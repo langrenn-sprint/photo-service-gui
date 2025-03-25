@@ -2,10 +2,11 @@
 
 import logging
 
-from aiohttp import web
 import aiohttp_jinja2
+from aiohttp import web
 
 from photo_service_gui.services import EventsAdapter, FotoService, GooglePhotosAdapter
+
 from .utils import (
     check_login_google_photos,
     get_event,
@@ -36,15 +37,6 @@ class PhotoSync(web.View):
 
         try:
             event = await get_event(user, event_id)
-            # check if automatic sync is active
-            try:
-                if action in ["auto_sync", "one_sync"]:
-                    informasjon += await FotoService().sync_photos_from_google(
-                        user, event
-                    )
-            except Exception as e:
-                informasjon = f"Det har oppstått en feil ved synkronisering. {e}"
-                action = ""
             g_albums = await GooglePhotosAdapter().get_albums(
                 user["token"], event, user["g_photos_token"]
             )
@@ -63,7 +55,7 @@ class PhotoSync(web.View):
                 },
             )
         except Exception as e:
-            logging.error(f"Error: {e}. Redirect to main page.")
+            logging.exception("Error. Redirect to main page.")
             return web.HTTPSeeOther(location=f"/?informasjon={e}")
 
     async def post(self) -> web.Response:
@@ -75,24 +67,24 @@ class PhotoSync(web.View):
         user = await check_login_google_photos(self, event_id)
         album_id = str(form["album_id"])
         album_title = str(form["album_title"])
-        logging.debug(f"Form {form}")
+        logging.info(f"Form {form}")
 
         try:
-            if "sync_from_google" in form.keys():
+            if "sync_from_google" in form:
                 # the actual sync is done on get-processing
                 try:
                     action = str(form["action"])
                     if action == "auto_sync":
-                        informasjon = f"Automatisk synkronisering er på. Siden oppdateres hvert minutt. {informasjon}"
+                        informasjon = "Autosynk er på."
                 except Exception:
                     action = "one_sync"
         except Exception as e:
-            logging.error(f"Error: {e}")
+            logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
             error_reason = str(e)
             if error_reason.startswith("401"):
                 return web.HTTPSeeOther(
-                    location=f"/login?informasjon=Ingen tilgang, vennligst logg inn på nytt. {e}"
+                    location=f"/login?informasjon=Vennligst logg inn på nytt. {e}"
                 )
 
         info = (

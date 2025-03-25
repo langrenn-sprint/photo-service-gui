@@ -29,8 +29,7 @@ async def get_auth_url_google_photos(
 async def login_google_photos(self, redirect_url: str, event: dict, user: dict) -> int:
     """Check scope authorization for google photos and store in session."""
     session = await new_session(self.request)
-    result = UserAdapter().login_google_photos(redirect_url, event, user, session)
-    return result
+    return UserAdapter().login_google_photos(redirect_url, event, user, session)
 
 
 async def check_login(self) -> dict:
@@ -122,7 +121,7 @@ async def get_event(user: dict, event_id: str) -> dict:
     """Get event - return new if no event found."""
     event = {"id": event_id, "name": "Langrenn-sprint", "organiser": "Ikke valgt"}
     if event_id:
-        logging.debug(f"get_event {event_id}")
+        logging.info(f"get_event {event_id}")
         event = await EventsAdapter().get_event(user["token"], event_id)
 
     return event

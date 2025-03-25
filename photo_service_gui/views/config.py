@@ -2,10 +2,11 @@
 
 import logging
 
-from aiohttp import web
 import aiohttp_jinja2
+from aiohttp import web
 
 from photo_service_gui.services import ConfigAdapter
+
 from .utils import check_login, get_event
 
 
@@ -53,11 +54,12 @@ class Config(web.View):
                 },
             )
         except Exception as e:
-            logging.error(f"Error: {e}. Redirect to login page.")
+            logging.exception("Error. Redirect to login page.")
             return web.HTTPSeeOther(location=f"/login?informasjon={e}")
 
     async def post(self) -> web.Response:
         """Post route function that updates video events."""
+        event_id = ""
         try:
             informasjon = ""
             form = await self.request.post()
@@ -65,18 +67,18 @@ class Config(web.View):
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
 
-            if "reset_config" in form.keys():
+            if "reset_config" in form:
                 await ConfigAdapter().init_config(user["token"], event)
                 informasjon = "Config er nullstilt."
-            elif "update_one" in form.keys():
-                key = form["key"]
+            elif "update_one" in form:
+                key = str(form["key"])
                 await ConfigAdapter().update_config(
-                    user["token"], event, key, form["value"]  # type: ignore
+                    user["token"], event, key, str(form["value"])
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
-        except Exception as e:
-            informasjon = f"Det har oppstått en feil: {e}"
-            logging.error(f"Config update - {e}")
+        except Exception:
+            informasjon = "Det har oppstått en feil."
+            logging.exception("Config update")
         return web.HTTPSeeOther(
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}"
         )
