@@ -57,7 +57,7 @@ class PhotosFileAdapter:
                 f[0] for f in sorted(files_with_ctime, key=lambda x: x[1], reverse=True)
             ]
             trigger_line_files = [
-                f for f in sorted_files if file_identifier in f  # type: ignore[no-untyped-call]
+                f for f in sorted_files if file_identifier in f.name
             ]
 
             # Return url to newest file, archive
@@ -66,7 +66,7 @@ class PhotosFileAdapter:
             trigger_line_file_name = trigger_line_files[0]
             if len(trigger_line_files) > 1:
                 for f in trigger_line_files[1:]:
-                    move_to_archive(f)  # type: ignore[no-untyped-call]
+                    move_to_archive(f.name)
 
         except Exception:
             logging.exception("Error getting photos")
