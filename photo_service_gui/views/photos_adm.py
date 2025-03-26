@@ -16,6 +16,7 @@ WEBSERVER_PHOTO_URL = "http://localhost:8080/photos_adm"
 
 
 class PhotosAdm(web.View):
+
     """Class representing the photo admin view."""
 
     async def get(self) -> web.Response:
@@ -42,19 +43,17 @@ class PhotosAdm(web.View):
                     user["g_scope"] = self.request.rel_url.query["scope"]
                     user["g_client_id"] = self.request.rel_url.query["code"]
                     result = await login_google_photos(
-                        self, WEBSERVER_PHOTO_URL, event, user
+                        self, WEBSERVER_PHOTO_URL, event, user,
                     )
                     if result == HTTPStatus.OK:
                         # reload user session information
                         user = await check_login_google(self, event_id)
                     else:
-                        raise Exception(
-                            f"Feil med google autorisasjon - {result}"
-                        )
+                        raise_auth_error(result)
                 else:
                     # initiate authorization for google photo
                     auth_url = await get_auth_url_google_photos(
-                        self, user["token"], event, WEBSERVER_PHOTO_URL
+                        self, user["token"], event, WEBSERVER_PHOTO_URL,
                     )
                     if auth_url:
                         return web.HTTPSeeOther(location=f"{auth_url}")
@@ -66,3 +65,8 @@ class PhotosAdm(web.View):
         except Exception as e:
             logging.exception("Error. Redirect to main page.")
             return web.HTTPSeeOther(location=f"/?informasjon={e}")
+
+def raise_auth_error(result) -> None:
+    """Raise error message."""
+    err_msg = f"Feil med google autorisasjon - {result}"
+    raise Exception(err_msg)

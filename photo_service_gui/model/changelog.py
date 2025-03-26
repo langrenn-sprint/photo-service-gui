@@ -4,6 +4,7 @@ from marshmallow import Schema, fields
 
 
 class Changelog(Schema):
+
     """Changelog data class."""
 
     timestamp = fields.DateTime()

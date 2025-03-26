@@ -60,23 +60,13 @@ ignore = [
     "ANN401", # Any should be allowed
     "ASYNC230",
     "BLE001",
-    "COM812",
-    "D203",
     "D211",
     "D213",
-    "EM102",
     "F401",
     "FBT003",
     "G004",
-    "ISC001",
     "LOG015",
-    "PLR0913",
-    "PTH208",
-    "SIM102",
-    "SIM117",
     "TRY002",
-    "TRY003",
-    "TRY301",
 ]
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = [

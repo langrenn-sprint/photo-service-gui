@@ -12,14 +12,14 @@ from photo_service_gui.services import (
 
 
 async def get_auth_url_google_photos(
-    self, token: str, event: dict, redirect_url: str
+    self, token: str, event: dict, redirect_url: str,
 ) -> str:
     """Check authorization for google photos and return url - blank if authorized."""
     session = await get_session(self.request)
     authorized = UserAdapter().isloggedin_google_photos(session)
     if not authorized:
         authorization_request_url = await GooglePhotosAdapter().get_auth_request_url(
-            token, event, redirect_url
+            token, event, redirect_url,
         )
     else:
         authorization_request_url = ""
@@ -60,8 +60,8 @@ async def check_login_google(self, event_id: str) -> dict:
     loggedin = UserAdapter().isloggedin_google(session)
     if not loggedin:
         informasjon = "informasjon=Logg inn med google for å se denne siden."
-        info = f"action=g_login&event_id={event_id}"
-        raise Exception(f"/login?{info}&{informasjon}")
+        info = f"/login?action=g_login&event_id={event_id}&{informasjon}"
+        raise Exception(info)
 
     return {
         "name": session["name"],
@@ -83,8 +83,8 @@ async def check_login_google_photos(self, event_id: str) -> dict:
     loggedin = UserAdapter().isloggedin_google_photos(session)
     if not loggedin:
         informasjon = "informasjon=Logg inn med google for å se denne siden."
-        info = f"action=g_login&event_id={event_id}"
-        raise Exception(f"/login?{info}&{informasjon}")
+        info = f"/login?action=g_login&event_id={event_id}&{informasjon}"
+        raise Exception(info)
 
     return {
         "name": session["name"],

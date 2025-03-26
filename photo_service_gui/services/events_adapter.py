@@ -20,6 +20,7 @@ EVENT_SERVICE_URL = f"http://{EVENTS_HOST_SERVER}:{EVENTS_HOST_PORT}"
 
 
 class EventsAdapter:
+
     """Class representing events."""
 
     async def generate_classes(self, token: str, event_id: str) -> str:
@@ -28,11 +29,11 @@ class EventsAdapter:
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{EVENT_SERVICE_URL}/events/{event_id}/generate-raceclasses"
         async with ClientSession() as session, session.post(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             res = resp.status
             logging.info(f"generate_raceclasses result - got response {resp}")
@@ -45,7 +46,7 @@ class EventsAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return "Opprettet klasser."
 
@@ -56,11 +57,11 @@ class EventsAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{EVENT_SERVICE_URL}/events", headers=headers
+            f"{EVENT_SERVICE_URL}/events", headers=headers,
         ) as resp:
             logging.info(f"get_all_events - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
@@ -81,11 +82,11 @@ class EventsAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers
+            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers,
         ) as resp:
             logging.info(f"get_event {my_id} - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
@@ -100,7 +101,7 @@ class EventsAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return event
 
@@ -118,7 +119,7 @@ class EventsAdapter:
         lt = "" # local time
         time_zone = event["timezone"]
         tn = datetime.datetime.now(
-            ZoneInfo(time_zone)
+            ZoneInfo(time_zone),
         )if time_zone else datetime.datetime.now(datetime.UTC)
 
         if time_format == "HH:MM":
@@ -156,29 +157,30 @@ class EventsAdapter:
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{remote_url}/?action=REST"
-        async with ClientSession() as session:
-            async with session.get(url, headers=headers) as resp:
-                res = resp.status
-                if res == HTTPStatus.OK:
-                    events = await resp.json()
-                    # import events to local database
-                    if events:
-                        for event in events:
-                            if event["id"] not in current_event_ids:
-                                information += await EventsAdapter().create_event(
-                                    token, event
-                                )
-                elif resp.status == HTTPStatus.UNAUTHORIZED:
-                    raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
-                else:
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
-                    )
+        async with ClientSession() as session, session.get(
+            url, headers=headers,
+        ) as resp:
+            res = resp.status
+            if res == HTTPStatus.OK:
+                events = await resp.json()
+                # import events to local database
+                if events:
+                    for event in events:
+                        if event["id"] not in current_event_ids:
+                            information += await EventsAdapter().create_event(
+                                token, event,
+                            )
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
+            else:
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}.",
+                )
         return information
 
     async def create_event(self, token: str, event: dict) -> str:
@@ -187,7 +189,7 @@ class EventsAdapter:
         result = ""
         # add default values for selected competition format
         competition_formats = await CompetitionFormatAdapter().get_competition_formats(
-            token
+            token,
         )
         for cf in competition_formats:
             if cf["name"] == event["competition_format"]:
@@ -205,12 +207,12 @@ class EventsAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         request_body = copy.deepcopy(event)
 
         async with ClientSession() as session, session.post(
-                f"{EVENT_SERVICE_URL}/events", headers=headers, json=request_body
+                f"{EVENT_SERVICE_URL}/events", headers=headers, json=request_body,
             ) as resp:
                 if resp.status == HTTPStatus.CREATED:
                     logging.info(f"result - got response {resp}")
@@ -223,7 +225,7 @@ class EventsAdapter:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
                     raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
+                        reason=f"Error - {resp.status}: {body['detail']}.",
                     )
         return result
 
@@ -234,11 +236,11 @@ class EventsAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{EVENT_SERVICE_URL}/events/{my_id}"
         async with ClientSession() as session, session.delete(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.info(f"result - got response {resp}")
@@ -246,7 +248,7 @@ class EventsAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return str(resp.status)
 
@@ -257,11 +259,11 @@ class EventsAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.put(
-            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers, json=request_body
+            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers, json=request_body,
         ) as resp:
             result = resp.status
             if resp.status == HTTPStatus.NO_CONTENT:
@@ -273,6 +275,6 @@ class EventsAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return str(result)

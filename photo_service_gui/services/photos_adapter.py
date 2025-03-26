@@ -14,10 +14,11 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 
 
 class PhotosAdapter:
+
     """Class representing photos."""
 
     async def get_all_photos(
-        self, token: str, event_id: str, limit: int | None = None
+        self, token: str, event_id: str, limit: int | None = None,
     ) -> list:
         """Get all photos function."""
         photos = []
@@ -25,14 +26,14 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{PHOTO_SERVICE_URL}/photos?eventId={event_id}"
         if limit:
             url += f"&limit={limit}"
 
         async with ClientSession() as session, session.get(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             if resp.status == HTTPStatus.OK:
                 photos = await resp.json()
@@ -52,11 +53,11 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/photos/{my_id}", headers=headers
+            f"{PHOTO_SERVICE_URL}/photos/{my_id}", headers=headers,
         ) as resp:
             logging.debug(f"get_photo {my_id} - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
@@ -70,7 +71,7 @@ class PhotosAdapter:
                 body = await resp.json()
                 logging.debug(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return photo
 
@@ -86,14 +87,14 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{PHOTO_SERVICE_URL}/photos?raceId={race_id}"
         if limit:
             url += f"&limit={limit}"
 
         async with ClientSession() as session, session.get(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             if resp.status == HTTPStatus.OK:
                 photos = await resp.json()
@@ -118,17 +119,17 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{PHOTO_SERVICE_URL}/photos?eventId={event_id}&raceclass={raceclass}"
         if limit:
             url += f"&limit={limit}"
 
         async with ClientSession() as session, session.get(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             logging.debug(
-                f"get_photos_by_raceclass - got response {resp.status}"
+                f"get_photos_by_raceclass - got response {resp.status}",
             )
             if resp.status == HTTPStatus.OK:
                 photos = await resp.json()
@@ -147,14 +148,14 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/photos?gBaseUrl={g_base_url}", headers=headers
+            f"{PHOTO_SERVICE_URL}/photos?gBaseUrl={g_base_url}", headers=headers,
         ) as resp:
             logging.debug(
-                f"get_photo_by_g_base_url {g_base_url} - got response {resp.status}"
+                f"get_photo_by_g_base_url {g_base_url} - got response {resp.status}",
             )
             if resp.status == HTTPStatus.OK:
                 photo = await resp.json()
@@ -166,7 +167,7 @@ class PhotosAdapter:
                 body = await resp.json()
                 logging.debug(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return photo
 
@@ -178,12 +179,12 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         request_body = copy.deepcopy(photo)
 
         async with ClientSession() as session, session.post(
-            f"{PHOTO_SERVICE_URL}/photos", headers=headers, json=request_body
+            f"{PHOTO_SERVICE_URL}/photos", headers=headers, json=request_body,
         ) as resp:
             if resp.status == HTTPStatus.CREATED:
                 logging.debug(f"result - got response {resp}")
@@ -196,7 +197,7 @@ class PhotosAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return result
 
@@ -207,11 +208,11 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{PHOTO_SERVICE_URL}/photos/{my_id}"
         async with ClientSession() as session, session.delete(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             logging.debug(f"Delete photo: {my_id} - res {resp.status}")
             if resp.status == HTTPStatus.NO_CONTENT:
@@ -229,11 +230,11 @@ class PhotosAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.put(
-            f"{PHOTO_SERVICE_URL}/photos/{my_id}", headers=headers, json=request_body
+            f"{PHOTO_SERVICE_URL}/photos/{my_id}", headers=headers, json=request_body,
         ) as resp:
             result = resp.status
             if resp.status == HTTPStatus.NO_CONTENT:
@@ -245,7 +246,7 @@ class PhotosAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
             logging.debug(f"Updated photo: {my_id} - res {resp.status}")
         return result

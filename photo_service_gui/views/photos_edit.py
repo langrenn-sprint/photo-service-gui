@@ -14,6 +14,7 @@ from .utils import (
 
 
 class PhotosEdit(web.View):
+
     """Class representing the photos edit view."""
 
     async def get(self) -> web.Response:
@@ -38,7 +39,7 @@ class PhotosEdit(web.View):
         try:
             event = await get_event(user, event_id)
             photos = await PhotosAdapter().get_all_photos(
-                user["token"], event_id
+                user["token"], event_id,
             )
 
             return await aiohttp_jinja2.render_template_async(
@@ -71,11 +72,11 @@ class PhotosEdit(web.View):
             user = await check_login_google_photos(self, event_id)
             if "update_race_info" in form:
                 informasjon = await FotoService().update_race_info(
-                    user["token"], event_id, dict(form)
+                    user["token"], event_id, dict(form),
                 )
             elif "delete_all_local" in form:
                 informasjon = await FotoService().delete_all_local_photos(
-                    user["token"], event_id
+                    user["token"], event_id,
                 )
         except Exception as e:
             logging.exception("Error")
@@ -84,9 +85,9 @@ class PhotosEdit(web.View):
             if error_reason.startswith("401"):
                 informasjon = "Ingen tilgang, vennligst logg inn på nytt."
                 return web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}"
+                    location=f"/login?informasjon={informasjon}",
                 )
 
         return web.HTTPSeeOther(
-            location=f"/photos_edit?event_id={event_id}&informasjon={informasjon}"
+            location=f"/photos_edit?event_id={event_id}&informasjon={informasjon}",
         )

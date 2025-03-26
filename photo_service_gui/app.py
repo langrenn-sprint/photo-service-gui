@@ -80,7 +80,7 @@ async def create_app() -> web.Application:
             web.view("/photo_sync", PhotoSync),
             web.view("/photos_adm", PhotosAdm),
             web.view("/video_events", VideoEvents),
-        ]
+        ],
     )
     static_dir = f"{PROJECT_ROOT}/static"
     files_dir = f"{PROJECT_ROOT}/files"

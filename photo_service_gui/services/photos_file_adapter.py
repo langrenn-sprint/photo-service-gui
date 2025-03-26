@@ -12,6 +12,7 @@ PHOTOS_URL_PATH = "files"
 
 
 class PhotosFileAdapter:
+
     """Class representing photos."""
 
     def get_all_photos(self) -> list:
@@ -19,11 +20,15 @@ class PhotosFileAdapter:
         photos = []
         try:
             # loop files in directory
-            for f in os.listdir(PHOTOS_FILE_PATH):
-                if f.endswith((".jpg", ".png")):
-                    # check that filename not contains _config or _crop
-                    if "_config" not in f:
-                        photos.append(f"{PHOTOS_FILE_PATH}/{f}")
+            photos.extend(
+                f"{PHOTOS_URL_PATH}/{f.name}"
+                for f in Path(PHOTOS_FILE_PATH).iterdir()
+                if (
+                    f.is_file()
+                    and f.suffix in [".jpg", ".png"]
+                    and "_config" not in f.name
+                )
+            )
         except Exception:
             logging.exception("Error getting photos")
         return photos
@@ -33,11 +38,16 @@ class PhotosFileAdapter:
         photos = []
         try:
             # loop files in directory and find all photos
-            for f in os.listdir(PHOTOS_FILE_PATH):
-                if f.endswith((".jpg", ".png")):
-                    # check that filename not contains _config or _crop
-                    if "_config" not in f and "_crop" not in f:
-                        photos.append(f"{PHOTOS_URL_PATH}/{f}")
+            photos.extend(
+                f"{PHOTOS_URL_PATH}/{f.name}"
+                for f in Path(PHOTOS_FILE_PATH).iterdir()
+                if (
+                    f.is_file()
+                    and f.suffix in [".jpg", ".png"]
+                    and "_config" not in f.name
+                    and "_crop" not in f.name
+                )
+            )
         except Exception:
             logging.exception("Error getting photos")
         return photos

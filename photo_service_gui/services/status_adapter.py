@@ -19,6 +19,7 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 
 
 class StatusAdapter:
+
     """Class representing status."""
 
     async def get_status(self, token: str, event: dict, count: int) -> list:
@@ -28,7 +29,7 @@ class StatusAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         servicename = "get_status"
 
@@ -49,7 +50,7 @@ class StatusAdapter:
         return status
 
     async def get_status_by_type(
-        self, token: str, event: dict, status_type: str, count: int
+        self, token: str, event: dict, status_type: str, count: int,
     ) -> list:
         """Get latest status messages for a given type."""
         status = []
@@ -57,7 +58,7 @@ class StatusAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         servicename = "get_status"
 
@@ -78,7 +79,7 @@ class StatusAdapter:
         return status
 
     async def create_status(
-        self, token: str, event: dict, status_type: str, message: str
+        self, token: str, event: dict, status_type: str, message: str,
     ) -> str:
         """Create new status function."""
         servicename = "create_status"
@@ -87,7 +88,7 @@ class StatusAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         logging.info(message)
         status_dict = {
@@ -99,7 +100,7 @@ class StatusAdapter:
         request_body = copy.deepcopy(status_dict)
 
         async with ClientSession() as session, session.post(
-                f"{PHOTO_SERVICE_URL}/status", headers=headers, json=request_body
+                f"{PHOTO_SERVICE_URL}/status", headers=headers, json=request_body,
             ) as resp:
                 if resp.status == HTTPStatus.CREATED:
                     logging.info(f"result - got response {resp}")
@@ -112,7 +113,7 @@ class StatusAdapter:
                     body = await resp.json()
                     logging.error(f"{servicename} failed - {resp.status} - {body}")
                     raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}."
+                        reason=f"Error - {resp.status}: {body['detail']}.",
                     )
 
         return result
@@ -124,11 +125,11 @@ class StatusAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{PHOTO_SERVICE_URL}/status?event_id={event['id']}"
         async with ClientSession() as session, session.delete(
-             url, headers=headers
+             url, headers=headers,
         ) as resp:
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.info(f"result - got response {resp}")

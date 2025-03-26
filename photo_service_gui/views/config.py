@@ -11,6 +11,7 @@ from .utils import check_login, get_event
 
 
 class Config(web.View):
+
     """Class representing the main view."""
 
     async def get(self) -> web.Response:
@@ -34,7 +35,7 @@ class Config(web.View):
 
             try:
                 event_config = await ConfigAdapter().get_all_configs(
-                    user["token"], event
+                    user["token"], event,
                 )
             except Exception:
                 event_config = []
@@ -73,12 +74,12 @@ class Config(web.View):
             elif "update_one" in form:
                 key = str(form["key"])
                 await ConfigAdapter().update_config(
-                    user["token"], event, key, str(form["value"])
+                    user["token"], event, key, str(form["value"]),
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
         except Exception:
             informasjon = "Det har oppstått en feil."
             logging.exception("Config update")
         return web.HTTPSeeOther(
-            location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}"
+            location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",
         )

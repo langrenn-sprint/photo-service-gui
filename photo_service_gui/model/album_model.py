@@ -1,49 +1,37 @@
 """Album data class module."""
 
+from dataclasses import dataclass
+
 from marshmallow import Schema, fields, post_load
 
 from .changelog import Changelog
 
 
+@dataclass
 class Album:
+
     """Basic model class."""
 
-    def __init__(
-        self,
-        g_id,
-        is_photo_finish,
-        is_start_registration,
-        sync_on,
-        event_id,
-        camera_position,
-        changelog,
-        cover_photo_url,
-        album_id,
-        last_sync_time,
-        place,
-        title,
-    ) -> None:
-        """Init class."""
-        self.g_id = g_id
-        self.is_photo_finish = is_photo_finish
-        self.is_start_registration = is_start_registration
-        self.sync_on = sync_on
-        self.event_id = event_id
-        self.camera_position = camera_position
-        self.changelog = changelog
-        self.cover_photo_url = cover_photo_url
-        self.id = album_id
-        self.last_sync_time = last_sync_time
-        self.place = place
-        self.title = title
-
+    g_id: str
+    is_photo_finish: bool
+    is_start_registration: bool
+    sync_on: bool
+    event_id: str
+    camera_position: str | None
+    changelog: list[Changelog] | None
+    cover_photo_url: str | None
+    id: str
+    last_sync_time: str | None
+    place: str | None
+    title: str | None
 
 class AlbumSchema(Schema):
+
     """Album data class."""
 
     camera_position = fields.String(allow_none=True)
     g_id = fields.String(
-        required=True, error_messages={"required": "Google album id is required."}
+        required=True, error_messages={"required": "Google album id is required."},
     )
     is_photo_finish = fields.Boolean(default=False)
     is_start_registration = fields.Boolean(default=False)

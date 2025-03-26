@@ -5,7 +5,7 @@ import logging
 import aiohttp_jinja2
 from aiohttp import web
 
-from photo_service_gui.services import EventsAdapter, FotoService, GooglePhotosAdapter
+from photo_service_gui.services import EventsAdapter, GooglePhotosAdapter
 
 from .utils import (
     check_login_google_photos,
@@ -14,6 +14,7 @@ from .utils import (
 
 
 class PhotoSync(web.View):
+
     """Class representing the photo edit view."""
 
     async def get(self) -> web.Response:
@@ -38,7 +39,7 @@ class PhotoSync(web.View):
         try:
             event = await get_event(user, event_id)
             g_albums = await GooglePhotosAdapter().get_albums(
-                user["token"], event, user["g_photos_token"]
+                user["token"], event, user["g_photos_token"],
             )
             return await aiohttp_jinja2.render_template_async(
                 "photo_sync.html",
@@ -84,12 +85,12 @@ class PhotoSync(web.View):
             error_reason = str(e)
             if error_reason.startswith("401"):
                 return web.HTTPSeeOther(
-                    location=f"/login?informasjon=Vennligst logg inn på nytt. {e}"
+                    location=f"/login?informasjon=Vennligst logg inn på nytt. {e}",
                 )
 
         info = (
             f"album_id={album_id}&album_title={album_title}&informasjon={informasjon}"
         )
         return web.HTTPSeeOther(
-            location=f"/photo_sync?event_id={event_id}&{info}&action={action}"
+            location=f"/photo_sync?event_id={event_id}&{info}&action={action}",
         )

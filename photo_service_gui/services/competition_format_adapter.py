@@ -10,7 +10,7 @@ from aiohttp import ClientSession, hdrs, web
 from multidict import MultiDict
 
 COMPETITION_FORMAT_HOST_SERVER = os.getenv(
-    "COMPETITION_FORMAT_HOST_SERVER", "localhost"
+    "COMPETITION_FORMAT_HOST_SERVER", "localhost",
 )
 COMPETITION_FORMAT_HOST_PORT = os.getenv("COMPETITION_FORMAT_HOST_PORT", "8094")
 COMPETITION_FORMAT_SERVICE_URL = (
@@ -19,6 +19,7 @@ COMPETITION_FORMAT_SERVICE_URL = (
 
 
 class CompetitionFormatAdapter:
+
     """Class representing events."""
 
     async def create_competition_format(self, token: str, request_body: dict) -> str:
@@ -28,11 +29,11 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{COMPETITION_FORMAT_SERVICE_URL}/competition-formats"
         async with ClientSession() as session, session.post(
-            url, headers=headers, json=request_body
+            url, headers=headers, json=request_body,
         ) as resp:
             res = resp.status
             logging.info(f"create_competition_format result - got response {resp}")
@@ -45,7 +46,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Opprettet competition format {resp.status}."
 
@@ -55,11 +56,11 @@ class CompetitionFormatAdapter:
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{COMPETITION_FORMAT_SERVICE_URL}/competition-formats/{my_id}"
         async with ClientSession() as session, session.delete(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             res = resp.status
             logging.info(f"delete_competition_format result - got response {resp}")
@@ -72,7 +73,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Slettet competition format {resp.status}."
 
@@ -83,17 +84,17 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{COMPETITION_FORMAT_SERVICE_URL}/competition-formats", headers=headers
+            f"{COMPETITION_FORMAT_SERVICE_URL}/competition-formats", headers=headers,
         ) as resp:
             logging.info(f"get_competition_formats - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
                 competition_formats = await resp.json()
                 logging.info(
-                    f"competition_formats - got response {competition_formats}"
+                    f"competition_formats - got response {competition_formats}",
                 )
             elif resp.status == HTTPStatus.UNAUTHORIZED:
                 err_msg = f"Login expired: {resp}"
@@ -103,7 +104,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return competition_formats
 
@@ -111,15 +112,15 @@ class CompetitionFormatAdapter:
         """Get default settings from config file."""
         file_dir = f"{Path.cwd()}/photo_service_gui/config"
         config_file_name = Path(
-            f"{file_dir}/competition_format_individual_sprint.json"
+            f"{file_dir}/competition_format_individual_sprint.json",
         )  # Default value
         if format_type == "default_sprint_all_to_finals":
             config_file_name = Path(
-                f"{file_dir}/competition_format_individual_sprint_all_to_finals.json"
+                f"{file_dir}/competition_format_individual_sprint_all_to_finals.json",
             )
         elif format_type == "default_interval_start":
             config_file_name = Path(
-                f"{file_dir}/competition_format_interval_start.json"
+                f"{file_dir}/competition_format_interval_start.json",
             )
         try:
             with config_file_name.open() as json_file:
@@ -127,7 +128,9 @@ class CompetitionFormatAdapter:
         except Exception as e:
             error_text1 = f"Comp_format {format_type} missing. {file_dir}"
             logging.exception(error_text1)
-            error_text2 = f"Current directory {Path.cwd()} - content {os.listdir()}"
+            error_text2 = f"Current directory {Path.cwd()} - content {
+                [p.name for p in Path.cwd().iterdir()]
+            }"
             logging.exception(error_text2)
             raise Exception(error_text1) from e
         return default_format
@@ -139,7 +142,7 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = (
             f"{
@@ -147,7 +150,7 @@ class CompetitionFormatAdapter:
             }/competition-formats/{request_body['id']}"
         )
         async with ClientSession() as session, session.put(
-            url, headers=headers, json=request_body
+            url, headers=headers, json=request_body,
         ) as resp:
             res = resp.status
             logging.info(f"update_competition_format result - got response {resp}")
@@ -160,7 +163,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Oppdatert competition format {resp.status}."
 
@@ -171,11 +174,11 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{COMPETITION_FORMAT_SERVICE_URL}/race-configs"
         async with ClientSession() as session, session.post(
-            url, headers=headers, json=request_body
+            url, headers=headers, json=request_body,
         ) as resp:
             res = resp.status
             logging.info(f"create_race_config result - got response {resp}")
@@ -188,7 +191,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Opprettet race-config {resp.status}."
 
@@ -198,11 +201,11 @@ class CompetitionFormatAdapter:
         headers = MultiDict(
             [
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{COMPETITION_FORMAT_SERVICE_URL}/race-configs/{my_id}"
         async with ClientSession() as session, session.delete(
-            url, headers=headers
+            url, headers=headers,
         ) as resp:
             res = resp.status
             logging.info(f"delete_race_config result - got response {resp}")
@@ -215,7 +218,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Slettet race-config {resp.status}."
 
@@ -226,11 +229,11 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
 
         async with ClientSession() as session, session.get(
-            f"{COMPETITION_FORMAT_SERVICE_URL}/race-configs", headers=headers
+            f"{COMPETITION_FORMAT_SERVICE_URL}/race-configs", headers=headers,
         ) as resp:
             logging.info(f"get_race_configs - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
@@ -244,7 +247,7 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return race_configs
 
@@ -255,11 +258,11 @@ class CompetitionFormatAdapter:
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
-            ]
+            ],
         )
         url = f"{COMPETITION_FORMAT_SERVICE_URL}/race-configs/{request_body['id']}"
         async with ClientSession() as session, session.put(
-            url, headers=headers, json=request_body
+            url, headers=headers, json=request_body,
         ) as resp:
             res = resp.status
             logging.info(f"update_race_config result - got response {resp}")
@@ -272,6 +275,6 @@ class CompetitionFormatAdapter:
                 body = await resp.json()
                 logging.error(f"{servicename} failed - {resp.status} - {body}")
                 raise web.HTTPBadRequest(
-                    reason=f"Error - {resp.status}: {body['detail']}."
+                    reason=f"Error - {resp.status}: {body['detail']}.",
                 )
         return f"Oppdatert race-config {resp.status}."

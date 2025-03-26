@@ -4,6 +4,7 @@ from aiohttp import web
 
 
 class Ping(web.View):
+
     """Class representing ping resource."""
 
     @staticmethod

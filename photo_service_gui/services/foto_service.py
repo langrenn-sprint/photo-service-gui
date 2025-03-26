@@ -12,6 +12,7 @@ from .photos_adapter import PhotosAdapter
 
 
 class FotoService:
+
     """Class representing foto service."""
 
     async def delete_all_local_albums(self, token: str, event_id: str) -> str:
@@ -45,11 +46,11 @@ class FotoService:
         return "* Fjernet *"
 
     async def add_album_for_synk(
-        self, token: str, g_token: str, event: dict, g_album_id: str
+        self, token: str, g_token: str, event: dict, g_album_id: str,
     ) -> int:
         """Create album for synk."""
         g_album = await GooglePhotosAdapter().get_album(
-            token, event, g_token, g_album_id
+            token, event, g_token, g_album_id,
         )
 
         # check if album already has been synced, if not create new
@@ -66,7 +67,7 @@ class FotoService:
             "",
             None,
             g_album["coverPhotoBaseUrl"],
-            None,
+            "",
             None,
             "",
             g_album["title"],
@@ -90,7 +91,7 @@ class FotoService:
                         photo["biblist"] = json.loads(new_biblist)
                         photo["event_id"] = event_id
                         await PhotosAdapter().update_photo(
-                            token, photo["id"], photo
+                            token, photo["id"], photo,
                         )
                         i_count += 1
                 except Exception:

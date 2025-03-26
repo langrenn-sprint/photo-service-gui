@@ -25,6 +25,7 @@ accesslog = "-"
 
 
 class CustomGunicornLogger(glogging.Logger):
+
     """Custom Gunicorn Logger class."""
 
     def setup(self, cfg: Any) -> None:
@@ -38,6 +39,7 @@ class CustomGunicornLogger(glogging.Logger):
 
 
 class PingFilter(logging.Filter):
+
     """Custom Ping Filter class."""
 
     def filter(self, record: logging.LogRecord) -> bool:
@@ -46,6 +48,7 @@ class PingFilter(logging.Filter):
 
 
 class ReadyFilter(logging.Filter):
+
     """Custom Ready Filter class."""
 
     def filter(self, record: logging.LogRecord) -> bool:

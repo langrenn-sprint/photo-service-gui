@@ -7,6 +7,7 @@ from aiohttp_session import get_session
 
 
 class Logout(web.View):
+
     """Class representing the main view."""
 
     async def get(self) -> web.Response:
