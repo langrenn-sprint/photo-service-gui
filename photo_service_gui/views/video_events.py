@@ -43,17 +43,17 @@ class VideoEvents(web.View):
                     "informasjon": informasjon,
                     "username": user["name"],
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
-                        user["token"], event, "TRIGGER_LINE_XYXYN",
+                        user["token"], event_id, "TRIGGER_LINE_XYXYN",
                     ),
                     "video_url": await ConfigAdapter().get_config(
-                        user["token"], event, "VIDEO_URL",
+                        user["token"], event_id, "VIDEO_URL",
                     ),
                     "service_status": await get_service_status(user["token"], event),
                     "sim_list": await ConfigAdapter().get_config(
-                        user["token"], event, "SIMULATION_START_LIST_FILE",
+                        user["token"], event_id, "SIMULATION_START_LIST_FILE",
                     ),
                     "sim_fastest_time": await ConfigAdapter().get_config(
-                        user["token"], event, "SIMULATION_FASTEST_TIME",
+                        user["token"], event_id, "SIMULATION_FASTEST_TIME",
                     ),
                 },
             )
@@ -123,7 +123,7 @@ class VideoEvents(web.View):
 async def get_analytics_status(token: str, event: dict) -> str:
     """Get video analytics status messages."""
     response = ""
-    result_list = await StatusAdapter().get_status(token, event, 25)
+    result_list = await StatusAdapter().get_status(token, event["id"], 25)
     for res in result_list:
         info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"
         response += f"{info_time} - {res['message']}<br>"
@@ -133,7 +133,7 @@ async def get_analytics_status(token: str, event: dict) -> str:
 async def start_integration(token: str, event: dict) -> str:
     """Start video analytics."""
     await ConfigAdapter().update_config(
-        token, event, "INTEGRATION_SERVICE_START", "True",
+        token, event["id"], "INTEGRATION_SERVICE_START", "True",
     )
     return "Integration started"
 
@@ -141,20 +141,24 @@ async def start_integration(token: str, event: dict) -> str:
 async def stop_integration(token: str, event: dict) -> str:
     """Stop video analytics."""
     await ConfigAdapter().update_config(
-        token, event, "INTEGRATION_SERVICE_START", "False",
+        token, event["id"], "INTEGRATION_SERVICE_START", "False",
     )
     return "Stop video analytics initiert."
 
 
 async def start_video_analytics(token: str, event: dict) -> str:
     """Start video analytics."""
-    await ConfigAdapter().update_config(token, event, "VIDEO_ANALYTICS_START", "True")
+    await ConfigAdapter().update_config(
+        token, event["id"], "VIDEO_ANALYTICS_START", "True",
+    )
     return "Video analytics started"
 
 
 async def stop_video_analytics(token: str, event: dict) -> str:
     """Stop video analytics."""
-    await ConfigAdapter().update_config(token, event, "VIDEO_ANALYTICS_STOP", "True")
+    await ConfigAdapter().update_config(
+        token, event["id"], "VIDEO_ANALYTICS_STOP", "True",
+    )
     return "Stop video analytics initiert."
 
 
@@ -163,22 +167,25 @@ async def update_config(token: str, event: dict, form: dict) -> str:
     informasjon = ""
     if "trigger_line_xyxyn" in form:
         await ConfigAdapter().update_config(
-            token, event, "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"]),
+            token, event["id"], "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"]),
         )
         await ConfigAdapter().update_config(
-            token, event, "VIDEO_URL", str(form["video_url"]),
+            token, event["id"], "VIDEO_URL", str(form["video_url"]),
         )
-        await ConfigAdapter().update_config(token, event, "DRAW_TRIGGER_LINE", "True")
+        await ConfigAdapter().update_config(
+            token, event["id"], "DRAW_TRIGGER_LINE", "True",
+        )
         informasjon = "Video settings updated."
     elif "sim_list" in form:
         await ConfigAdapter().update_config(
-            token, event, "SIMULATION_START_LIST_FILE", str(form["sim_list"]),
+            token, event["id"], "SIMULATION_START_LIST_FILE", str(form["sim_list"]),
+        )
+        fastest_time = str(form["sim_fastest_time"])
+        await ConfigAdapter().update_config(
+            token, event["id"], "SIMULATION_FASTEST_TIME", fastest_time,
         )
         await ConfigAdapter().update_config(
-            token, event, "SIMULATION_FASTEST_TIME", str(form["sim_fastest_time"]),
-        )
-        await ConfigAdapter().update_config(
-            token, event, "SIMULATION_CROSSINGS_START", "True",
+            token, event["id"], "SIMULATION_CROSSINGS_START", "True",
         )
         informasjon = "Simulering av passeringer er initiert."
     return informasjon
@@ -187,28 +194,28 @@ async def update_config(token: str, event: dict, form: dict) -> str:
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""
     integration_available = await ConfigAdapter().get_config(
-        token, event, "INTEGRATION_SERVICE_AVAILABLE",
+        token, event["id"], "INTEGRATION_SERVICE_AVAILABLE",
     )
     integration_running = await ConfigAdapter().get_config_bool(
-        token, event, "INTEGRATION_SERVICE_RUNNING",
+        token, event["id"], "INTEGRATION_SERVICE_RUNNING",
     )
     integration_start = await ConfigAdapter().get_config_bool(
-        token, event, "INTEGRATION_SERVICE_START",
+        token, event["id"], "INTEGRATION_SERVICE_START",
     )
     integration_mode = await ConfigAdapter().get_config(
-        token, event, "INTEGRATION_SERVICE_MODE",
+        token, event["id"], "INTEGRATION_SERVICE_MODE",
     )
     video_analytics_running = await ConfigAdapter().get_config_bool(
-        token, event, "VIDEO_ANALYTICS_RUNNING",
+        token, event["id"], "VIDEO_ANALYTICS_RUNNING",
     )
     video_analytics_start = await ConfigAdapter().get_config_bool(
-        token, event, "VIDEO_ANALYTICS_START",
+        token, event["id"], "VIDEO_ANALYTICS_START",
     )
     video_analytics_stop = await ConfigAdapter().get_config_bool(
-        token, event, "VIDEO_ANALYTICS_STOP",
+        token, event["id"], "VIDEO_ANALYTICS_STOP",
     )
     video_analytics_available = await ConfigAdapter().get_config(
-        token, event, "VIDEO_ANALYTICS_AVAILABLE",
+        token, event["id"], "VIDEO_ANALYTICS_AVAILABLE",
     )
     return {
         "integration_available": integration_available,

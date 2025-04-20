@@ -35,7 +35,7 @@ class Config(web.View):
 
             try:
                 event_config = await ConfigAdapter().get_all_configs(
-                    user["token"], event,
+                    user["token"], event_id,
                 )
             except Exception:
                 event_config = []
@@ -66,15 +66,14 @@ class Config(web.View):
             form = await self.request.post()
             user = await check_login(self)
             event_id = str(form["event_id"])
-            event = await get_event(user, event_id)
 
             if "reset_config" in form:
-                await ConfigAdapter().init_config(user["token"], event)
+                await ConfigAdapter().init_config(user["token"], event_id)
                 informasjon = "Config er nullstilt."
             elif "update_one" in form:
                 key = str(form["key"])
                 await ConfigAdapter().update_config(
-                    user["token"], event, key, str(form["value"]),
+                    user["token"], event_id, key, str(form["value"]),
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
         except Exception:

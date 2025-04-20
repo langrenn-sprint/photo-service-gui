@@ -26,7 +26,7 @@ class GooglePhotosAdapter:
         i = 0
         servicename = "upload_photo_to_album"
         google_photo_server = await ConfigAdapter().get_config(
-            token, event, "GOOGLE_PHOTO_SERVER",
+            token, event["id"], "GOOGLE_PHOTO_SERVER",
         )
 
         try:
@@ -88,7 +88,7 @@ class GooglePhotosAdapter:
         page_token = ""
         servicename = "get_album_items"
         google_photo_server = await ConfigAdapter().get_config(
-            token, event, "GOOGLE_PHOTO_SERVER",
+            token, event["id"], "GOOGLE_PHOTO_SERVER",
         )
         headers = MultiDict(
             [
@@ -129,7 +129,7 @@ class GooglePhotosAdapter:
         album = {}
         servicename = "get_album"
         google_photo_server = await ConfigAdapter().get_config(
-            token, event, "GOOGLE_PHOTO_SERVER",
+            token, event["id"], "GOOGLE_PHOTO_SERVER",
         )
         headers = MultiDict(
             [
@@ -154,7 +154,7 @@ class GooglePhotosAdapter:
         albums = []
         servicename = "get_albums"
         google_photo_server = await ConfigAdapter().get_config(
-            token, event, "GOOGLE_PHOTO_SERVER",
+            token, event["id"], "GOOGLE_PHOTO_SERVER",
         )
         headers = MultiDict(
             [
@@ -181,7 +181,7 @@ class GooglePhotosAdapter:
         # Use the client_secret.json file to identify the application requesting
         # authorization. The client ID (from that file) and access scopes are required.
         google_photo_scope = await ConfigAdapter().get_config(
-            token, event, "GOOGLE_PHOTO_SCOPE",
+            token, event["id"], "GOOGLE_PHOTO_SCOPE",
         )
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             GOOGLE_PHOTO_CREDENTIALS_FILE, scopes=google_photo_scope,
@@ -205,7 +205,7 @@ class GooglePhotosAdapter:
     async def get_g_token(self, user: dict, event: dict, redirect_url: str) -> str:
         """Get token for request to read from Photos API."""
         google_photo_scope = await ConfigAdapter().get_config(
-            user["token"], event, "GOOGLE_PHOTO_SCOPE",
+            user["token"], event["id"], "GOOGLE_PHOTO_SCOPE",
         )
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             GOOGLE_PHOTO_CREDENTIALS_FILE, scopes=google_photo_scope, state=event["id"],

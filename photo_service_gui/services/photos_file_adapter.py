@@ -55,7 +55,7 @@ class PhotosFileAdapter:
     async def get_trigger_line_file_url(self, token: str, event: dict) -> str:
         """Get url to latest trigger line photo."""
         key = "TRIGGER_LINE_CONFIG_FILE"
-        file_identifier = await ConfigAdapter().get_config(token, event, key)
+        file_identifier = await ConfigAdapter().get_config(token, event["id"], key)
         trigger_line_file_name = ""
         try:
             # Lists files in a directory sorted by creation date, newest first."""
