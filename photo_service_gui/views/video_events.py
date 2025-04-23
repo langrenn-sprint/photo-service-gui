@@ -73,12 +73,8 @@ class VideoEvents(web.View):
         try:
             form = await self.request.post()
             user = await check_login(self)
-            event = {}
-            try:
-                event_id = str(form["event_id"])
-                event = await get_event(user, event_id)
-            except Exception:
-                event_id = ""
+            event_id = str(form["event_id"])
+            event = await get_event(user, event_id)
 
             if "update_config" in form:
                 informasjon = await update_config(user["token"], event, dict(form))

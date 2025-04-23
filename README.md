@@ -58,7 +58,7 @@ LOCAL_PHOTO_DIRECTORY=/home/github/photo-service-gui/photo_service_gui/files
 
 Install: curl <https://pyenv.run> | bash
 Create: python -m venv .venv (replace .venv with your preferred name)
-Install python 3.12: pyenv install 3.12
+Install python 3.13: pyenv install 3.13
 Activate:
 source .venv/bin/activate
 
@@ -102,10 +102,12 @@ Then install the dependencies:
 
 ## Running the API locally
 
-Start the server locally:
+Start the server locally (with all required services):
 
 ```Zsh
-% uv run adev runserver -p 8080 photo_service_gui
+% uv run adev runserver -p 8096 photo_service_gui
+docker compose up integration-service race-service competition-format-service photo-service user-service event-service mongodb
+
 ```
 
 ## Running the API in a wsgi-server (gunicorn)

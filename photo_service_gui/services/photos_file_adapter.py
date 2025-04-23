@@ -73,7 +73,7 @@ class PhotosFileAdapter:
             # Return url to newest file, archive
             if len(trigger_line_files) == 0:
                 return ""
-            trigger_line_file_name = trigger_line_files[0]
+            trigger_line_file_name = trigger_line_files[0].name
             if len(trigger_line_files) > 1:
                 for f in trigger_line_files[1:]:
                     move_to_archive(f.name)
