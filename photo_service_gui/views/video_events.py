@@ -174,7 +174,10 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         informasjon = "Video settings updated."
     elif "sim_actual_url" in form:
         await ConfigAdapter().update_config(
-            token, event["id"], "SIMULATION_START_LIST_FILE", str(form["sim_actual_url"]),
+            token,
+            event["id"],
+            "SIMULATION_START_LIST_FILE",
+            str(form["sim_actual_url"]),
         )
         fastest_time = str(form["sim_fastest_time"])
         await ConfigAdapter().update_config(
