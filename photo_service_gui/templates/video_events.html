@@ -25,8 +25,8 @@
     <br> - Del 2 av tjenesten (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
     mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
     <br><b>Configuration</b> - Mulighet for å skru av og på tjenestene (video analytics og pubsub) samt å stille inn video url og linje-koordinater.
-    <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).<br>
-    <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at en startliste gis som input.<br>
+    <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).
+    <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.<br>
   </div>
   <div id=spacer></div>
   <! --- End Information --->
@@ -103,6 +103,15 @@
       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
       xhttp.send(formData);
     }
+
+    /* this function will show actual simulation_url */
+    function update_simulation_url() {
+                var sim_url = document.getElementById("sim_list").value;
+                var sim_round = document.getElementById("sim_round").value;
+                var actual_url = sim_url + "/csv?event_id={{ event_id }}&action=startlist&round=" + sim_round;
+                document.getElementById("actual_url").innerHTML = actual_url;
+                document.getElementById("sim_actual_url").value = actual_url;
+              }
 
   </script>
   <table>
@@ -187,15 +196,22 @@
           </tr>
           <tr>
             <td colspan="2">
-              <b><br>Simulation settings</b>
+              <b><br>Simulation of crossings</b>
             </td>
           </tr>
           <form action=/video_events method=post>
           <tr>
-            <td>Start list</td>
+            <td>URL</td>
             <td>
-              <input type="text" name="sim_list" value="{{ sim_list }}">
-              <small>(file path or url - <a href="https://www.harnaes.no/sprint/web/startliste.csv">eksempel</a>)</small>
+              <input type="text" name="sim_list" id="sim_list" value="http://localhost:8080" onchange=update_simulation_url()>
+              Runde: <select name="sim_round" id="sim_round" onchange=update_simulation_url()>
+                <option value="Q">Q</option>
+                <option value="S">S</option>
+                <option value="F">F</option>
+              </select>
+              <small><span id="actual_url"></span></small>
+              <input type="hidden" name=sim_actual_url id=sim_actual_url value="">
+              <script>update_simulation_url()</script>
             </td>
           </tr>
           <tr>
