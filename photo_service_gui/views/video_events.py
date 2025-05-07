@@ -75,7 +75,6 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
-
             if "update_config" in form:
                 informasjon = await update_config(user["token"], event, dict(form))
                 return web.HTTPSeeOther(
@@ -169,6 +168,12 @@ async def update_config(token: str, event: dict, form: dict) -> str:
             token, event["id"], "VIDEO_URL", str(form["video_url"]),
         )
         await ConfigAdapter().update_config(
+            token,
+            event["id"],
+            "VIDEO_ANALYTICS_IMAGE_SIZE",
+            str(form["image_size"]),
+        )
+        await ConfigAdapter().update_config(
             token, event["id"], "DRAW_TRIGGER_LINE", "True",
         )
         informasjon = "Video settings updated."
@@ -216,6 +221,14 @@ async def get_service_status(token: str, event: dict) -> dict:
     video_analytics_available = await ConfigAdapter().get_config(
         token, event["id"], "VIDEO_ANALYTICS_AVAILABLE",
     )
+    video_analytics_im_size = await ConfigAdapter().get_config(
+        token, event["id"], "VIDEO_ANALYTICS_IMAGE_SIZE",
+    )
+    video_analytics_im_size_def = await ConfigAdapter().get_config_list(
+        token, event["id"], "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES",
+    )
+
+
     return {
         "integration_available": integration_available,
         "integration_running": integration_running,
@@ -225,4 +238,6 @@ async def get_service_status(token: str, event: dict) -> dict:
         "video_analytics_start": video_analytics_start,
         "video_analytics_stop": video_analytics_stop,
         "video_analytics_available": video_analytics_available,
+        "video_analytics_im_size": video_analytics_im_size,
+        "video_analytics_im_size_def": video_analytics_im_size_def,
     }
