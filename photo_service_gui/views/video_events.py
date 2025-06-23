@@ -71,44 +71,40 @@ class VideoEvents(web.View):
             "trigger_line_url": "",
         }
         try:
+            informasjon = ""
             form = await self.request.post()
             user = await check_login(self)
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
             if "update_config" in form:
                 informasjon = await update_config(user["token"], event, dict(form))
+            elif "reset_config" in form:
+                informasjon = await reset_config(user["token"], event)
+            elif "integration_start" in form:
+                informasjon = await start_integration(user["token"], event)
+            elif "integration_stop" in form:
+                informasjon = await stop_integration(user["token"], event)
+            elif "video_start" in form:
+                informasjon = await start_video(user["token"], event)
+            elif "video_stop" in form:
+                informasjon = await stop_video(user["token"], event)
+            if informasjon:
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}",
                 )
-            if "integration_start" in form:
-                response["integration_start"] = await start_integration(
-                    user["token"], event,
-                )
-            if "integration_stop" in form:
-                response["integration_stop"] = await stop_integration(
-                    user["token"], event,
-                )
-            if "video_analytics_start" in form:
-                response["video_analytics"] = await start_video_analytics(
-                    user["token"], event,
-                )
-            elif "video_analytics_stop" in form:
-                response["video_analytics"] = await stop_video_analytics(
-                    user["token"], event,
-                )
-            if "video_status" in form:
+            if "video_status" in form or "photo_queue" in form:
                 response["video_status"] = await get_analytics_status(
                     user["token"], event,
                 )
-            if "photo_queue" in form:
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
                 response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
                     user["token"], event,
                 )
-        except Exception:
-            response["video_status"] = "Det har oppstått en feil."
+        except Exception as e:
+            err_msg = f"Error updating video events: {e}"
+            response["video_status"] = json.dumps(err_msg)
             logging.exception("Video events update")
 
         json_response = json.dumps(response)
@@ -141,20 +137,61 @@ async def stop_integration(token: str, event: dict) -> str:
     return "Stop video analytics initiert."
 
 
-async def start_video_analytics(token: str, event: dict) -> str:
+async def start_video(token: str, event: dict) -> str:
     """Start video analytics."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "VIDEO_ANALYTICS_START", "True",
-    )
-    return "Video analytics started"
+    informasjon = ""
+    video_status = await get_service_status(token, event)
+    if video_status["capture_video_available"]:
+        await ConfigAdapter().update_config(
+            token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
+        )
+        informasjon += "Video CAPTURE started. "
+        if video_status["enhance_video_available"]:
+            await ConfigAdapter().update_config(
+                token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "True",
+            )
+            informasjon += "Video ENHANCE started. "
+        else:
+            informasjon += "Info: Video ENHANCE not available. "
+        if video_status["detect_video_available"]:
+            await ConfigAdapter().update_config(
+                token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
+            )
+            informasjon += "Video DETECTION started. "
+        else:
+            informasjon += "Warning: Video DETECTION not available."
+    return informasjon
 
 
-async def stop_video_analytics(token: str, event: dict) -> str:
+async def stop_video(token: str, event: dict) -> str:
     """Stop video analytics."""
     await ConfigAdapter().update_config(
-        token, event["id"], "VIDEO_ANALYTICS_STOP", "True",
+        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
     )
-    return "Stop video analytics initiert."
+    await ConfigAdapter().update_config(
+        token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "False",
+    )
+    await ConfigAdapter().update_config(
+        token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
+    )
+    return "Video service stopped."
+
+
+async def reset_config(token: str, event: dict) -> str:
+    """Reset config for video service."""
+    config_map = {
+        "INTEGRATION_SERVICE_AVAILABLE": "False",
+        "CAPTURE_VIDEO_SERVICE_AVAILABLE": "False",
+        "ENHANCE_VIDEO_SERVICE_AVAILABLE": "False",
+        "DETECT_VIDEO_SERVICE_AVAILABLE": "False",
+        "INTEGRATION_SERVICE_MODE": "push",
+    }
+
+    for key, value in config_map.items():
+        await ConfigAdapter().update_config(
+            token, event["id"], key, value,
+        )
+    return "Video settings reset."
 
 
 async def update_config(token: str, event: dict, form: dict) -> str:
@@ -197,47 +234,42 @@ async def update_config(token: str, event: dict, form: dict) -> str:
 
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""
-    integration_available = await ConfigAdapter().get_config(
-        token, event["id"], "INTEGRATION_SERVICE_AVAILABLE",
-    )
-    integration_running = await ConfigAdapter().get_config_bool(
-        token, event["id"], "INTEGRATION_SERVICE_RUNNING",
-    )
-    integration_start = await ConfigAdapter().get_config_bool(
-        token, event["id"], "INTEGRATION_SERVICE_START",
-    )
-    integration_mode = await ConfigAdapter().get_config(
-        token, event["id"], "INTEGRATION_SERVICE_MODE",
-    )
-    video_analytics_running = await ConfigAdapter().get_config_bool(
-        token, event["id"], "VIDEO_ANALYTICS_RUNNING",
-    )
-    video_analytics_start = await ConfigAdapter().get_config_bool(
-        token, event["id"], "VIDEO_ANALYTICS_START",
-    )
-    video_analytics_stop = await ConfigAdapter().get_config_bool(
-        token, event["id"], "VIDEO_ANALYTICS_STOP",
-    )
-    video_analytics_available = await ConfigAdapter().get_config(
-        token, event["id"], "VIDEO_ANALYTICS_AVAILABLE",
-    )
-    video_analytics_im_size = await ConfigAdapter().get_config(
-        token, event["id"], "VIDEO_ANALYTICS_IMAGE_SIZE",
-    )
-    video_analytics_im_size_def = await ConfigAdapter().get_config_list(
-        token, event["id"], "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES",
-    )
-
-
-    return {
-        "integration_available": integration_available,
-        "integration_running": integration_running,
-        "integration_start": integration_start,
-        "integration_mode": integration_mode,
-        "video_analytics_running": video_analytics_running,
-        "video_analytics_start": video_analytics_start,
-        "video_analytics_stop": video_analytics_stop,
-        "video_analytics_available": video_analytics_available,
-        "video_analytics_im_size": video_analytics_im_size,
-        "video_analytics_im_size_def": video_analytics_im_size_def,
+    config_map = {
+        "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
+        "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
+        "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
+        "integration_mode": ("INTEGRATION_SERVICE_MODE", "get_config"),
+        "capture_video_available": (
+            "CAPTURE_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
+        ),
+        "capture_video_running": ("CAPTURE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
+        "capture_video_start": ("CAPTURE_VIDEO_SERVICE_START", "get_config_bool"),
+        "capture_video_stop": ("CAPTURE_VIDEO_SERVICE_STOP", "get_config_bool"),
+        "enhance_video_available": (
+            "ENHANCE_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
+        ),
+        "enhance_video_running": ("ENHANCE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
+        "enhance_video_start": ("ENHANCE_VIDEO_SERVICE_START", "get_config_bool"),
+        "enhance_video_stop": ("ENHANCE_VIDEO_SERVICE_STOP", "get_config_bool"),
+        "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
+        "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
+        "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
+        "detect_video_stop": ("DETECT_VIDEO_SERVICE_STOP", "get_config_bool"),
+        "video_analytics_im_size": ("VIDEO_ANALYTICS_IMAGE_SIZE", "get_config"),
+        "video_analytics_im_size_def": (
+            "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES", "get_config_list",
+        ),
     }
+
+    adapter = ConfigAdapter()
+    result = {}
+
+    for key, (config_key, method) in config_map.items():
+        if method == "get_config":
+            result[key] = await adapter.get_config(token, event["id"], config_key)
+        elif method == "get_config_bool":
+            result[key] = await adapter.get_config_bool(token, event["id"], config_key)
+        elif method == "get_config_list":
+            result[key] = await adapter.get_config_list(token, event["id"], config_key)
+
+    return result

@@ -1,6 +1,6 @@
 {% extends "open_base.html" %}
 {% block titlecontainer %}
-<div class="w3-80">
+<div class="w3-container">
 {% endblock %}
 
 {% block titleheader %}
@@ -20,12 +20,14 @@
   <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
   <div id=info-zone class="collapse">
     <b>Om tjenesten</b>
-    <br> - Del 1: Video events tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
-    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. 
-    <br> - Del 2 av tjenesten (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
+    <br> Mulighet for å skru av og på tjenestene (video service og integration)
+    <br> - VIDEO SERVICE: Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
+    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. Tjenesten har 3 workers: CAPTURE, ENHANCE (optional) og DETECT som jobber med videoen.
+    <br> - INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
     mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
-    <br><b>Configuration</b> - Mulighet for å skru av og på tjenestene (video analytics og pubsub) samt å stille inn video url og linje-koordinater.
     <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).
+    <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
+    <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
     <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.<br>
   </div>
   <div id=spacer></div>
@@ -40,20 +42,6 @@
 
       try {
         var formData = "video_status=true&event_id={{ event_id }}"
-        var checkBoxPub = document.getElementById("integration_automatic");
-        if (checkBoxPub.checked) {
-          formData = formData + "&integration_start=true"
-        }
-        else {
-          formData = formData + "&integration_stop=true"
-        }
-        var checkBoxAna = document.getElementById("video_analytics_automatic");
-        if (checkBoxAna.checked) {
-          formData = formData + "&video_analytics_start=true"
-        }
-        else {
-          formData = formData + "&video_analytics_stop=true"
-        }
         formData = formData + "&photo_queue=true"
         
         loadDoc("POST", "/video_events", mySync, formData);
@@ -116,35 +104,13 @@
   </script>
   <table>
     <tr id="headerblack">
-      <td><b>Configuration</b></td>
+      <td width="50%"><b>Configuration</b></td>
       <td>&nbsp;</td>
       <td><b>Service status</b></td>
     </tr>
     <tr>
       <td valign="top">
         <table> 
-          <tr>
-            <td colspan="2">
-              <input type="checkbox" id="video_analytics_automatic" name="video_analytics_checkbox" 
-                value="video_analytics_checkbox" {% if service_status.video_analytics_running %}checked{% endif %}>
-              <b>Run video detection</b> (identify line crossings)
-              {% if service_status.video_analytics_available == "False" %}
-                <span id=info>Warning! Vision ai service is not detected. Analytics can not be run.</span>
-              {% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <input type="checkbox" id="integration_automatic" name="integration_checkbox" 
-                value="integration_checkbox" {% if service_status.integration_start %}checked{% endif %}>
-              <b>Run integration</b> (sync to Google cloud)
-              {% if service_status.integration_available == "False" %}
-                <span id=info>Warning! Integration service is not detected. Analytics can not be run.</span>
-                {% else %}
-                <span id=info>Mode: {{ service_status.integration_mode }}</span>
-                {% endif %}
-            </td>
-          </tr>
           <tr>
             <td colspan="2">
               <b><br>Video settings</b>
@@ -195,16 +161,25 @@
           </tr>
           </form>
           <tr>
-            <td colspan="2">
-              <br>Photos in queue for upload to Google: <b><span id=photo_queue_count>0</span></b>
-            </td>
-          </tr>
-          <tr>
             <td></td>
             <td>
               <img id="photo_queue_latest" src="../static/no_image.png" title="Latest photo from vision AI detection" style="width:400px">
             </td>
           </tr>
+          <tr>
+            <td colspan="2">
+              <b><br>Advanced</b>
+            </td>
+          </tr>
+          <form action=/video_events method=post>
+          <tr>
+            <td></td>
+            <td>
+              <input type="submit" name="reset_config" value="  Nullstill video service  ">
+              <input type="hidden" name=event_id value="{{ event_id }}">
+            </td>
+          </tr>
+          </form>
           <tr>
             <td colspan="2">
               <b><br>Simulation of crossings</b>
@@ -241,6 +216,78 @@
       </td>
       <td>&nbsp;</td>
       <td valign="top">
+        <table>
+          <tr>
+            <td>
+              {% if not service_status.integration_available %}
+                <span class="lamp lamp-red" title="Integration unavailable!"></span>
+              {% elif service_status.integration_start %}
+                <form action=/video_events method=post>
+                  <span class="lamp lamp-green" title="Service running."></span>
+                  <input type="submit" name="integration_stop" value="  Stop  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% else %}
+                <form action=/video_events method=post>
+                <span class="lamp lamp-yellow"></span>
+                  <input type="submit" name="integration_start" value="  Start  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% endif %}
+            </td>
+            <td>
+              Integration service, photos in queue: <b><span id=photo_queue_count>0</span></b>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {% if not service_status.capture_video_available %}
+                <span class="lamp lamp-red" title="Video service unavailable!"></span>
+              {% elif service_status.capture_video_start %}
+                <form action=/video_events method=post>
+                  <span class="lamp lamp-green" title="Service running."></span>
+                  <input type="submit" name="video_stop" value="  Stop  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% else %}
+                <form action=/video_events method=post>
+                <span class="lamp lamp-yellow"></span>
+                  <input type="submit" name="video_start" value="  Start  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% endif %}
+            </td>
+            <td>
+              Capture video service
+            </td>
+          </tr>
+          <tr>
+            <td>
+              {% if not service_status.enhance_video_available %}
+                <span class="lamp lamp-red" title="Enhance video unavailable!"></span>
+              {% elif service_status.enhance_video_start %}
+                <span class="lamp lamp-green" title="Service running."></span>
+              {% else %}
+                <span class="lamp lamp-yellow"></span>
+              {% endif %}
+            </td>
+            <td>Enhance video service</td>
+          </tr>
+          <tr>
+            <td>
+              {% if not service_status.detect_video_available %}
+                <span class="lamp lamp-red" title="Detect video unavailable!"></span>
+              {% elif service_status.detect_video_start %}
+                <span class="lamp lamp-green" title="Service running."></span>
+              {% else %}
+                <span class="lamp lamp-yellow"></span>
+              {% endif %}
+            </td>
+            <td>
+              Detect video service
+            </td>
+          </tr>
+        </table>
         <span id="send_result"></span>
       </td>
     </tr>

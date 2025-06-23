@@ -52,7 +52,6 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
-LOCAL_PHOTO_DIRECTORY=/home/github/photo-service-gui/photo_service_gui/files
 
 ### If required - virtual environment
 

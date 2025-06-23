@@ -697,3 +697,38 @@ img.hover-shadow {
 .hover-shadow:hover {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
+
+.lamp {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  margin: 0 8px;
+  position: relative;
+  vertical-align: middle;
+  box-shadow: 0 0 8px #0002;
+}
+.lamp-red {
+  background: #e53935;
+  animation: blink-red 1s infinite alternate;
+}
+.lamp-green {
+  background: #43a047;
+  animation: blink-green 1s infinite alternate;
+}
+.lamp-yellow {
+  background: #ffd600;
+  animation: blink-yellow 1s infinite alternate;
+}
+@keyframes blink-red {
+  from { opacity: 1; }
+  to   { opacity: 0.5; }
+}
+@keyframes blink-green {
+  from { opacity: 1; }
+  to   { opacity: 0.5; }
+}
+@keyframes blink-yellow {
+  from { opacity: 1; }
+  to   { opacity: 0.5; }
+}
