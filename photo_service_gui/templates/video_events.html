@@ -53,9 +53,13 @@
             const video_status = jsonDoc.video_status;
             document.getElementById("send_result").innerHTML = video_status;
             const photo_queue = jsonDoc.photo_queue;
+            const capture_queue_length = jsonDoc.capture_queue_length;
+            const enhance_queue_length = jsonDoc.enhance_queue_length;
             if (photo_queue != "") {
               document.getElementById("photo_queue_count").innerHTML = photo_queue.length;
               document.getElementById("photo_queue_latest").src = photo_queue[0];
+              document.getElementById("capture_queue_count").innerHTML = capture_queue_length;
+              document.getElementById("enhance_queue_count").innerHTML = enhance_queue_length;
             }
             else {
               document.getElementById("photo_queue_count").innerHTML = "0";
@@ -222,61 +226,46 @@
               {% if not service_status.integration_available %}
                 <span class="lamp lamp-red" title="Integration unavailable!"></span>
               {% elif service_status.integration_start %}
-                <form action=/video_events method=post>
                   <span class="lamp lamp-green" title="Service running."></span>
+              {% else %}
+                <span class="lamp lamp-yellow"></span>
+              {% endif %}
+            </td>
+            <td>
+              Integration service (<b><span id=photo_queue_count>0</span></b> in queue)
+            </td>
+            <td>
+              {% if service_status.integration_start %}
+                <form action=/video_events method=post>
                   <input type="submit" name="integration_stop" value="  Stop  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">
                 </form>
               {% else %}
                 <form action=/video_events method=post>
-                <span class="lamp lamp-yellow"></span>
                   <input type="submit" name="integration_start" value="  Start  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">
                 </form>
               {% endif %}
             </td>
-            <td>
-              Integration service, photos in queue: <b><span id=photo_queue_count>0</span></b>
-            </td>
           </tr>
           <tr>
             <td>
               {% if not service_status.capture_video_available %}
-                <span class="lamp lamp-red" title="Video service unavailable!"></span>
+                <span class="lamp lamp-red" title="CAPTURE Video service unavailable!"></span>
               {% elif service_status.capture_video_start %}
-                <form action=/video_events method=post>
-                  <span class="lamp lamp-green" title="Service running."></span>
-                  <input type="submit" name="video_stop" value="  Stop  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
+                <span class="lamp lamp-green" title="Service running."></span>
               {% else %}
-                <form action=/video_events method=post>
                 <span class="lamp lamp-yellow"></span>
-                  <input type="submit" name="video_start" value="  Start  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
               {% endif %}
-            </td>
-            <td>
-              Capture video service
-            </td>
-          </tr>
-          <tr>
-            <td>
               {% if not service_status.enhance_video_available %}
-                <span class="lamp lamp-red" title="Enhance video unavailable!"></span>
+                <span class="lamp lamp-red" title="ENHANCE video unavailable!"></span>
               {% elif service_status.enhance_video_start %}
                 <span class="lamp lamp-green" title="Service running."></span>
               {% else %}
                 <span class="lamp lamp-yellow"></span>
               {% endif %}
-            </td>
-            <td>Enhance video service</td>
-          </tr>
-          <tr>
-            <td>
               {% if not service_status.detect_video_available %}
-                <span class="lamp lamp-red" title="Detect video unavailable!"></span>
+                <span class="lamp lamp-red" title="DETECT video unavailable!"></span>
               {% elif service_status.detect_video_start %}
                 <span class="lamp lamp-green" title="Service running."></span>
               {% else %}
@@ -284,7 +273,20 @@
               {% endif %}
             </td>
             <td>
-              Detect video service
+              CAPTURE / ENHANCE (<b><span id=capture_queue_count>0</span></b>) / DETECT (<b><span id=enhance_queue_count>0</span></b>) video service
+            </td>
+            <td>
+              {% if service_status.capture_video_start or service_status.enhance_video_start or service_status.detect_video_start %}
+                <form action=/video_events method=post>
+                  <input type="submit" name="video_stop" value="  Stop  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% elif service_status.capture_video_available or service_status.enhance_video_available or service_status.detect_video_available %}
+                <form action=/video_events method=post>
+                  <input type="submit" name="video_start" value="  Start  ">
+                  <input type="hidden" name=event_id value="{{ event_id }}">
+                </form>
+              {% endif %}
             </td>
           </tr>
         </table>

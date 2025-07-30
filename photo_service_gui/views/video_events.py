@@ -68,8 +68,11 @@ class VideoEvents(web.View):
             "video_analytics": "",
             "video_status": "",
             "photo_queue": [],
+            "capture_queue_length": 0,
+            "enhance_queue_length": 0,
             "trigger_line_url": "",
         }
+        event_id = ""
         try:
             informasjon = ""
             form = await self.request.post()
@@ -85,9 +88,9 @@ class VideoEvents(web.View):
             elif "integration_stop" in form:
                 informasjon = await stop_integration(user["token"], event)
             elif "video_start" in form:
-                informasjon = await start_video(user["token"], event)
+                informasjon = await start_video_analytics(user["token"], event)
             elif "video_stop" in form:
-                informasjon = await stop_video(user["token"], event)
+                informasjon = await stop_video_analytics(user["token"], event)
             if informasjon:
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}",
@@ -98,15 +101,21 @@ class VideoEvents(web.View):
                 )
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
                 response[
+                    "capture_queue_length"
+                ], response[
+                    "enhance_queue_length"
+                ] = PhotosFileAdapter().get_clip_queue_length()
+                response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
                     user["token"], event,
                 )
         except Exception as e:
             err_msg = f"Error updating video events: {e}"
-            response["video_status"] = json.dumps(err_msg)
             logging.exception("Video events update")
-
+            return web.HTTPSeeOther(
+                location=f"/video_events?event_id={event_id}&informasjon={err_msg}",
+            )
         json_response = json.dumps(response)
         return web.Response(body=json_response)
 
@@ -137,33 +146,36 @@ async def stop_integration(token: str, event: dict) -> str:
     return "Stop video analytics initiert."
 
 
-async def start_video(token: str, event: dict) -> str:
+async def start_video_analytics(token: str, event: dict) -> str:
     """Start video analytics."""
-    informasjon = ""
+    informasjon = "Video analytics started: "
     video_status = await get_service_status(token, event)
+
+    await ConfigAdapter().update_config(
+        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
+    )
+    await ConfigAdapter().update_config(
+        token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "True",
+    )
+    await ConfigAdapter().update_config(
+        token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
+    )
     if video_status["capture_video_available"]:
-        await ConfigAdapter().update_config(
-            token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
-        )
-        informasjon += "Video CAPTURE started. "
-        if video_status["enhance_video_available"]:
-            await ConfigAdapter().update_config(
-                token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "True",
-            )
-            informasjon += "Video ENHANCE started. "
-        else:
-            informasjon += "Info: Video ENHANCE not available. "
-        if video_status["detect_video_available"]:
-            await ConfigAdapter().update_config(
-                token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
-            )
-            informasjon += "Video DETECTION started. "
-        else:
-            informasjon += "Warning: Video DETECTION not available."
+        informasjon += "CAPTURE started. "
+    else:
+        informasjon += "Warning: CAPTURE not available. "
+    if video_status["enhance_video_available"]:
+        informasjon += "ENHANCE started. "
+    else:
+        informasjon += "Warning: ENHANCE not available. "
+    if video_status["detect_video_available"]:
+        informasjon += "DETECT started. "
+    else:
+        informasjon += "Warning: DETECTION not available."
     return informasjon
 
 
-async def stop_video(token: str, event: dict) -> str:
+async def stop_video_analytics(token: str, event: dict) -> str:
     """Stop video analytics."""
     await ConfigAdapter().update_config(
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
@@ -174,7 +186,7 @@ async def stop_video(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
     )
-    return "Video service stopped."
+    return "Video analytics stopped."
 
 
 async def reset_config(token: str, event: dict) -> str:
