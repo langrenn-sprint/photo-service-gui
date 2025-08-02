@@ -256,17 +256,14 @@ async def get_service_status(token: str, event: dict) -> dict:
         ),
         "capture_video_running": ("CAPTURE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "capture_video_start": ("CAPTURE_VIDEO_SERVICE_START", "get_config_bool"),
-        "capture_video_stop": ("CAPTURE_VIDEO_SERVICE_STOP", "get_config_bool"),
         "filter_video_available": (
             "FILTER_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
         ),
         "filter_video_running": ("FILTER_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "filter_video_start": ("FILTER_VIDEO_SERVICE_START", "get_config_bool"),
-        "filter_video_stop": ("FILTER_VIDEO_SERVICE_STOP", "get_config_bool"),
         "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
         "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
-        "detect_video_stop": ("DETECT_VIDEO_SERVICE_STOP", "get_config_bool"),
         "video_analytics_im_size": ("VIDEO_ANALYTICS_IMAGE_SIZE", "get_config"),
         "video_analytics_im_size_def": (
             "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES", "get_config_list",
