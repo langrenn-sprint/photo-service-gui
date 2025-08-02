@@ -68,8 +68,8 @@ class VideoEvents(web.View):
             "video_analytics": "",
             "video_status": "",
             "photo_queue": [],
-            "capture_queue_length": 0,
-            "filter_queue_length": 0,
+            "captured_queue_length": 0,
+            "filtered_queue_length": 0,
             "trigger_line_url": "",
         }
         event_id = ""
@@ -101,9 +101,9 @@ class VideoEvents(web.View):
                 )
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
                 response[
-                    "capture_queue_length"
+                    "captured_queue_length"
                 ], response[
-                    "filter_queue_length"
+                    "filtered_queue_length"
                 ] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"

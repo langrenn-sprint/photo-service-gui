@@ -53,16 +53,16 @@
             const video_status = jsonDoc.video_status;
             document.getElementById("send_result").innerHTML = video_status;
             const photo_queue = jsonDoc.photo_queue;
-            const capture_queue_length = jsonDoc.capture_queue_length;
-            const filter_queue_length = jsonDoc.filter_queue_length;
+            const captured_queue_length = jsonDoc.captured_queue_length;
+            const filtered_queue_length = jsonDoc.filtered_queue_length;
             if (photo_queue != "") {
-              document.getElementById("photo_queue_count").innerHTML = photo_queue.length;
+              document.getElementById("photo_queue_length").innerHTML = photo_queue.length;
               document.getElementById("photo_queue_latest").src = photo_queue[0];
-              document.getElementById("capture_queue_count").innerHTML = capture_queue_length;
-              document.getElementById("filter_queue_count").innerHTML = filter_queue_length;
+              document.getElementById("captured_queue_length").innerHTML = captured_queue_length;
+              document.getElementById("filtered_queue_length").innerHTML = filtered_queue_length;
             }
             else {
-              document.getElementById("photo_queue_count").innerHTML = "0";
+              document.getElementById("photo_queue_length").innerHTML = "0";
               document.getElementById("photo_queue_latest").src = "../static/no_image.png";
             }
 
@@ -232,7 +232,7 @@
               {% endif %}
             </td>
             <td>
-              Integration service (<b><span id=photo_queue_count>0</span></b> in queue)
+              Integration service (<b><span id=photo_queue_length>0</span></b> in queue)
             </td>
             <td>
               {% if service_status.integration_start %}
@@ -273,7 +273,7 @@
               {% endif %}
             </td>
             <td>
-              CAPTURE / FILTER (<b><span id=capture_queue_count>0</span></b>) / DETECT (<b><span id=filter_queue_count>0</span></b>) video service
+              CAPTURE / FILTER (<b><span id=captured_queue_length>0</span></b>) / DETECT (<b><span id=filtered_queue_length>0</span></b>) video service
             </td>
             <td>
               {% if service_status.capture_video_start or service_status.filter_video_start or service_status.detect_video_start %}
