@@ -95,14 +95,14 @@ class PhotosFileAdapter:
         return f"{PHOTOS_URL_PATH}/{trigger_line_file_name}"
 
     def get_clip_queue_length(self) -> tuple:
-        """Get length of capture and enhance queue."""
+        """Get length of capture and filter queue."""
         capture_folder = Path(self.get_video_folder_path("CAPTURE"))
-        enhance_folder = Path(self.get_video_folder_path("ENHANCE"))
+        filter_folder = Path(self.get_video_folder_path("FILTER"))
 
         capture_count = sum(1 for f in capture_folder.iterdir() if f.is_file())
-        enhance_count = sum(1 for f in enhance_folder.iterdir() if f.is_file())
+        filter_count = sum(1 for f in filter_folder.iterdir() if f.is_file())
 
-        return capture_count, enhance_count
+        return capture_count, filter_count
 
     def get_video_folder_path(self, mode: str) -> str:
         """Get path to video folder."""

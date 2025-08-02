@@ -22,7 +22,7 @@
     <b>Om tjenesten</b>
     <br> Mulighet for å skru av og på tjenestene (video service og integration)
     <br> - VIDEO SERVICE: Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
-    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. Tjenesten har 3 workers: CAPTURE, ENHANCE (optional) og DETECT som jobber med videoen.
+    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. Tjenesten har 3 workers: CAPTURE, FILTER (optional) og DETECT som jobber med videoen.
     <br> - INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
     mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
     <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).
@@ -54,12 +54,12 @@
             document.getElementById("send_result").innerHTML = video_status;
             const photo_queue = jsonDoc.photo_queue;
             const capture_queue_length = jsonDoc.capture_queue_length;
-            const enhance_queue_length = jsonDoc.enhance_queue_length;
+            const filter_queue_length = jsonDoc.filter_queue_length;
             if (photo_queue != "") {
               document.getElementById("photo_queue_count").innerHTML = photo_queue.length;
               document.getElementById("photo_queue_latest").src = photo_queue[0];
               document.getElementById("capture_queue_count").innerHTML = capture_queue_length;
-              document.getElementById("enhance_queue_count").innerHTML = enhance_queue_length;
+              document.getElementById("filter_queue_count").innerHTML = filter_queue_length;
             }
             else {
               document.getElementById("photo_queue_count").innerHTML = "0";
@@ -257,9 +257,9 @@
               {% else %}
                 <span class="lamp lamp-yellow"></span>
               {% endif %}
-              {% if not service_status.enhance_video_available %}
-                <span class="lamp lamp-red" title="ENHANCE video unavailable!"></span>
-              {% elif service_status.enhance_video_start %}
+              {% if not service_status.filter_video_available %}
+                <span class="lamp lamp-red" title="FILTER video unavailable!"></span>
+              {% elif service_status.filter_video_start %}
                 <span class="lamp lamp-green" title="Service running."></span>
               {% else %}
                 <span class="lamp lamp-yellow"></span>
@@ -273,15 +273,15 @@
               {% endif %}
             </td>
             <td>
-              CAPTURE / ENHANCE (<b><span id=capture_queue_count>0</span></b>) / DETECT (<b><span id=enhance_queue_count>0</span></b>) video service
+              CAPTURE / FILTER (<b><span id=capture_queue_count>0</span></b>) / DETECT (<b><span id=filter_queue_count>0</span></b>) video service
             </td>
             <td>
-              {% if service_status.capture_video_start or service_status.enhance_video_start or service_status.detect_video_start %}
+              {% if service_status.capture_video_start or service_status.filter_video_start or service_status.detect_video_start %}
                 <form action=/video_events method=post>
                   <input type="submit" name="video_stop" value="  Stop  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">
                 </form>
-              {% elif service_status.capture_video_available or service_status.enhance_video_available or service_status.detect_video_available %}
+              {% elif service_status.capture_video_available or service_status.filter_video_available or service_status.detect_video_available %}
                 <form action=/video_events method=post>
                   <input type="submit" name="video_start" value="  Start  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">

@@ -69,7 +69,7 @@ class VideoEvents(web.View):
             "video_status": "",
             "photo_queue": [],
             "capture_queue_length": 0,
-            "enhance_queue_length": 0,
+            "filter_queue_length": 0,
             "trigger_line_url": "",
         }
         event_id = ""
@@ -103,7 +103,7 @@ class VideoEvents(web.View):
                 response[
                     "capture_queue_length"
                 ], response[
-                    "enhance_queue_length"
+                    "filter_queue_length"
                 ] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"
@@ -155,7 +155,7 @@ async def start_video_analytics(token: str, event: dict) -> str:
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
     )
     await ConfigAdapter().update_config(
-        token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "True",
+        token, event["id"], "FILTER_VIDEO_SERVICE_START", "True",
     )
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
@@ -164,10 +164,10 @@ async def start_video_analytics(token: str, event: dict) -> str:
         informasjon += "CAPTURE started. "
     else:
         informasjon += "Warning: CAPTURE not available. "
-    if video_status["enhance_video_available"]:
-        informasjon += "ENHANCE started. "
+    if video_status["filter_video_available"]:
+        informasjon += "FILTER started. "
     else:
-        informasjon += "Warning: ENHANCE not available. "
+        informasjon += "Warning: FILTER not available. "
     if video_status["detect_video_available"]:
         informasjon += "DETECT started. "
     else:
@@ -181,7 +181,7 @@ async def stop_video_analytics(token: str, event: dict) -> str:
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
     )
     await ConfigAdapter().update_config(
-        token, event["id"], "ENHANCE_VIDEO_SERVICE_START", "False",
+        token, event["id"], "FILTER_VIDEO_SERVICE_START", "False",
     )
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
@@ -194,7 +194,7 @@ async def reset_config(token: str, event: dict) -> str:
     config_map = {
         "INTEGRATION_SERVICE_AVAILABLE": "False",
         "CAPTURE_VIDEO_SERVICE_AVAILABLE": "False",
-        "ENHANCE_VIDEO_SERVICE_AVAILABLE": "False",
+        "FILTER_VIDEO_SERVICE_AVAILABLE": "False",
         "DETECT_VIDEO_SERVICE_AVAILABLE": "False",
         "INTEGRATION_SERVICE_MODE": "push",
     }
@@ -257,12 +257,12 @@ async def get_service_status(token: str, event: dict) -> dict:
         "capture_video_running": ("CAPTURE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "capture_video_start": ("CAPTURE_VIDEO_SERVICE_START", "get_config_bool"),
         "capture_video_stop": ("CAPTURE_VIDEO_SERVICE_STOP", "get_config_bool"),
-        "enhance_video_available": (
-            "ENHANCE_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
+        "filter_video_available": (
+            "FILTER_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
         ),
-        "enhance_video_running": ("ENHANCE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
-        "enhance_video_start": ("ENHANCE_VIDEO_SERVICE_START", "get_config_bool"),
-        "enhance_video_stop": ("ENHANCE_VIDEO_SERVICE_STOP", "get_config_bool"),
+        "filter_video_running": ("FILTER_VIDEO_SERVICE_RUNNING", "get_config_bool"),
+        "filter_video_start": ("FILTER_VIDEO_SERVICE_START", "get_config_bool"),
+        "filter_video_stop": ("FILTER_VIDEO_SERVICE_STOP", "get_config_bool"),
         "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
         "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
