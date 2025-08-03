@@ -51,7 +51,7 @@ class PhotosFileAdapter:
         try:
             # loop files in directory and find all photos
             photos.extend(
-                f"{PHOTOS_URL_PATH}/CAPTURE/{f.name}"
+                f"{PHOTOS_URL_PATH}/DETECT/{f.name}"
                 for f in Path(PHOTOS_FILE_PATH).iterdir()
                 if (
                     f.is_file()

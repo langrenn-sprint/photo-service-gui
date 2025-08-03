@@ -74,23 +74,15 @@ class VideoEvents(web.View):
         }
         event_id = ""
         try:
-            informasjon = ""
             form = await self.request.post()
             user = await check_login(self)
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
-            if "update_config" in form:
-                informasjon = await update_config(user["token"], event, dict(form))
-            elif "reset_config" in form:
-                informasjon = await reset_config(user["token"], event)
-            elif "integration_start" in form:
-                informasjon = await start_integration(user["token"], event)
-            elif "integration_stop" in form:
-                informasjon = await stop_integration(user["token"], event)
-            elif "video_start" in form:
-                informasjon = await start_video_analytics(user["token"], event)
-            elif "video_stop" in form:
-                informasjon = await stop_video_analytics(user["token"], event)
+
+            informasjon = await handle_form_actions(
+                user, event, dict(form),
+            )
+
             if informasjon:
                 return web.HTTPSeeOther(
                     location=f"/video_events?event_id={event_id}&informasjon={informasjon}",
@@ -119,6 +111,27 @@ class VideoEvents(web.View):
         json_response = json.dumps(response)
         return web.Response(body=json_response)
 
+
+async def handle_form_actions(user: dict, event: dict, form: dict) -> str:
+    """Handle form actions for video events."""
+    informasjon = ""
+
+    if "update_config" in form:
+        informasjon = await update_config(user["token"], event, form)
+    elif "reset_config" in form:
+        informasjon = await reset_config(user["token"], event)
+    elif "integration_start" in form:
+        informasjon = await start_integration(user["token"], event)
+    elif "integration_stop" in form:
+        informasjon = await stop_integration(user["token"], event)
+    elif "video_start" in form:
+        informasjon = await start_video_analytics(user["token"], event)
+    elif "video_stop" in form:
+        informasjon = await stop_video_analytics(user["token"], event)
+    elif "capture_stop" in form:
+        informasjon = await stop_video_capture(user["token"], event)
+
+    return informasjon
 
 async def get_analytics_status(token: str, event: dict) -> str:
     """Get video analytics status messages."""
@@ -174,6 +187,13 @@ async def start_video_analytics(token: str, event: dict) -> str:
         informasjon += "Warning: DETECTION not available."
     return informasjon
 
+async def stop_video_capture(token: str, event: dict) -> str:
+    """Stop video analytics."""
+    await ConfigAdapter().update_config(
+        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
+    )
+    return "Video capture stopped."
+
 
 async def stop_video_analytics(token: str, event: dict) -> str:
     """Stop video analytics."""
@@ -225,7 +245,22 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         await ConfigAdapter().update_config(
             token, event["id"], "DRAW_TRIGGER_LINE", "True",
         )
+        await ConfigAdapter().update_config(
+            token, event["id"], "VIDEO_CLIP_DURATION", str(form["video_clip_duration"]),
+        )
+        await ConfigAdapter().update_config(
+            token, event["id"], "VIDEO_CLIP_FPS", str(form["video_clip_fps"]),
+        )
+        await ConfigAdapter().update_config(
+            token, event["id"], "MAX_CLIPS_PER_FILTERED_VIDEO", str(
+                form["max_clips_per_filtered_video"],
+            ),
+        )
+        await ConfigAdapter().update_config(
+            token, event["id"], "CONFIDENCE_LIMIT", str(form["confidence_limit"]),
+        )
         informasjon = "Video settings updated."
+
     elif "sim_actual_url" in form:
         await ConfigAdapter().update_config(
             token,
@@ -268,6 +303,12 @@ async def get_service_status(token: str, event: dict) -> dict:
         "video_analytics_im_size_def": (
             "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES", "get_config_list",
         ),
+        "video_clip_duration": ("VIDEO_CLIP_DURATION", "get_config"),
+        "video_clip_fps": ("VIDEO_CLIP_FPS", "get_config"),
+        "max_clips_per_filtered_video": (
+            "MAX_CLIPS_PER_FILTERED_VIDEO", "get_config",
+        ),
+        "confidence_limit": ("CONFIDENCE_LIMIT", "get_config"),
     }
 
     adapter = ConfigAdapter()
