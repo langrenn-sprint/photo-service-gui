@@ -4,6 +4,7 @@
     "TRIGGER_LINE_XYXYN": "0:0.75:1:0.75",
     "DETECTION_ZONE": "[(0.1, 0.1), (0.9, 0.9)]",
     "TRIGGER_LINE_CONFIG_FILE": "Trigger_line_config.jpg",
+    "NEW_TRIGGER_LINE_PHOTO": "True",
     "INTEGRATION_SERVICE_AVAILABLE": "False",
     "INTEGRATION_SERVICE_START": "False",
     "INTEGRATION_SERVICE_RUNNING": "False",

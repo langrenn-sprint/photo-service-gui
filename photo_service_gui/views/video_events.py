@@ -234,6 +234,9 @@ async def update_config(token: str, event: dict, form: dict) -> str:
             token, event["id"], "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"]),
         )
         await ConfigAdapter().update_config(
+            token, event["id"], "NEW_TRIGGER_LINE_PHOTO", "True",
+        )
+        await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_URL", str(form["video_url"]),
         )
         await ConfigAdapter().update_config(
