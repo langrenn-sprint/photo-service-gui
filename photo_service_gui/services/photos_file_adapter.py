@@ -7,7 +7,7 @@ from .config_adapter import ConfigAdapter
 
 VISION_ROOT_PATH = f"{Path.cwd()}/photo_service_gui/files"
 PHOTOS_FILE_PATH = f"{Path.cwd()}/photo_service_gui/files/DETECT"
-PHOTOS_ARCHIVE_PATH = f"{PHOTOS_FILE_PATH}/archive"
+VISION_ARCHIVE_PATH = f"{VISION_ROOT_PATH}/archive"
 PHOTOS_URL_PATH = "files"
 
 
@@ -24,10 +24,6 @@ class PhotosFileAdapter:
                 logging.exception(f"Error creating folder: {PHOTOS_FILE_PATH}")
         # Return the path to the photos folder
         return PHOTOS_FILE_PATH
-
-    def get_photos_archive_folder_path(self) -> str:
-        """Get path to photo archive folder."""
-        return PHOTOS_ARCHIVE_PATH
 
     def get_all_photos(self) -> list:
         """Get all path/filename to all photos on file directory."""
@@ -113,15 +109,15 @@ class PhotosFileAdapter:
 
 
 def move_to_archive(filename: str) -> None:
-    """Move photo to archive."""
-    source_file = Path(PHOTOS_FILE_PATH) / filename
-    destination_file = Path(PHOTOS_ARCHIVE_PATH) / source_file.name
+    """Move trigger line photo to archive."""
+    source_file = Path(VISION_ROOT_PATH) / filename
+    destination_file = Path(VISION_ARCHIVE_PATH) / source_file.name
 
     try:
         source_file.rename(destination_file)
     except FileNotFoundError:
         logging.info("Destination folder not found. Creating...")
-        Path(PHOTOS_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+        Path(VISION_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
         source_file.rename(destination_file)
     except Exception:
         logging.exception("Error moving photo to archive.")
