@@ -108,8 +108,12 @@ class ConfigAdapter:
     async def get_config_list(self, token: str, event_id: str, key: str) -> list:
         """Get config list value."""
         string_value = await self.get_config(token, event_id, key)
-        # convert from json string to list
-        return json.loads(string_value)
+        try:
+            # convert from json string to list
+            return json.loads(string_value)
+        except json.JSONDecodeError:
+            logging.exception(f"JSON for key '{key}', value '{string_value}'")
+            return []
 
     async def get_config_img_res_tuple(
         self, token: str, event_id: str, key: str,

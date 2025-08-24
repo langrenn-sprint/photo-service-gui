@@ -302,7 +302,9 @@ async def get_service_status(token: str, event: dict) -> dict:
         "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
         "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
-        "video_analytics_im_size": ("VIDEO_ANALYTICS_IMAGE_SIZE", "get_config"),
+        "video_analytics_im_size": (
+            "VIDEO_ANALYTICS_IMAGE_SIZE", "get_config_img_res_tuple",
+        ),
         "video_analytics_im_size_def": (
             "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES", "get_config_list",
         ),
@@ -324,5 +326,9 @@ async def get_service_status(token: str, event: dict) -> dict:
             result[key] = await adapter.get_config_bool(token, event["id"], config_key)
         elif method == "get_config_list":
             result[key] = await adapter.get_config_list(token, event["id"], config_key)
+        elif method == "get_config_img_res_tuple":
+            result[key] = await adapter.get_config_img_res_tuple(
+                token, event["id"], config_key,
+            )
 
     return result

@@ -1,4 +1,5 @@
 {
+    "CONFIDENCE_LIMIT": "0.7",
     "GOOGLE_PHOTO_SERVER": "https://photoslibrary.googleapis.com/v1",
     "GOOGLE_PHOTO_SCOPE": "https://www.googleapis.com/auth/photoslibrary",
     "TRIGGER_LINE_XYXYN": "0:0.75:1:0.75",
@@ -19,6 +20,9 @@
     "DETECT_VIDEO_SERVICE_RUNNING": "False",
     "VIDEO_ANALYTICS_IMAGE_SIZE": "640x480",
     "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES": ["640x480", "1280x736", "1600x896", "1920x1088"],
+    "VIDEO_CLIP_DURATION": 5,
+    "VIDEO_CLIP_FPS": 20,
+    "MAX_CLIPS_PER_FILTERED_VIDEO": 5,
     "DRAW_TRIGGER_LINE": "False",
     "VIDEO_URL": "https://harnaes.no/maalfoto/2023SkiMaal.mp4",
     "SIMULATION_CROSSINGS_START": "False",
