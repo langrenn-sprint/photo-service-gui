@@ -169,7 +169,7 @@
           <tr>
             <td>Image resolution</td>
             <td>
-              <select name="image_size" id="image_size">
+              <select name="image_size">
                 <option value={{ service_status.video_analytics_im_size }}>{{ service_status.video_analytics_im_size }}</option>
                 {% for one_res in service_status.video_analytics_im_size_def %}
                   <option value={{ one_res }}>{{ one_res }}</option>
