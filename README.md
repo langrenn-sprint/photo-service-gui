@@ -67,23 +67,6 @@ source .venv/bin/activate
 % poetry update / poetry add <module>
 ```
 
-
-### Rydde opp i docker stuff
-docker system prune
-
-### Starte services i docker
-sudo docker-compose pull #oppdatere images
-sudo docker-compose up --build #bygge og debug modus
-sudo docker-compose up -d #kjøre-modus
-
-### Oppdatere services i docker
-sudo docker-compose stop #oppdatere images
-sudo docker-compose pull #oppdatere images
-sudo git pull #photo-service-gui
-sudo docker-compose up --build #bygge og debug modus
-sudo docker-compose stop #oppdatere images
-sudo docker-compose up -d #kjøre-modus
-
 ### Kjøre webserver lokalt
 ## Requirement for development
 
@@ -99,9 +82,7 @@ Then install the dependencies:
 % uv sync
 ```
 
-## Running the API locally
-
-Start the server locally (with all required services):
+## Start the server locally (with all required services):
 
 ```Zsh
 % uv run adev runserver -p 8096 photo_service_gui
@@ -109,15 +90,9 @@ docker compose up integration-service race-service competition-format-service ph
 
 ```
 
-## Running the API in a wsgi-server (gunicorn)
-
-```Zsh
-% uv run gunicorn photo_service_gui:create_app --bind localhost:8080 --worker-class aiohttp.GunicornWebWorker
-```
-
 ## Running the wsgi-server in Docker
 
-To build and run the api in a Docker container:
+To build and run the service in a Docker container:
 
 ```Zsh
 % docker build -t langrenn-sprint/photo-service-gui:latest .
@@ -145,6 +120,23 @@ To run tests with logging, do:
 ```Zsh
 % uv run pytest -m integration -- --log-cli-level=DEBUG
 ```
+
+### Rydde opp i docker stuff
+docker system prune
+
+### Starte services i docker
+sudo docker-compose pull #oppdatere images
+sudo docker-compose up --build #bygge og debug modus
+sudo docker-compose up -d #kjøre-modus
+
+### Oppdatere services i docker
+sudo docker-compose stop #oppdatere images
+sudo docker-compose pull #oppdatere images
+sudo git pull #photo-service-gui
+sudo docker-compose up --build #bygge og debug modus
+sudo docker-compose stop #oppdatere images
+sudo docker-compose up -d #kjøre-modus
+
 
 ## testfiler for video
 

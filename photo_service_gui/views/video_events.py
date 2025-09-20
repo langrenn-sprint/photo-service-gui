@@ -279,29 +279,56 @@ async def update_config(token: str, event: dict, form: dict) -> str:
             token, event["id"], "SIMULATION_CROSSINGS_START", "True",
         )
         informasjon = "Simulering av passeringer er initiert."
+    if "storage_mode" in form:
+        new_storage_mode = str(form["storage_mode"])
+        if new_storage_mode != 0:
+            informasjon += await update_storage_mode(token, event, new_storage_mode)
+
     return informasjon
 
+async def update_storage_mode(token: str, event: dict, new_storage_mode: str) -> str:
+    """Update storage mode."""
+    if new_storage_mode == "local_storage":
+        await ConfigAdapter().update_config(
+            token, event["id"], "INTEGRATION_SERVICE_MODE", "push_detections",
+        )
+        await ConfigAdapter().update_config(
+            token, event["id"], "VIDEO_STORAGE_MODE", "local_storage",
+        )
+    elif new_storage_mode == "cloud_storage":
+        await ConfigAdapter().update_config(
+            token, event["id"], "INTEGRATION_SERVICE_MODE", "push_captured_video",
+        )
+        await ConfigAdapter().update_config(
+            token, event["id"], "VIDEO_STORAGE_MODE", "cloud_storage",
+        )
+    return f"Oppdatert storage mode til {new_storage_mode}."
 
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""
     config_map = {
-        "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
-        "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
-        "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
-        "integration_mode": ("INTEGRATION_SERVICE_MODE", "get_config"),
         "capture_video_available": (
             "CAPTURE_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
         ),
         "capture_video_running": ("CAPTURE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "capture_video_start": ("CAPTURE_VIDEO_SERVICE_START", "get_config_bool"),
+        "confidence_limit": ("CONFIDENCE_LIMIT", "get_config"),
+        "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
+        "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
+        "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
         "filter_video_available": (
             "FILTER_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
         ),
         "filter_video_running": ("FILTER_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "filter_video_start": ("FILTER_VIDEO_SERVICE_START", "get_config_bool"),
-        "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
-        "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
-        "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
+        "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
+        "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
+        "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
+        "integration_mode": ("INTEGRATION_SERVICE_MODE", "get_config"),
+        "max_clips_per_filtered_video": (
+            "MAX_CLIPS_PER_FILTERED_VIDEO", "get_config",
+        ),
+        "storage_mode_name": ("VIDEO_STORAGE_MODE", "get_config"),
         "video_analytics_im_size": (
             "VIDEO_ANALYTICS_IMAGE_SIZE", "get_config",
         ),
@@ -310,10 +337,6 @@ async def get_service_status(token: str, event: dict) -> dict:
         ),
         "video_clip_duration": ("VIDEO_CLIP_DURATION", "get_config"),
         "video_clip_fps": ("VIDEO_CLIP_FPS", "get_config"),
-        "max_clips_per_filtered_video": (
-            "MAX_CLIPS_PER_FILTERED_VIDEO", "get_config",
-        ),
-        "confidence_limit": ("CONFIDENCE_LIMIT", "get_config"),
     }
 
     adapter = ConfigAdapter()

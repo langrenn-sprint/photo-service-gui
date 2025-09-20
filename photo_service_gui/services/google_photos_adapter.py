@@ -195,7 +195,7 @@ class GooglePhotosAdapter:
         flow.redirect_uri = redirect_url
 
         # Generate URL for request to Google's OAuth 2.0 server.
-        authorization_url, state = flow.authorization_url(
+        authorization_url, _ = flow.authorization_url(
             access_type="offline",
             login_hint="info.renn.langrenn.kjelsaas@gmail.com",
             state=event["id"],

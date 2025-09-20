@@ -17,19 +17,33 @@
 
   <! --- Information --->
   <div id=spacer></div>
-  <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
-  <div id=info-zone class="collapse">
-    <b>Om tjenesten</b>
-    <br> Mulighet for å skru av og på tjenestene (video service og integration)
-    <br> - VIDEO SERVICE: Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
-    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen. Tjenesten har 3 workers: CAPTURE, FILTER (optional) og DETECT som jobber med videoen.
-    <br> - INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
-    mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
-    <br><b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes videre til meldingskøen i Google (pubsub).
-    <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
-    <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
-    <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.<br>
-  </div>
+  <details>
+    <summary><span id=info-header>Info</span></summary>
+    <table>
+      <tr id="info-zone">
+        <td colspan="2">
+          Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
+    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
+        </td>
+      </tr>
+      <tr id="info-zone">
+        <td valign="top">
+          <b>Camera shots</b> - her vises mål-linje og siste deteksjon.
+          <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
+          <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
+          <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
+        </td>
+        <td>
+          Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
+            <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, no filtering, detection stored directly on cloud storage.
+          <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
+          mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
+          <br>VIDEO SERVICE: Tjenesten har 3 workers: CAPTURE, FILTER (optional) og DETECT som jobber med videoen.
+          <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
+        </td>
+      </tr>
+    </table>
+  </details>
   <div id=spacer></div>
   <! --- End Information --->
 
@@ -178,6 +192,16 @@
             </td>
           </tr>
           <tr>
+            <td>Video storage mode</td>
+            <td>
+              <select name="storage_mode">
+                <option value="0">{{ service_status.storage_mode_name }}</option>
+                <option value="local_storage">Local storage</option>
+                <option value="cloud_storage">Cloud storage</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
             <td></td>
             <td>
               <input type="submit" name="update_config" value="  Lagre  ">
@@ -236,7 +260,15 @@
       <td>&nbsp;</td>
       <td valign="top">
         <br>
-        <table>
+        <table> 
+          <tr>
+            <td>
+              Storage mode
+            </td>
+            <td></td>
+            <td>{{ service_status.storage_mode_name }}</td>
+            <td></td>
+          </tr>
           <tr>
             <td>
               Integration service
