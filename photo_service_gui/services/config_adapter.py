@@ -1,5 +1,6 @@
 """Module for config adapter."""
 
+import ast
 import copy
 import json
 import logging
@@ -58,7 +59,7 @@ class ConfigAdapter:
                 informasjon = f"{servicename} failed - {resp.status} - {body['detail']}"
                 logging.error(informasjon)
                 raise web.HTTPBadRequest(reason=informasjon)
-        return config["value"]
+        return config["value"].strip()
 
     async def get_all_configs(self, token: str, event_id: str) -> list:
         """Get config by google id function."""
@@ -112,6 +113,11 @@ class ConfigAdapter:
             # convert from json string to list
             return json.loads(string_value)
         except json.JSONDecodeError:
+            pass
+        # then try Python literal (handles "['a','b']")
+        try:
+            return ast.literal_eval(string_value)
+        except (ValueError, SyntaxError):
             logging.exception(f"JSON for key '{key}', value '{string_value}'")
             return []
 

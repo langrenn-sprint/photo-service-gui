@@ -1,0 +1,242 @@
+2025-09-28 22:42:49,878 - ERROR - Error
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 134, in split_netloc
+    port = int(port_str)
+           ^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'None'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 550, in _request
+    url = self._build_url(str_or_url)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 479, in _build_url
+    url = URL(str_or_url)
+          ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 358, in __new__
+    return pre_encoded_url(val) if encoded else encode_url(val)
+                                                ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 155, in encode_url
+    username, password, host, port = split_netloc(netloc)
+                                     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 136, in split_netloc
+    raise ValueError("Invalid URL: port can't be converted to integer")
+ValueError: Invalid URL: port can't be converted to integer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/login.py", line 73, in post
+    result = await UserAdapter().login(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/user_adapter.py", line 118, in login
+    async with ClientSession() as session, session.post(
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 552, in _request
+    raise InvalidUrlClientError(str_or_url) from e
+aiohttp.client_exceptions.InvalidUrlClientError: http://None:None/login
+2025-09-28 22:42:52,907 - ERROR - Error. Redirect to main page.
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 33, in get
+    user = await check_login(self)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/utils.py", line 41, in check_login
+    raise Exception(informasjon)
+Exception: Logg inn for å se denne siden
+2025-09-28 22:42:58,256 - ERROR - Error
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 134, in split_netloc
+    port = int(port_str)
+           ^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'None'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 550, in _request
+    url = self._build_url(str_or_url)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 479, in _build_url
+    url = URL(str_or_url)
+          ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 358, in __new__
+    return pre_encoded_url(val) if encoded else encode_url(val)
+                                                ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 155, in encode_url
+    username, password, host, port = split_netloc(netloc)
+                                     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 136, in split_netloc
+    raise ValueError("Invalid URL: port can't be converted to integer")
+ValueError: Invalid URL: port can't be converted to integer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/login.py", line 73, in post
+    result = await UserAdapter().login(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/user_adapter.py", line 118, in login
+    async with ClientSession() as session, session.post(
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 552, in _request
+    raise InvalidUrlClientError(str_or_url) from e
+aiohttp.client_exceptions.InvalidUrlClientError: http://None:None/login
+2025-09-28 22:43:43,539 - ERROR - Error
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 134, in split_netloc
+    port = int(port_str)
+           ^^^^^^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'None'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 550, in _request
+    url = self._build_url(str_or_url)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 479, in _build_url
+    url = URL(str_or_url)
+          ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 358, in __new__
+    return pre_encoded_url(val) if encoded else encode_url(val)
+                                                ^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_url.py", line 155, in encode_url
+    username, password, host, port = split_netloc(netloc)
+                                     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/yarl/_parse.py", line 136, in split_netloc
+    raise ValueError("Invalid URL: port can't be converted to integer")
+ValueError: Invalid URL: port can't be converted to integer
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/login.py", line 73, in post
+    result = await UserAdapter().login(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/user_adapter.py", line 118, in login
+    async with ClientSession() as session, session.post(
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 1488, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.12/site-packages/aiohttp/client.py", line 552, in _request
+    raise InvalidUrlClientError(str_or_url) from e
+aiohttp.client_exceptions.InvalidUrlClientError: http://None:None/login
+2025-09-28 22:44:42,237 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640', '736x1280', '896x1600', '1088x1920']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 113, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-09-28 22:49:19,656 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640', '736x1280', '896x1600', '1088x1920']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-09-28 22:49:22,769 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640', '736x1280', '896x1600', '1088x1920']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-09-28 22:50:15,852 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640', '736x1280', '896x1600', '1088x1920']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-09-28 22:54:11,371 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '[480x640, 736x1280, 896x1600, 1088x1920]'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 5 (char 4)
+2025-09-28 22:54:45,130 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '[480x640, 736x1280, 896x1600, 1088x1920]'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Expecting ',' delimiter: line 1 column 5 (char 4)
+2025-09-28 22:56:13,588 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640'; '736x1280']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-09-28 22:57:56,172 - ERROR - JSON for key 'VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES', value '['480x640'; '736x1280']'
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 114, in get_config_list
+    return json.loads(string_value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
