@@ -23,23 +23,18 @@ dependencies = [
     "pytest>=8.3.5",
     "pytest-aiohttp>=1.1.0",
     "pytest-cov>=7.0.0",
+    "pytest-docker>=3.2.3",
+    "pytest-asyncio>=1.2.0",
     "requests>=2.32.3",
     "ruff>=0.13.2",
     "deptry>=0.23.1",
     "pip-audit>=2.9.0",
     "marshmallow>=4.0.1",
-    "pytest-docker>=3.2.3",
-    "pytest-asyncio>=1.2.0",
 ]
 
 dependency-groups.dev = [
-    "pytest-cov>=5.0.0",
-    "pytest-docker>=3.1.1",
     "pytest-env>=1.1.5",
     "pytest-mock>=3.14.0",
-    "pytest>=8.3.3",
-    "requests>=2.32.3",
-    "ruff>=0.7.1",
 ]
 
 [tool.poe.tasks]
