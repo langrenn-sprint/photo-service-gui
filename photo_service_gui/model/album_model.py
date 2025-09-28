@@ -33,9 +33,9 @@ class AlbumSchema(Schema):
     g_id = fields.String(
         required=True, error_messages={"required": "Google album id is required."},
     )
-    is_photo_finish = fields.Boolean(default=False)
-    is_start_registration = fields.Boolean(default=False)
-    sync_on = fields.Boolean(default=True)
+    is_photo_finish = fields.Boolean(load_default=False)
+    is_start_registration = fields.Boolean(load_default=False)
+    sync_on = fields.Boolean(load_default=True)
     event_id = fields.String()
     changelog = fields.Nested(Changelog(many=True), allow_none=True)
     cover_photo_url = fields.String(allow_none=True)

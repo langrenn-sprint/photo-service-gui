@@ -3,30 +3,33 @@ description = "An API for admin of sporting users"
 license = "Apache-2.0"
 name = "photo-service-gui"
 readme = "README.md"
-version = "0.1.0"
+version = "1.0.0"
 requires-python = ">=3.12"
 dependencies = [
-    "aiodns>=3.2.0",
-    "aiohttp-middlewares>=2.4.0",
-    "aiohttp>=3.10.10",
-    "certifi>=2024.8.30",
-    "dataclasses-json>=0.6.7",
+    "aiodns>=3.5.0",
+    "aiohttp>=3.12.15",
+    "aiohttp-session>=2.12.1",
+    "aiohttp-jinja2>=1.6",
+    "certifi>=2024.12.24",
+    "cryptography>=44.0.2",
     "gunicorn>=23.0.0",
-    "motor>=3.6.0",
     "multidict>=6.1.0",
     "pyjwt>=2.9.0",
     "python-dotenv>=1.0.1",
-    "aiohttp-session>=2.12.1",
-    "aiohttp-jinja2>=1.6",
     "google-auth-oauthlib>=1.2.1",
-    "cryptography>=44.0.2",
+    "poethepoet>=0.37.0",
+    "pyright>=1.1.405",
+    "pytest>=8.3.5",
+    "requests>=2.32.3",
+    "ruff>=0.13.2",
+    "deptry>=0.23.1",
+    "pip-audit>=2.9.0",
+    "pytest-cov>=7.0.0",
+    "marshmallow>=4.0.1",
 ]
 
-[tool.uv]
-dev-dependencies = [
+dependency-groups.dev = [
     "aiohttp-devtools>=1.1.2",
-    "poethepoet>=0.29.0",
-    "pyright>=1.1.386",
     "pytest-aiohttp>=1.0.5",
     "pytest-asyncio>=0.24.0",
     "pytest-cov>=5.0.0",
