@@ -27,6 +27,7 @@ dependencies = [
     "deptry>=0.23.1",
     "pip-audit>=2.9.0",
     "marshmallow>=4.0.1",
+    "pytest-docker>=3.2.3",
 ]
 
 dependency-groups.dev = [
