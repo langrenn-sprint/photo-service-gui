@@ -11,6 +11,7 @@ dependencies = [
     "aiohttp-devtools>=1.1.2",
     "aiohttp-session>=2.12.1",
     "aiohttp-jinja2>=1.6",
+    "Jinja2>=3.1.2",
     "certifi>=2024.12.24",
     "cryptography>=44.0.2",
     "google-auth-oauthlib>=1.2.1",
@@ -35,19 +36,40 @@ dependencies = [
 dependency-groups.dev = [
     "pytest-env>=1.1.5",
     "pytest-mock>=3.14.0",
+    # test frameworks and plugins
+    "pytest>=8.3.5",
+    "pytest-aiohttp>=1.1.0",
+    "pytest-cov>=7.0.0",
+    "pytest-docker>=3.2.3",
+    "pytest-asyncio>=1.2.0",
+    "pytest-env>=1.1.5",
+    "pytest-mock>=3.14.0",
+
+    # developer tooling
+    "poethepoet>=0.37.0",
+    "pyright>=1.1.405",
+    "ruff>=0.13.2",
+    "deptry>=0.23.1",
+    "pip-audit>=2.9.0",
+    "aiohttp-devtools>=1.1.2",
+    "aiodns>=3.5.0",
+    "certifi>=2024.12.24",
+    "cryptography>=44.0.2",
 ]
 
 [tool.poe.tasks]
 fmt = "uv run ruff format"
 lint = "uv run ruff check --fix"
 pyright = "uv run pyright"
+check_deps = { cmd = "uv run deptry ." }
+audit = { cmd = "uv run pip-audit" }
 integration-tests = "uv run pytest --cov=photo_service_gui --cov-report=term-missing -m integration"
-contract-tests = "uv run pytest -m contract"
 release = [
     "lint",
     "pyright",
+    "check_deps",
+    "audit",
     "integration-tests",
-    "contract-tests",
 ]
 
 
@@ -102,6 +124,9 @@ markers = [
     "integration: marks tests as integration",
     "contract: marks tests as contract",
 ]
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["aiodns", "certifi", "pyjwt", "cryptography", "requests", "poethepoet", "aiohttp-devtools", "pyright", "pytest", "ruff", "deptry", "pip-audit", "pytest-cov", "pytest-aiohttp", "pytest-docker", "pytest-asyncio"]
 
 [tool.coverage.paths]
 source = ["photo_service_gui", "*/site-packages"]
