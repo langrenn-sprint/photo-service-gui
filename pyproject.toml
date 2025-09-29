@@ -64,12 +64,14 @@ pyright = "uv run pyright"
 check_deps = { cmd = "uv run deptry ." }
 audit = { cmd = "uv run pip-audit" }
 integration-tests = "uv run pytest --cov=photo_service_gui --cov-report=term-missing -m integration"
+contract_test = { cmd = "uv run pytest -m contract -s" }
 release = [
     "lint",
     "pyright",
     "check_deps",
     "audit",
     "integration-tests",
+    "contract_test",
 ]
 
 
@@ -124,6 +126,10 @@ markers = [
     "integration: marks tests as integration",
     "contract: marks tests as contract",
 ]
+
+[tool.deptry]
+ignore_notebooks = true
+known_first_party = ["event_service_gui"]
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["aiodns", "certifi", "pyjwt", "cryptography", "requests", "poethepoet", "aiohttp-devtools", "pyright", "pytest", "ruff", "deptry", "pip-audit", "pytest-cov", "pytest-aiohttp", "pytest-docker", "pytest-asyncio"]
