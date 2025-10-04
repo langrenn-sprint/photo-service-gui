@@ -91,6 +91,7 @@ class VideoEvents(web.View):
                     user["token"], event,
                 )
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
+                response["captured_queue_length"] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
