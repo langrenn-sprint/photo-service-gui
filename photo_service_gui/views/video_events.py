@@ -91,7 +91,9 @@ class VideoEvents(web.View):
                     user["token"], event,
                 )
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
-                response["captured_queue_length"] = PhotosFileAdapter().get_clip_queue_length()
+                response[
+                    "captured_queue_length"
+                ] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
@@ -200,7 +202,6 @@ async def reset_config(token: str, event: dict) -> str:
         "INTEGRATION_SERVICE_AVAILABLE": "False",
         "CAPTURE_VIDEO_SERVICE_AVAILABLE": "False",
         "DETECT_VIDEO_SERVICE_AVAILABLE": "False",
-        "INTEGRATION_SERVICE_MODE": "push",
     }
 
     for key, value in config_map.items():
@@ -269,15 +270,9 @@ async def update_storage_mode(token: str, event: dict, new_storage_mode: str) ->
     """Update storage mode."""
     if new_storage_mode == "local_storage":
         await ConfigAdapter().update_config(
-            token, event["id"], "INTEGRATION_SERVICE_MODE", "push_detections",
-        )
-        await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "local_storage",
         )
     elif new_storage_mode == "cloud_storage":
-        await ConfigAdapter().update_config(
-            token, event["id"], "INTEGRATION_SERVICE_MODE", "push_captured_video",
-        )
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "cloud_storage",
         )
@@ -298,7 +293,6 @@ async def get_service_status(token: str, event: dict) -> dict:
         "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
         "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
         "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
-        "integration_mode": ("INTEGRATION_SERVICE_MODE", "get_config"),
         "storage_mode_name": ("VIDEO_STORAGE_MODE", "get_config"),
         "detect_analytics_im_size": (
             "DETECT_ANALYTICS_IMAGE_SIZE", "get_config",
