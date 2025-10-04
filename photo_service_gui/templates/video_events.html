@@ -35,10 +35,10 @@
         </td>
         <td>
           Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
-            <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, no filtering, detection stored directly on cloud storage.
+            <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.
           <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
           mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
-          <br>VIDEO SERVICE: Tjenesten har 3 workers: CAPTURE, FILTER (optional) og DETECT som jobber med videoen.
+          <br>VIDEO SERVICE: Tjenesten har 2 workers: CAPTURE og DETECT som jobber med videoen.
           <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
         </td>
       </tr>
@@ -68,12 +68,10 @@
             document.getElementById("send_result").innerHTML = video_status;
             const photo_queue = jsonDoc.photo_queue;
             const captured_queue_length = jsonDoc.captured_queue_length;
-            const filtered_queue_length = jsonDoc.filtered_queue_length;
             if (photo_queue != "") {
               document.getElementById("photo_queue_length").innerHTML = photo_queue.length;
               document.getElementById("photo_queue_latest").src = photo_queue[0];
               document.getElementById("captured_queue_length").innerHTML = captured_queue_length;
-              document.getElementById("filtered_queue_length").innerHTML = filtered_queue_length;
             }
             else {
               document.getElementById("photo_queue_length").innerHTML = "0";
@@ -173,18 +171,14 @@
             <td><input type="text" name="video_clip_fps" value="{{ service_status.video_clip_fps }}"> <small>(frames per second)</small></td>
           </tr>
           <tr>
-            <td>Max clips per filtered video</td>
-            <td><input type="text" name="max_clips_per_filtered_video" value="{{ service_status.max_clips_per_filtered_video }}"></td>
-          </tr>
-          <tr>
             <td>Confidence limit</td>
             <td><input type="text" name="confidence_limit" value="{{ service_status.confidence_limit }}"></td>
           </tr>
           <tr>
-            <td>Image resolution</td>
+            <td>Image resolution - detection</td>
             <td>
-              <select name="image_size">
-                <option value={{ service_status.video_analytics_im_size }}>{{ service_status.video_analytics_im_size }}</option>
+              <select name="detect_image_size">
+                <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
                 {% for one_res in service_status.video_analytics_im_size_def %}
                   <option value={{ one_res }}>{{ one_res }}</option>
                 {% endfor %}
@@ -311,13 +305,6 @@
               {% else %}
                 <span class="lamp lamp-yellow"></span>
               {% endif %}
-              {% if not service_status.filter_video_available %}
-                <span class="lamp lamp-red" title="FILTER video unavailable!"></span>
-              {% elif service_status.filter_video_start %}
-                <span class="lamp lamp-green" title="Service running."></span>
-              {% else %}
-                <span class="lamp lamp-yellow"></span>
-              {% endif %}
               {% if not service_status.detect_video_available %}
                 <span class="lamp lamp-red" title="DETECT video unavailable!"></span>
               {% elif service_status.detect_video_start %}
@@ -327,10 +314,10 @@
               {% endif %}
             </td>
             <td>
-              CAPTURE / FILTER (<b><span id=captured_queue_length>0</span></b> in queue) / DETECT (<b><span id=filtered_queue_length>0</span></b>)
+              CAPTURE (<b><span id=captured_queue_length>0</span></b> in queue)
             </td>
             <td>
-              {% if service_status.capture_video_start or service_status.filter_video_start or service_status.detect_video_start %}
+              {% if service_status.capture_video_start or service_status.detect_video_start %}
                 <form action=/video_events method=post>
                   <input type="submit" name="video_stop" value="  Stop  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">
@@ -341,7 +328,7 @@
                     <input type="hidden" name=event_id value="{{ event_id }}">
                   </form>
                 {% endif %}
-              {% elif service_status.capture_video_available or service_status.filter_video_available or service_status.detect_video_available %}
+              {% elif service_status.capture_video_available or service_status.detect_video_available %}
                 <form action=/video_events method=post>
                   <input type="submit" name="video_start" value="  Start  ">
                   <input type="hidden" name=event_id value="{{ event_id }}">

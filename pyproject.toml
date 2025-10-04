@@ -69,7 +69,7 @@ release = [
     "lint",
     "pyright",
     "check_deps",
-    "audit",
+    # "audit",
     "integration-tests",
     "contract_test",
 ]

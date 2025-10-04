@@ -69,7 +69,6 @@ class VideoEvents(web.View):
             "video_status": "",
             "photo_queue": [],
             "captured_queue_length": 0,
-            "filtered_queue_length": 0,
             "trigger_line_url": "",
         }
         event_id = ""
@@ -92,11 +91,6 @@ class VideoEvents(web.View):
                     user["token"], event,
                 )
                 response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
-                response[
-                    "captured_queue_length"
-                ], response[
-                    "filtered_queue_length"
-                ] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"
                 ] = await PhotosFileAdapter().get_trigger_line_file_url(
@@ -168,19 +162,12 @@ async def start_video_analytics(token: str, event: dict) -> str:
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
     )
     await ConfigAdapter().update_config(
-        token, event["id"], "FILTER_VIDEO_SERVICE_START", "True",
-    )
-    await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
     )
     if video_status["capture_video_available"]:
         informasjon += "CAPTURE started. "
     else:
         informasjon += "Warning: CAPTURE not available. "
-    if video_status["filter_video_available"]:
-        informasjon += "FILTER started. "
-    else:
-        informasjon += "Warning: FILTER not available. "
     if video_status["detect_video_available"]:
         informasjon += "DETECT started. "
     else:
@@ -201,9 +188,6 @@ async def stop_video_analytics(token: str, event: dict) -> str:
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
     )
     await ConfigAdapter().update_config(
-        token, event["id"], "FILTER_VIDEO_SERVICE_START", "False",
-    )
-    await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
     )
     return "Video analytics stopped."
@@ -214,7 +198,6 @@ async def reset_config(token: str, event: dict) -> str:
     config_map = {
         "INTEGRATION_SERVICE_AVAILABLE": "False",
         "CAPTURE_VIDEO_SERVICE_AVAILABLE": "False",
-        "FILTER_VIDEO_SERVICE_AVAILABLE": "False",
         "DETECT_VIDEO_SERVICE_AVAILABLE": "False",
         "INTEGRATION_SERVICE_MODE": "push",
     }
@@ -242,8 +225,8 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         await ConfigAdapter().update_config(
             token,
             event["id"],
-            "VIDEO_ANALYTICS_IMAGE_SIZE",
-            str(form["image_size"]),
+            "DETECT_ANALYTICS_IMAGE_SIZE",
+            str(form["detect_image_size"]),
         )
         await ConfigAdapter().update_config(
             token, event["id"], "DRAW_TRIGGER_LINE", "True",
@@ -253,11 +236,6 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         )
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_CLIP_FPS", str(form["video_clip_fps"]),
-        )
-        await ConfigAdapter().update_config(
-            token, event["id"], "MAX_CLIPS_PER_FILTERED_VIDEO", str(
-                form["max_clips_per_filtered_video"],
-            ),
         )
         await ConfigAdapter().update_config(
             token, event["id"], "CONFIDENCE_LIMIT", str(form["confidence_limit"]),
@@ -316,21 +294,13 @@ async def get_service_status(token: str, event: dict) -> dict:
         "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
         "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
         "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
-        "filter_video_available": (
-            "FILTER_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
-        ),
-        "filter_video_running": ("FILTER_VIDEO_SERVICE_RUNNING", "get_config_bool"),
-        "filter_video_start": ("FILTER_VIDEO_SERVICE_START", "get_config_bool"),
         "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
         "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
         "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
         "integration_mode": ("INTEGRATION_SERVICE_MODE", "get_config"),
-        "max_clips_per_filtered_video": (
-            "MAX_CLIPS_PER_FILTERED_VIDEO", "get_config",
-        ),
         "storage_mode_name": ("VIDEO_STORAGE_MODE", "get_config"),
-        "video_analytics_im_size": (
-            "VIDEO_ANALYTICS_IMAGE_SIZE", "get_config",
+        "detect_analytics_im_size": (
+            "DETECT_ANALYTICS_IMAGE_SIZE", "get_config",
         ),
         "video_analytics_im_size_def": (
             "VIDEO_ANALYTICS_DEFAULT_IMAGE_SIZES", "get_config_list",
