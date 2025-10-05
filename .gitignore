@@ -136,3 +136,4 @@ dmypy.json
 yolov8n.pt
 20240113_110011_KJ.mp4
 .vienv/bin/activate.csh
+photo_service_gui/files/CAPTURE/*.mp4
