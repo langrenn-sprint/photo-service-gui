@@ -4,7 +4,7 @@ license = "Apache-2.0"
 name = "photo-service-gui"
 readme = "README.md"
 version = "1.0.0"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "aiodns>=3.5.0",
     "aiohttp>=3.12.15",
