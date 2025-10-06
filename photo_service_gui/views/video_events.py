@@ -96,8 +96,8 @@ class VideoEvents(web.View):
                 ] = PhotosFileAdapter().get_clip_queue_length()
                 response[
                     "trigger_line_url"
-                ] = await PhotosFileAdapter().get_trigger_line_file_url(
-                    user["token"], event,
+                ] = await ConfigAdapter().get_config(
+                    user["token"], event_id, "TRIGGER_LINE_PHOTO_URL",
                 )
         except Exception as e:
             err_msg = f"Error updating video events: {e}"

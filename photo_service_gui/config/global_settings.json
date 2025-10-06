@@ -4,7 +4,7 @@
     "GOOGLE_PHOTO_SCOPE": "https://www.googleapis.com/auth/photoslibrary",
     "TRIGGER_LINE_XYXYN": "0:0.75:1:0.75",
     "DETECTION_ZONE": "[(0.1, 0.1), (0.9, 0.9)]",
-    "TRIGGER_LINE_CONFIG_FILE": "Trigger_line_config.jpg",
+    "TRIGGER_LINE_PHOTO_URL": "https://storage.googleapis.com/langrenn-sprint/DETECT//home/hh/github/video-service/video_service/files/20251005_205406_Trigger_line_config.jpg.jpg",
     "NEW_TRIGGER_LINE_PHOTO": "True",
     "INTEGRATION_SERVICE_AVAILABLE": "False",
     "INTEGRATION_SERVICE_START": "False",

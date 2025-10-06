@@ -54,6 +54,7 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
     depends_on:
+      - competition-format-service
       - user-service
       - mongodb
   competition-format-service:
