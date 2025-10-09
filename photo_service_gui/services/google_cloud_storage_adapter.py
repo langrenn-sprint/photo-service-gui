@@ -115,7 +115,7 @@ class GoogleCloudStorageAdapter:
                 blobs = bucket.list_blobs(prefix=f"{event_id}/{prefix}")
 
             return [
-                {"name": f.name, "url": f.public_url}
+                {"name": f.name, "url": f.public_url, "metadata": f.metadata}
                 for f in blobs
             ]
         except Exception as e:
