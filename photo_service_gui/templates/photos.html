@@ -1,0 +1,132 @@
+{% extends "open_base.html" %}
+{% block titlecontainer %}
+  <div class="w3-10"></div>
+  <div class="w3-80">
+{% endblock %}
+
+{% block titleheader %}{{ lopsinfo }}{% endblock %}
+
+{% block headercontainer %}{{ lopsinfo }} <img id=header_icon src="../static/icon_photos.png"> {% endblock %}
+
+{% block refresh %}{% endblock %}
+{% block titlemain %}
+  <img id=menu_icon src="../static/icon_photos.png"> {{ lopsinfo }}
+{% endblock %}
+{% block menuitems %}
+  <li class=dropdown id=topborder>
+    <a href=javascript:void(0) class=dropbtn>Velg funksjon</a>
+    <div class=dropdown-content>
+      <a  href=photos?event_id={{ event_id }}>Vis alle</a>
+    </div>
+  </li>
+{% endblock %}
+{% block content %}
+<! --- Information --->
+  <div id=spacer></div>
+  <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
+  <div id=info-zone class="collapse">
+    - Det er mulig å slette bilder - både enkeltvis og alle. Merk at det bare er link til bildene som slettes.<br>
+  </div>
+  <div id=spacer></div>
+<! --- End Information --->
+
+<! --- Edit menu --->
+  <table>
+    <tr id=headerblue align=right>
+      <td>
+        <form action=/photos method=get>
+          <input type="hidden" name=event_id value="{{ event_id }}">
+          <input type="hidden" name=action value="delete_select">
+          <input type="submit" class=black name=delete_select value="  Slett lokale kopier  ">
+        </form>
+      </td>
+      <td>
+        <form action=/photos method=post>
+          <input type="hidden" name="event_id" value="{{ event_id }}">
+          <input type="submit" class=black name="delete_all_local" value="  Slett alle lokale kopier  ">
+        </form>
+      </td>
+  </table>
+  <p>
+    <span id="informasjon"></span>
+  </p>
+  <table cellpadding=4>
+    <tr>
+      <td colspan=4 id=headerblue>
+        <b>Bilder - lokale kopier</b>
+      </td>
+    </tr>
+    {% if action in ["delete_select"] %}
+      <tr>
+        <td id=table_border colspan=4>
+        <form action=/photos method=post>
+          <input type="submit" name={{ action }} value="  Slett  ">
+          <input type="hidden" name="event_id" value="{{ event_id }}">
+          <input type="hidden" name=action value={{ action }}>
+        </td>
+      </tr>
+    {% endif %}
+
+    {% for foto in photos %}
+      <tr>
+        {% if action in ["delete_select"] %}
+          <td>
+            <input type="checkbox" name="delete_photo_{{ loop.index }}" value="{{ foto.name }}">
+          </td>
+        {% endif %}
+        <td width=220>
+          <!-- Trigger the Modal -->
+          <img id="modalImg_{{loop.index}}" src="{{ foto.url }}" title="Click to view big size" style="width:200px">
+          <!-- The Modal -->
+          <div id="myModal_{{loop.index}}" class="modal">
+            <!-- The Close Button -->
+            <span id="close_{{loop.index}}" class="close">&times;</span>
+            <!-- Modal Content (The Image) -->
+            <img class="modal-content" id="img_{{loop.index}}">
+            <!-- Modal Caption (Image Text) -->
+            <div id="caption_{{loop.index}}"></div>
+          </div>
+          <script>
+            // Get the modal
+            var modal_{{loop.index}} = document.getElementById("myModal_{{loop.index}}");
+            
+            // Get the image and insert it inside the modal - use its "alt" text as a caption
+            var img_{{loop.index}} = document.getElementById("modalImg_{{loop.index}}");
+            var modalImg_{{loop.index}} = document.getElementById("img_{{loop.index}}");
+            var captionText_{{loop.index}} = document.getElementById("caption_{{loop.index}}");
+            img_{{loop.index}}.onclick = function(){
+              modal_{{loop.index}}.style.display = "block";
+              modalImg_{{loop.index}}.src = this.src;
+              captionText_{{loop.index}}.innerHTML = this.alt;
+            }
+            
+            // Get the <span> element that closes the modal
+            var span_{{loop.index}} = document.getElementById("close_{{loop.index}}");
+            
+            // When the user clicks on <span> (x), close the modal
+            span_{{loop.index}}.onclick = function() { 
+              modal_{{loop.index}}.style.display = "none";
+            }
+            </script>
+        </td>
+        <td id=table_border_r>
+          <table>
+            <tr>
+              <td width="200">
+              </td>
+              <td><a target=_blank href={{ foto.url }}>{{ foto.name }}</a></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    {% endfor %}
+    {% if action in ["delete_select"] %}
+    <tr>
+      <td colspan=4>
+        <input type="submit" name={{ action }} value="  Slett  ">
+        </form>
+      </td>
+    </tr>
+    {% endif %}
+  </table>
+{% endblock %}

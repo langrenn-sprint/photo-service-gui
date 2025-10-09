@@ -1,7 +1,6 @@
 """Resource module for login view."""
 
 import logging
-import os
 from http import HTTPStatus
 
 import aiohttp_jinja2
@@ -10,7 +9,7 @@ from aiohttp_session import new_session
 
 from photo_service_gui.services import UserAdapter
 
-from .utils import check_login, check_login_open
+from .utils import check_login_open
 
 
 class Login(web.View):
@@ -41,7 +40,6 @@ class Login(web.View):
             self.request,
             {
                 "action": action,
-                "GOOGLE_OAUTH_CLIENT_ID": str(os.getenv("GOOGLE_OAUTH_CLIENT_ID")),
                 "lopsinfo": "Login",
                 "event": event,
                 "event_id": event_id,
@@ -54,13 +52,13 @@ class Login(web.View):
         """Get route function that return the index page."""
         informasjon = ""
         result = 0
-        logging.info(f"Login: {self}")
+        logging.debug(f"Login: {self}")
 
         try:
             form = await self.request.post()
             try:
                 event_id = self.request.rel_url.query["event_id"]
-                logging.info(f"Event: {event_id}")
+                logging.debug(f"Event: {event_id}")
             except Exception:
                 event_id = ""
             try:
@@ -75,16 +73,6 @@ class Login(web.View):
                 )
                 if result == HTTPStatus.OK:
                     informasjon = "Innlogget!"
-                else:
-                    informasjon = f"Innlogging feilet - {result}"
-            elif action == "g_login":
-                user = await check_login(self)
-                g_jwt = str(form["g_jwt"])
-                # get public key from google and store in session
-                session = await new_session(self.request)
-                result = UserAdapter().login_google(g_jwt, user, session)
-                if result == HTTPStatus.OK:
-                    informasjon = "Innlogget Google!"
                 else:
                     informasjon = f"Innlogging feilet - {result}"
 
@@ -103,4 +91,5 @@ class Login(web.View):
         except Exception as e:
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
+            result = HTTPStatus.INTERNAL_SERVER_ERROR
         return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

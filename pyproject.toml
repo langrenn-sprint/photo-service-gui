@@ -18,8 +18,8 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "aiohttp-session>=2.12.1",
     "aiohttp-jinja2>=1.6",
-    "google-auth-oauthlib>=1.2.1",
     "cryptography>=44.0.2",
+    "google-cloud-storage>=3.4.0",
 ]
 
 [tool.uv]
@@ -66,6 +66,7 @@ ignore = [
     "FBT003",
     "G004",
     "LOG015",
+    "PLR0913",
     "TRY002",
 ]
 [tool.ruff.lint.per-file-ignores]

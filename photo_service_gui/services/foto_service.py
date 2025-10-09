@@ -2,12 +2,8 @@
 
 import json
 import logging
-from http import HTTPStatus
 
-from aiohttp import web
-
-from .albums_adapter import Album, AlbumsAdapter
-from .google_photos_adapter import GooglePhotosAdapter
+from .albums_adapter import AlbumsAdapter
 from .photos_adapter import PhotosAdapter
 
 
@@ -44,37 +40,6 @@ class FotoService:
         photo["starred"] = False
         await PhotosAdapter().update_photo(token, photo["id"], photo)
         return "* Fjernet *"
-
-    async def add_album_for_synk(
-        self, token: str, g_token: str, event: dict, g_album_id: str,
-    ) -> int:
-        """Create album for synk."""
-        g_album = await GooglePhotosAdapter().get_album(
-            token, event, g_token, g_album_id,
-        )
-
-        # check if album already has been synced, if not create new
-        album = await AlbumsAdapter().get_album_by_g_id(token, g_album_id)
-        if album:
-            raise web.HTTPBadRequest(reason="Error - album eksisterer allerede.")
-        # create album instance
-        album = Album(
-            g_album_id,
-            False,
-            False,
-            True,
-            event["id"],
-            "",
-            None,
-            g_album["coverPhotoBaseUrl"],
-            "",
-            None,
-            "",
-            g_album["title"],
-        )
-        res_c = await AlbumsAdapter().create_album(token, album)
-        logging.info(f"Created album, local copy {res_c}")
-        return HTTPStatus.OK
 
     async def update_race_info(self, token: str, event_id: str, form: dict) -> str:
         """Update race information in phostos, biblist."""

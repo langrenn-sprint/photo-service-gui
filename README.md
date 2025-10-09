@@ -52,6 +52,11 @@ JWT_EXP_DELTA_SECONDS=3600
 LOGGING_LEVEL=INFO
 USERS_HOST_SERVER=localhost
 USERS_HOST_PORT=8086
+GOOGLE_STORAGE_BUCKET=langrenn-sprint
+GOOGLE_STORAGE_SERVER=https://storage.googleapis.com
+GOOGLE_CLOUD_PROJECT=sigma-celerity-257719
+GOOGLE_APPLICATION_CREDENTIALS=/home/hh/github/secrets/application_default_credentials.json
+
 
 ### If required - virtual environment
 
