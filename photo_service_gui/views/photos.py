@@ -79,9 +79,7 @@ class Photos(web.View):
                 )
 
         try:
-            if "delete_all_local" in form:
-                informasjon = "TODO: Sletting av alle lokale kopier."
-            elif "delete_select" in form:
+            if "delete_select" in form:
                 informasjon = "Sletting utført: "
                 for key, value in form.items():
                     if key.startswith("delete_photo"):

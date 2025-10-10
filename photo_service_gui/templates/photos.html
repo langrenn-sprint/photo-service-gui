@@ -32,7 +32,7 @@
 
 <! --- Edit menu --->
   <table>
-    <tr id=headerblue align=right>
+    <tr id=headerblue>
       <td>
         <form action=/photos method=get>
           <input type="hidden" name=event_id value="{{ event_id }}">
@@ -41,10 +41,6 @@
         </form>
       </td>
       <td>
-        <form action=/photos method=post>
-          <input type="hidden" name="event_id" value="{{ event_id }}">
-          <input type="submit" class=black name="delete_all_local" value="  Slett alle lokale kopier  ">
-        </form>
       </td>
   </table>
   <p>
@@ -58,11 +54,14 @@
     </tr>
     {% if action in ["delete_select"] %}
       <tr>
-        <td id=table_border colspan=4>
-        <form action=/photos method=post>
-          <input type="submit" name={{ action }} value="  Slett  ">
-          <input type="hidden" name="event_id" value="{{ event_id }}">
-          <input type="hidden" name=action value={{ action }}>
+        <td id=table_border>
+          <button id="toggleAll">Velg alle</button>
+        </td>
+      <form action=/photos method=post>
+        <td id=table_border colspan=3>
+            <input type="submit" name={{ action }} value="  Slett valgte ">
+            <input type="hidden" name="event_id" value="{{ event_id }}">
+            <input type="hidden" name=action value={{ action }}>
         </td>
       </tr>
     {% endif %}
@@ -71,12 +70,12 @@
       <tr>
         {% if action in ["delete_select"] %}
           <td>
-            <input type="checkbox" name="delete_photo_{{ loop.index }}" value="{{ foto.name }}">
+            <input type="checkbox" class="item-chk" name="delete_photo_{{ loop.index }}" value="{{ foto.name }}">
           </td>
         {% endif %}
         <td width=220>
           <!-- Trigger the Modal -->
-          <img id="modalImg_{{loop.index}}" src="{{ foto.url }}" title="Click to view big size" style="width:200px">
+          <img id="modalImg_{{loop.index}}" src="{{ foto.url }}" title="Click to view big size" style="height: 100px">
           <!-- The Modal -->
           <div id="myModal_{{loop.index}}" class="modal">
             <!-- The Close Button -->
@@ -107,7 +106,15 @@
             span_{{loop.index}}.onclick = function() { 
               modal_{{loop.index}}.style.display = "none";
             }
-            </script>
+
+            // Toggle all checkboxes
+            const toggleBtn = document.getElementById('toggleAll');
+            toggleBtn.addEventListener('click', () => {
+              const itemsList = document.querySelectorAll('input.item-chk[type="checkbox"]');
+              const anyUnchecked = Array.from(itemsList).some(cb => !cb.checked);
+              itemsList.forEach(cb => cb.checked = anyUnchecked);
+            });
+          </script>
         </td>
         <td id=table_border_r>
           <table>
@@ -121,12 +128,7 @@
       </tr>
     {% endfor %}
     {% if action in ["delete_select"] %}
-    <tr>
-      <td colspan=4>
-        <input type="submit" name={{ action }} value="  Slett  ">
-        </form>
-      </td>
-    </tr>
+      </form>
     {% endif %}
   </table>
 {% endblock %}
