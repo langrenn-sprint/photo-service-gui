@@ -17,33 +17,33 @@
 
   <! --- Information --->
   <div id=spacer></div>
-  <details>
-    <summary><span id=info-header>Info</span></summary>
-    <table>
-      <tr id="info-zone">
-        <td colspan="2">
-          Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
-    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
-        </td>
-      </tr>
-      <tr id="info-zone">
-        <td valign="top">
-          <b>Camera shots</b> - her vises mål-linje og siste deteksjon.
-          <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
-          <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
-          <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
-        </td>
-        <td>
-          Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
-            <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.
-          <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
-          mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
-          <br>VIDEO SERVICE: Tjenesten har 2 workers: CAPTURE og DETECT som jobber med videoen.
-          <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
-        </td>
-      </tr>
-    </table>
-  </details>
+    <details id="info-details" class="info-box">
+      <summary>TIPS</summary>
+      <table>
+        <tr id="info-zone">
+          <td colspan="2">
+            Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
+      Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
+          </td>
+        </tr>
+        <tr id="info-zone">
+          <td valign="top">
+            <b>Camera shots</b> - her vises mål-linje og siste deteksjon.
+            <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
+            <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
+            <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
+          </td>
+          <td>
+            Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
+              <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.
+            <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
+            mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
+            <br>VIDEO SERVICE: Tjenesten har 2 workers: CAPTURE og DETECT som jobber med videoen.
+            <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
+          </td>
+        </tr>
+      </table>
+    </details>
   <div id=spacer></div>
   <! --- End Information --->
 

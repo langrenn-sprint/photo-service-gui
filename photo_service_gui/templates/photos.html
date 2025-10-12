@@ -23,10 +23,12 @@
 {% block content %}
 <! --- Information --->
   <div id=spacer></div>
-  <div id=info-header><a id=info-header data-toggle="collapse" href="#info-zone">TIPS</a></div>
-  <div id=info-zone class="collapse">
-    - Det er mulig å slette bilder - både enkeltvis og alle. Merk at det bare er link til bildene som slettes.<br>
-  </div>
+  <details id="info-details" class="info-box">
+    <summary>TIPS</summary>
+    <div>
+      - Det er mulig å slette bilder - både enkeltvis og alle. Merk at det bare er link til bildene som slettes.
+    </div>
+  </details>
   <div id=spacer></div>
 <! --- End Information --->
 
@@ -48,26 +50,36 @@
   </p>
   <table cellpadding=4>
     <tr>
-      <td colspan=4 id=headerblue>
+      <td colspan=8 id=headerblue>
         <b>Bilder - lokale kopier</b>
       </td>
     </tr>
     {% if action in ["delete_select"] %}
       <tr>
-        <td id=table_border>
+        <td id=table_border colspan=2>
           <button id="toggleAll">Velg alle</button>
         </td>
       <form action=/photos method=post>
-        <td id=table_border colspan=3>
+        <td id=table_border colspan=6>
             <input type="submit" name={{ action }} value="  Slett valgte ">
             <input type="hidden" name="event_id" value="{{ event_id }}">
             <input type="hidden" name=action value={{ action }}>
         </td>
       </tr>
+      <script>
+        // Toggle all checkboxes
+        const toggleBtn = document.getElementById('toggleAll');
+        toggleBtn.addEventListener('click', () => {
+          const itemsList = document.querySelectorAll('input.item-chk[type="checkbox"]');
+          const anyUnchecked = Array.from(itemsList).some(cb => !cb.checked);
+          itemsList.forEach(cb => cb.checked = anyUnchecked);
+        });
+      </script>
+
     {% endif %}
 
-    {% for foto in photos %}
-      <tr>
+    <tr>
+      {% for foto in photos %}
         {% if action in ["delete_select"] %}
           <td>
             <input type="checkbox" class="item-chk" name="delete_photo_{{ loop.index }}" value="{{ foto.name }}">
@@ -107,26 +119,16 @@
               modal_{{loop.index}}.style.display = "none";
             }
 
-            // Toggle all checkboxes
-            const toggleBtn = document.getElementById('toggleAll');
-            toggleBtn.addEventListener('click', () => {
-              const itemsList = document.querySelectorAll('input.item-chk[type="checkbox"]');
-              const anyUnchecked = Array.from(itemsList).some(cb => !cb.checked);
-              itemsList.forEach(cb => cb.checked = anyUnchecked);
-            });
           </script>
         </td>
         <td id=table_border_r>
-          <table>
-            <tr>
-              <td width="200">
-              </td>
-              <td><a target=_blank href={{ foto.url }}>{{ foto.name }}</a> <br> {{ foto.metadata }}</td>
-            </tr>
-          </table>
+          <a target=_blank href={{ foto.url }}>{{ foto.name }}</a> <br> {{ foto.metadata }}
         </td>
-      </tr>
-    {% endfor %}
+        {% if loop.index is divisibleby 2 %}
+          </tr><tr>
+        {% endif %}
+      {% endfor %}
+    </tr>
     {% if action in ["delete_select"] %}
       </form>
     {% endif %}
