@@ -191,6 +191,13 @@ class EventsAdapter:
         competition_formats = await CompetitionFormatAdapter().get_competition_formats(
             token,
         )
+        if not competition_formats:
+            # create default competition formats
+            _cf = CompetitionFormatAdapter().get_default_competition_format(
+                event["competition_format"],
+            )
+            await CompetitionFormatAdapter().create_competition_format(token, _cf)
+            competition_formats.append(_cf)
         for cf in competition_formats:
             if cf["name"] == event["competition_format"]:
                 event["datatype"] = cf["datatype"]
