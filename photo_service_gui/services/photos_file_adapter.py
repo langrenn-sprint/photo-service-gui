@@ -62,8 +62,8 @@ class PhotosFileAdapter:
             logging.exception("Error getting photos")
         return photos
 
-    def get_clip_queue_length(self) -> int:
-        """Get length of capture queue."""
+    def get_local_capture_queue_length(self) -> int:
+        """Get length of local capture queue."""
         capture_folder = Path(self.get_video_folder_path("CAPTURE"))
 
         return sum(1 for f in capture_folder.iterdir() if f.is_file())

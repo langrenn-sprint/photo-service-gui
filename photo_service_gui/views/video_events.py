@@ -8,6 +8,7 @@ from aiohttp import web
 
 from photo_service_gui.services import (
     ConfigAdapter,
+    GoogleCloudStorageAdapter,
     PhotosFileAdapter,
     StatusAdapter,
 )
@@ -67,8 +68,8 @@ class VideoEvents(web.View):
             "pub_message": "",
             "video_analytics": "",
             "video_status": "",
-            "photo_queue": [],
-            "captured_queue_length": 0,
+            "local_captured_queue_length": 0,
+            "cloud_captured_queue_length": 0,
             "trigger_line_url": "",
         }
         event_id = ""
@@ -90,14 +91,21 @@ class VideoEvents(web.View):
                 response["video_status"] = await get_analytics_status(
                     user["token"], event,
                 )
-                response["photo_queue"] = PhotosFileAdapter().get_all_photo_urls()
                 response[
-                    "captured_queue_length"
-                ] = PhotosFileAdapter().get_clip_queue_length()
+                    "local_captured_queue_length"
+                ] = PhotosFileAdapter().get_local_capture_queue_length()
+                response[
+                    "cloud_captured_queue_length"
+                ] = GoogleCloudStorageAdapter().list_blobs(
+                    event_id, "CAPTURED/",
+                ).__len__()
                 response[
                     "trigger_line_url"
                 ] = await ConfigAdapter().get_config(
                     user["token"], event_id, "TRIGGER_LINE_PHOTO_URL",
+                )
+                response["photo_latest"] = await ConfigAdapter().get_config(
+                    user["token"], event_id, "LATEST_DETECTED_PHOTO_URL",
                 )
         except Exception as e:
             err_msg = f"Error updating video events: {e}"

@@ -4,7 +4,8 @@
     "GOOGLE_PHOTO_SCOPE": "https://www.googleapis.com/auth/photoslibrary",
     "TRIGGER_LINE_XYXYN": "0:0.75:1:0.75",
     "DETECTION_ZONE": "[(0.1, 0.1), (0.9, 0.9)]",
-    "TRIGGER_LINE_PHOTO_URL": "https://storage.googleapis.com/langrenn-sprint/DETECT//home/hh/github/video-service/video_service/files/20251005_205406_Trigger_line_config.jpg.jpg",
+    "LATEST_DETECTED_PHOTO_URL": "",
+    "TRIGGER_LINE_PHOTO_URL": "",
     "NEW_TRIGGER_LINE_PHOTO": "True",
     "INTEGRATION_SERVICE_AVAILABLE": "False",
     "INTEGRATION_SERVICE_START": "False",
@@ -21,7 +22,7 @@
     "VIDEO_CLIP_DURATION": 5,
     "VIDEO_CLIP_FPS": 20,
     "DRAW_TRIGGER_LINE": "False",
-    "VIDEO_URL": "https://harnaes.no/maalfoto/2023SkiMaal.mp4",
+    "VIDEO_URL": "",
     "SIMULATION_CROSSINGS_START": "False",
     "SIMULATION_START_LIST_FILE": "tests/files/startliste.csv",
     "SIMULATION_FASTEST_TIME": "300"

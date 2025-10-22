@@ -91,7 +91,7 @@ Then install the dependencies:
 
 ```Zsh
 % uv run adev runserver -p 8096 photo_service_gui
-docker compose up integration-service race-service competition-format-service photo-service user-service event-service mongodb
+docker compose up integration-service race-service competition-format-service photo-service user-service event-service mongodb capture-video-service
 
 ```
 

@@ -15,333 +15,342 @@
 {% block menuitems %}{% endblock %}
 {% block content %}
 
-  <! --- Information --->
-  <div id=spacer></div>
-    <details id="info-details" class="info-box">
-      <summary>TIPS</summary>
-      <table>
-        <tr id="info-zone">
-          <td colspan="2">
-            Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
-      Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
-          </td>
-        </tr>
-        <tr id="info-zone">
-          <td valign="top">
-            <b>Camera shots</b> - her vises mål-linje og siste deteksjon.
-            <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
-            <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
-            <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
-          </td>
-          <td>
-            Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
-              <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.
-            <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
-            mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
-            <br>VIDEO SERVICE: Tjenesten har 2 workers: CAPTURE og DETECT som jobber med videoen.
-            <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
-          </td>
-        </tr>
-      </table>
-    </details>
-  <div id=spacer></div>
-  <! --- End Information --->
+<! --- Information --->
+<div id=spacer></div>
+  <details id="info-details" class="info-box">
+    <summary>TIPS</summary>
+    <table>
+      <tr id="info-zone">
+        <td colspan="2">
+          Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
+    Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
+        </td>
+      </tr>
+      <tr id="info-zone">
+        <td valign="top">
+          <b>Camera shots</b> - her vises mål-linje og siste deteksjon.
+          <br><b>Configuration</b> - Mulighet for å stille inn video url og linje-koordinater.
+          <br><b>Avansert</b> - Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.
+          <br><b>Simulering</b> - (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
+        </td>
+        <td>
+          Storage mode - <b>local_storage</b>: local file system used for storage. Integration service for pushing detections.
+            <b>cloud_storage</b> - capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.
+          <br>INTEGRATION SERVICE: (Pubsub) vil sende informasjon til Google Cloud. Bildene sendes til en Storage Bucket,
+          mens informasjon sendes til Pubsub og legges på en meldingskø der interessenter kan abonnere på hendelsene.
+          <br>VIDEO SERVICE: Tjenesten har 2 workers: CAPTURE og DETECT som jobber med videoen.
+          <b>Status</b> - Her vises statusmeldinger for tjenesten. Både det som registreres på videoen og at meldingenr sendes til meldingskøen (Google pubsub).
+        </td>
+      </tr>
+    </table>
+  </details>
+<div id=spacer></div>
+<! --- End Information --->
 
-  <script>
-    /* this function will sync (update+get) status updates with backend */
-    let syncRunning = false;
-    function sync_status() {
-      if (syncRunning) return; // Exit if already running
-      syncRunning = true;
+<script>
+  /* this function will sync (update+get) status updates with backend */
+  let syncRunning = false;
+  function sync_status() {
+    if (syncRunning) return; // Exit if already running
+    syncRunning = true;
 
-      try {
-        var formData = "video_status=true&event_id={{ event_id }}"
-        formData = formData + "&photo_queue=true"
-        
-        loadDoc("POST", "/video_events", mySync, formData);
+    try {
+      var formData = "video_status=true&event_id={{ event_id }}"
+      formData = formData + "&photo_queue=true"
+      
+      loadDoc("POST", "/video_events", mySync, formData);
 
-        function mySync(xhttp) {
-          try {
-            // load new info
-            const jsonDoc = JSON.parse(xhttp.response);
-            const video_status = jsonDoc.video_status;
-            document.getElementById("send_result").innerHTML = video_status;
-            const photo_queue = jsonDoc.photo_queue;
-            const captured_queue_length = jsonDoc.captured_queue_length;
-            if (photo_queue != "") {
-              document.getElementById("photo_queue_length").innerHTML = photo_queue.length;
-              document.getElementById("photo_queue_latest").src = photo_queue[0];
-              document.getElementById("captured_queue_length").innerHTML = captured_queue_length;
-            }
-            else {
-              document.getElementById("photo_queue_length").innerHTML = "0";
-              document.getElementById("photo_queue_latest").src = "../static/no_image.png";
-            }
-
-            const trigger_line_url = jsonDoc.trigger_line_url;
-            if (trigger_line_url != "") {
-              document.getElementById("trigger_line_photo").src = trigger_line_url;
-            }
-            else {
-              document.getElementById("trigger_line_photo").src = "../static/no_image.png";
-            }
+      function mySync(xhttp) {
+        try {
+          // load new info
+          const jsonDoc = JSON.parse(xhttp.response);
+          const video_status = jsonDoc.video_status;
+          document.getElementById("send_result").innerHTML = video_status;
+          const photo_latest = jsonDoc.photo_latest;
+          const local_captured_queue_length = jsonDoc.local_captured_queue_length;
+          const cloud_captured_queue_length = jsonDoc.cloud_captured_queue_length;
+          if (photo_latest != "") {
+            document.getElementById("photo_latest").src = photo_latest;
+            document.getElementById("local_captured_queue_length").innerHTML = local_captured_queue_length;
+            document.getElementById("cloud_captured_queue_length").innerHTML = cloud_captured_queue_length;
           }
-          catch(err) {
-              alert(err);
+          else {
+            document.getElementById("photo_latest").src = "../static/no_image.png";
+          }
+
+          const trigger_line_url = jsonDoc.trigger_line_url;
+          if (trigger_line_url != "") {
+            document.getElementById("trigger_line_photo").src = trigger_line_url;
+          }
+          else {
+            document.getElementById("trigger_line_photo").src = "../static/no_image.png";
           }
         }
-      }
-      catch(err) {
-          alert(err);
-      } finally {
-        syncRunning = false; // Ensure flag is cleared even on errors
-        setTimeout(sync_status, 4000);
+        catch(err) {
+            alert(err);
+        }
       }
     }
-
-    /* this function will get status updates */
-    function loadDoc(req, url, cFunction, formData) {
-      const xhttp = new XMLHttpRequest();
-      xhttp.onload = function() {cFunction(this);}
-      xhttp.open(req, url, true);
-      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      xhttp.send(formData);
+    catch(err) {
+        alert(err);
+    } finally {
+      syncRunning = false; // Ensure flag is cleared even on errors
+      setTimeout(sync_status, 4000);
     }
+  }
 
-    /* this function will show actual simulation_url */
-    function update_simulation_url() {
-                var sim_url = document.getElementById("sim_list").value;
-                var sim_round = document.getElementById("sim_round").value;
-                var actual_url = sim_url + "/csv?event_id={{ event_id }}&action=startlist&round=" + sim_round;
-                document.getElementById("actual_url").innerHTML = actual_url;
-                document.getElementById("sim_actual_url").value = actual_url;
-              }
+  /* this function will get status updates */
+  function loadDoc(req, url, cFunction, formData) {
+    const xhttp = new XMLHttpRequest();
+    xhttp.onload = function() {cFunction(this);}
+    xhttp.open(req, url, true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send(formData);
+  }
 
-  </script>
+  /* this function will show actual simulation_url */
+  function update_simulation_url() {
+              var sim_url = document.getElementById("sim_list").value;
+              var sim_round = document.getElementById("sim_round").value;
+              var actual_url = sim_url + "/csv?event_id={{ event_id }}&action=startlist&round=" + sim_round;
+              document.getElementById("actual_url").innerHTML = actual_url;
+              document.getElementById("sim_actual_url").value = actual_url;
+            }
+
+</script>
+
+<table>
+  <tr id="headerblack">
+    <td colspan="2">
+      Trigger line photo
+    </td>
+    <td colspan="2">
+      Latest detection
+    </td>
+    <td>
+      Service status
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2"><nobr>
+      <!-- Trigger the Modal -->
+      <img id="trigger_line_photo" src="../static/no_image.png" title="Crossing line, click to view big size" style="width:400px">
+      <!-- The Modal -->
+      <div id="myModal_line" class="modal">
+        <!-- The Close Button -->
+        <span id="close_line" class="close">&times;</span>
+        <!-- Modal Content (The Image) -->
+        <img class="modal-content" id="img_line">
+        <!-- Modal Caption (Image Text) -->
+        <div id="caption_line"></div>
+      </div>
+    </td>
+    <td colspan="2"><nobr>
+      <img id="photo_latest" src="../static/no_image.png" title="Latest photo from vision AI detection" style="width:400px"></nobr>
+    </td>
+    <td rowspan="4"> <span id="send_result"></span> </td>
+  </tr>
+  <tr>
+    <td>
+      Storage mode
+    </td>
+    <td></td>
+    <td>{{ service_status.storage_mode_name }}</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>
+      Integration service
+    </td>
+    <td>
+      {% if not service_status.integration_available %}
+        <span class="lamp lamp-red" title="Integration unavailable!"></span>
+      {% elif service_status.integration_start %}
+          <span class="lamp lamp-green" title="Service running."></span>
+      {% else %}
+        <span class="lamp lamp-yellow"></span>
+      {% endif %}
+    </td>
+    <td>
+      (<b><span id=local_captured_queue_length>0</span></b> in queue)
+    </td>
+    <td>
+      {% if service_status.integration_start %}
+        <form action=/video_events method=post>
+          <input type="submit" name="integration_stop" value="  Stop  ">
+          <input type="hidden" name=event_id value="{{ event_id }}">
+        </form>
+      {% else %}
+        <form action=/video_events method=post>
+          <input type="submit" name="integration_start" value="  Start  ">
+          <input type="hidden" name=event_id value="{{ event_id }}">
+        </form>
+      {% endif %}
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Video service
+    </td>
+    <td>
+      {% if not service_status.capture_video_available %}
+        <span class="lamp lamp-red" title="CAPTURE Video service unavailable!"></span>
+      {% elif service_status.capture_video_start %}
+        <span class="lamp lamp-green" title="Service running."></span>
+      {% else %}
+        <span class="lamp lamp-yellow"></span>
+      {% endif %}
+      {% if not service_status.detect_video_available %}
+        <span class="lamp lamp-red" title="DETECT video unavailable!"></span>
+      {% elif service_status.detect_video_start %}
+        <span class="lamp lamp-green" title="Service running."></span>
+      {% else %}
+        <span class="lamp lamp-yellow"></span>
+      {% endif %}
+    </td>
+    <td>
+      CAPTURE (<b><span id=cloud_captured_queue_length>0</span></b> in queue)
+    </td>
+    <td>
+      {% if service_status.capture_video_start or service_status.detect_video_start %}
+        <form action=/video_events method=post>
+          <input type="submit" name="video_stop" value="  Stop  ">
+          <input type="hidden" name=event_id value="{{ event_id }}">
+        </form>
+        {% if service_status.capture_video_start %}
+          <form action=/video_events method=post>
+            <input type="submit" name="capture_stop" value="  Stop capture  ">
+            <input type="hidden" name=event_id value="{{ event_id }}">
+          </form>
+        {% endif %}
+      {% elif service_status.capture_video_available or service_status.detect_video_available %}
+        <form action=/video_events method=post>
+          <input type="submit" name="video_start" value="  Start  ">
+          <input type="hidden" name=event_id value="{{ event_id }}">
+        </form>
+      {% endif %}
+    </td>
+  </tr>
+</table>
+
+<details>
+  <summary id="headerblack">Configuration (click to expand)</summary>
   <table>
-    <tr id="headerblack">
-      <td width="50%"><b>Configuration</b></td>
-      <td>&nbsp;</td>
-      <td><b>Service status</b></td>
+    <form action=/video_events method=post>
+    <tr>
+      <td>Line</td>
+      <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"></td>
+      <td colspan="2"><small>(line coordinates, eks: 0.1:0.8:0.9:0.8)</small></td>
     </tr>
     <tr>
-      <td valign="top">
-        <table> 
-          <tr>
-            <td colspan="2">
-              <b><br>Camera shots</b> - trigger line and latest detection
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2"><nobr>
-              <!-- Trigger the Modal -->
-              <img id="trigger_line_photo" src="../static/no_image.png" title="Crossing line, click to view big size" style="width:400px">
-              <!-- The Modal -->
-              <div id="myModal_line" class="modal">
-                <!-- The Close Button -->
-                <span id="close_line" class="close">&times;</span>
-                <!-- Modal Content (The Image) -->
-                <img class="modal-content" id="img_line">
-                <!-- Modal Caption (Image Text) -->
-                <div id="caption_line"></div>
-              </div>
-              <img id="photo_queue_latest" src="../static/no_image.png" title="Latest photo from vision AI detection" style="width:400px"></nobr>
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2">
-              <b><br>Video settings</b>
-            </td>
-          </tr>
-          <form action=/video_events method=post>
-          <tr>
-            <td>Line</td>
-            <td><input type="text" id="trigger_line_xyxyn" name="trigger_line_xyxyn" value="{{ trigger_line_xyxyn }}"> <small>(line coordinates, eks: 0.1:0.8:0.9:0.8)</small></td>
-          </tr>
-          <tr>
-            <td>Url</td>
-            <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}"></td>
-          </tr>
-          <tr>
-            <td>Video clip duration</td>
-            <td><input type="text" name="video_clip_duration" value="{{ service_status.video_clip_duration }}"> <small>(seconds)</small></td>
-          </tr>
-          <tr>
-            <td>Video clip FPS</td>
-            <td><input type="text" name="video_clip_fps" value="{{ service_status.video_clip_fps }}"> <small>(frames per second)</small></td>
-          </tr>
-          <tr>
-            <td>Confidence limit</td>
-            <td><input type="text" name="confidence_limit" value="{{ service_status.confidence_limit }}"></td>
-          </tr>
-          <tr>
-            <td>Image resolution - detection</td>
-            <td>
-              <select name="detect_image_size">
-                <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
-                {% for one_res in service_status.video_analytics_im_size_def %}
-                  <option value={{ one_res }}>{{ one_res }}</option>
-                {% endfor %}
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Video storage mode</td>
-            <td>
-              <select name="storage_mode">
-                <option value="0">{{ service_status.storage_mode_name }}</option>
-                <option value="local_storage">Local storage</option>
-                <option value="cloud_storage">Cloud storage</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>
-              <input type="submit" name="update_config" value="  Lagre  ">
-              <input type="hidden" name=event_id value="{{ event_id }}">
-            </td>
-          </tr>
-          </form>
-          <tr>
-            <td colspan="2">
-              <b><br>Advanced</b>
-            </td>
-          </tr>
-          <form action=/video_events method=post>
-          <tr>
-            <td></td>
-            <td>
-              <input type="submit" name="reset_config" value="  Nullstill video service  ">
-              <input type="hidden" name=event_id value="{{ event_id }}">
-            </td>
-          </tr>
-          </form>
-          <tr>
-            <td colspan="2">
-              <b><br>Simulation of crossings</b>
-            </td>
-          </tr>
-          <form action=/video_events method=post>
-          <tr>
-            <td>URL</td>
-            <td>
-              <input type="text" name="sim_list" id="sim_list" value="http://localhost:8080" onchange=update_simulation_url()>
-              Runde: <select name="sim_round" id="sim_round" onchange=update_simulation_url()>
-                <option value="Q">Q</option>
-                <option value="S">S</option>
-                <option value="F">F</option>
-              </select>
-              <small><span id="actual_url"></span></small>
-              <input type="hidden" name=sim_actual_url id=sim_actual_url value="">
-              <script>update_simulation_url()</script>
-            </td>
-          </tr>
-          <tr>
-            <td>Fastest time</td>
-            <td><input type="text" name="sim_fastest_time" value="{{ sim_fastest_time }}"></td>
-          </tr>
-          <tr>
-            <td></td>
-            <td>
-              <input type="submit" name="update_config" value="  Start simulering  ">
-              <input type="hidden" name=event_id value="{{ event_id }}">
-            </td>
-          </tr>
-          </form>
-        </table>
+      <td>Url</td>
+      <td><input type="text" id="video_url" name="video_url" value="{{ video_url }}"></td>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td>Video clip duration</td>
+      <td><input type="text" name="video_clip_duration" value="{{ service_status.video_clip_duration }}"></td>
+      <td colspan="2"><small>(seconds)</small></td>
+    </tr>
+    <tr>
+      <td>Video clip FPS</td>
+      <td><input type="text" name="video_clip_fps" value="{{ service_status.video_clip_fps }}"></td>
+      <td colspan="2"><small>(frames per second)</small></td>
+    </tr>
+    <tr>
+      <td>Confidence limit</td>
+      <td><input type="text" name="confidence_limit" value="{{ service_status.confidence_limit }}"></td>
+      <td colspan="2"></td>
+    </tr>
+    <tr>
+      <td>Image resolution - detection</td>
+      <td>
+        <select name="detect_image_size">
+          <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
+          {% for one_res in service_status.video_analytics_im_size_def %}
+            <option value={{ one_res }}>{{ one_res }}</option>
+          {% endfor %}
+        </select>
       </td>
-      <td>&nbsp;</td>
-      <td valign="top">
-        <br>
-        <table> 
-          <tr>
-            <td>
-              Storage mode
-            </td>
-            <td></td>
-            <td>{{ service_status.storage_mode_name }}</td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>
-              Integration service
-            </td>
-            <td>
-              {% if not service_status.integration_available %}
-                <span class="lamp lamp-red" title="Integration unavailable!"></span>
-              {% elif service_status.integration_start %}
-                  <span class="lamp lamp-green" title="Service running."></span>
-              {% else %}
-                <span class="lamp lamp-yellow"></span>
-              {% endif %}
-            </td>
-            <td>
-              (<b><span id=photo_queue_length>0</span></b> in queue)
-            </td>
-            <td>
-              {% if service_status.integration_start %}
-                <form action=/video_events method=post>
-                  <input type="submit" name="integration_stop" value="  Stop  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
-              {% else %}
-                <form action=/video_events method=post>
-                  <input type="submit" name="integration_start" value="  Start  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
-              {% endif %}
-            </td>
-          </tr>
-          <tr>
-            <td>
-              Video service
-            </td>
-            <td>
-              {% if not service_status.capture_video_available %}
-                <span class="lamp lamp-red" title="CAPTURE Video service unavailable!"></span>
-              {% elif service_status.capture_video_start %}
-                <span class="lamp lamp-green" title="Service running."></span>
-              {% else %}
-                <span class="lamp lamp-yellow"></span>
-              {% endif %}
-              {% if not service_status.detect_video_available %}
-                <span class="lamp lamp-red" title="DETECT video unavailable!"></span>
-              {% elif service_status.detect_video_start %}
-                <span class="lamp lamp-green" title="Service running."></span>
-              {% else %}
-                <span class="lamp lamp-yellow"></span>
-              {% endif %}
-            </td>
-            <td>
-              CAPTURE (<b><span id=captured_queue_length>0</span></b> in queue)
-            </td>
-            <td>
-              {% if service_status.capture_video_start or service_status.detect_video_start %}
-                <form action=/video_events method=post>
-                  <input type="submit" name="video_stop" value="  Stop  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
-                {% if service_status.capture_video_start %}
-                  <form action=/video_events method=post>
-                    <input type="submit" name="capture_stop" value="  Stop capture  ">
-                    <input type="hidden" name=event_id value="{{ event_id }}">
-                  </form>
-                {% endif %}
-              {% elif service_status.capture_video_available or service_status.detect_video_available %}
-                <form action=/video_events method=post>
-                  <input type="submit" name="video_start" value="  Start  ">
-                  <input type="hidden" name=event_id value="{{ event_id }}">
-                </form>
-              {% endif %}
-            </td>
-          </tr>
-        </table>
-        <br>
-        <span id="send_result"></span>
+      <td colspan="2"><small>(pixels)</small></td>
+    </tr>
+    <tr>
+      <td>Video storage mode</td>
+      <td>
+        <select name="storage_mode">
+          <option value="0">{{ service_status.storage_mode_name }}</option>
+          <option value="local_storage">Local storage</option>
+          <option value="cloud_storage">Cloud storage</option>
+        </select>
+      </td>
+      <td colspan="2"><small>(process captured video locally or from cloud storage)</small></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" name="update_config" value="  Lagre  ">
+        <input type="hidden" name=event_id value="{{ event_id }}">
+      </td>
+      <td colspan="2"></td>
+    </tr>
+    </form>
+    <tr>
+      <td colspan="4">
+        <b><br>Advanced</b>
       </td>
     </tr>
-</table>
+    <form action=/video_events method=post>
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" name="reset_config" value="  Nullstill video service  ">
+        <input type="hidden" name=event_id value="{{ event_id }}">
+      </td>
+      <td colspan="2"><small>(Resets all video service settings to default values)</small></td>
+    </tr>
+    </form>
+    <tr>
+      <td colspan="2">
+        <b><br>Simulation of crossings</b>
+      </td>
+      <td colspan="2"></td>
+    </tr>
+    <form action=/video_events method=post>
+    <tr>
+      <td>URL</td>
+      <td>
+        <input type="text" name="sim_list" id="sim_list" value="http://localhost:8080" onchange=update_simulation_url()>
+        Runde: <select name="sim_round" id="sim_round" onchange=update_simulation_url()>
+          <option value="Q">Q</option>
+          <option value="S">S</option>
+          <option value="F">F</option>
+        </select>
+      </td>
+      <td colspan="2">
+        <small><span id="actual_url"></span></small>
+        <input type="hidden" name=sim_actual_url id=sim_actual_url value="">
+        <script>update_simulation_url()</script>
+      </td>
+    </tr>
+    <tr>
+      <td>Fastest time</td>
+      <td><input type="text" name="sim_fastest_time" value="{{ sim_fastest_time }}"></td>
+      <td colspan="2"><small>(in seconds)</small></td>
+    </tr>
+    <tr>
+      <td></td>
+      <td>
+        <input type="submit" name="update_config" value="  Start simulering  ">
+        <input type="hidden" name=event_id value="{{ event_id }}">
+      </td>
+      <td colspan="2"></td>
+    </tr>
+    </form>
+
+  </table>
+</details>
+
+
 <script>
     // Initial call to start the cycle
     setTimeout(sync_status, 4000);
