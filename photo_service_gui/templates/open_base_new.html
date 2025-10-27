@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="no">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <meta http-equiv="refresh" content="{% block refresh %}{% endblock %}">
+        <title>{% block titleheader %}{% endblock %}</title>
+        <link rel="stylesheet" href="../static/styles.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="../static/styles_new.css">
+        {% if event.organiser[:5] == "Kjels" %}
+            <link rel="stylesheet" type="text/css" href="../static/styles_kjelsaas.css">
+        {% else %}
+            <link rel="stylesheet" type="text/css" href="../static/styles_lyn.css">
+        {% endif %}
+
+        <script type="text/javascript">
+            function confirm_delete(message) {
+                return window.confirm(message);
+            }
+
+            function naviger(id) {
+                var elmnt = document.getElementById(id);
+                elmnt.scrollIntoView();
+            }
+            function save_message(id) {
+                document.getElementById(id).value = "  Lagrer, vennligst vent... ";
+                return true;
+            }
+
+            async function savefile(inp)
+            {
+                let formData = new FormData();
+                let file = inp.files[0];
+
+                formData.append("file", file);
+
+                const ctrl = new AbortController()    // timeout
+                setTimeout(() => ctrl.abort(), 5000);
+
+                let r = await fetch('/contestants',
+                    {method: "POST", body: formData, signal: ctrl.signal});
+
+            }
+        </script>
+    </head>
+    <body>
+        <header class="container-fluid">
+            <div class="text-center">
+                <h2>{% block headercontainer %}{% endblock %}{{ event.name }}</h2>
+            </div>
+        </header>
+        <main class="container" id="main" role="main">
+            <div class="w3-container-sticky">
+            <ul>
+                <li class=dropdown>
+                <a href=javascript:void(0) class=dropbtn>...</a>
+                <div class=dropdown-content>
+                    <table><tr><td>
+                    <a id="myIndex" href=/><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
+                    {% if event_id %}
+                        {% if username != "Gjest" %}
+                        </td><td>
+                            <a href=photos?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Foto</a>
+                            <a href=video_events?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Deteksjon målpassering</a>
+                            <a href=config?event_id={{ event_id }}><img id=menu_icon src="../static/icon_settings.png"> Admin: Innstillinger</a>
+                        {% endif %}
+                    {% endif %}
+                    </td></tr></table>
+                </div>
+                </li>
+                <li id=topborder class=active>
+                {% block titlemain %}{% endblock %}
+                </li>
+                {% block menuitems %}{% endblock %}
+                <li class=dropdown id=topborder style="float:right">
+                <a href=javascript:void(0) class=dropbtn><img id=menu_icon src="../static/icon_user.png">&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;</a>
+                <div class=dropdown-content>
+                    {% if username == "Gjest" %}
+                    <a href=/login class=dropbtn>Logg inn</a>
+                    {% else %}
+                    <a id="myUsers" href="/users">Brukere</a>
+                    <a id="mySettings" href="/settings">Globale innstillinger</a>
+                    <a href="https://langrenn-sprint.github.io/docs" target="_blank">Docs</a>
+                    <a href="/logout">Logg ut</a>
+                    {% endif %}
+                </div>
+                </li>
+            </ul>
+            </div>
+            <div class="w3-container" id=info>{{ informasjon }}</div>
+            {% block content %}{% endblock %}
+            <div id="spacer"></div>
+            <details class="info-box">
+                <summary>TIPS (klikk for å utvide)</summary>
+                {% block tips %}{% endblock %}
+            </details>
+
+        </main>
+
+        <footer class="container text-center" role="contentinfo">
+            <small><a href="https://github.com/langrenn-sprint">langrenn-sprint</a> — utviklet av Lyn ski og Kjelsås langrenn</small>
+        </footer>
+    </body>
+</html>

@@ -91,12 +91,11 @@ class Photos(web.View):
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
             error_reason = str(e)
-            if error_reason.startswith("401"):
-                informasjon = f"Ingen tilgang, vennligst logg inn på nytt. {e}"
+            if error_reason.count("401 Unauthorized") > 0   :
+                informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
                 )
-
         return web.HTTPSeeOther(
             location=f"/photos?event_id={event_id}&informasjon={informasjon}",
         )

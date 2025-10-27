@@ -73,9 +73,16 @@ class Config(web.View):
                     user["token"], event_id, key, str(form["value"]),
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
-        except Exception:
-            informasjon = "Det har oppstått en feil."
-            logging.exception("Config update")
+        except Exception as e:
+            logging.exception("Error")
+            informasjon = f"Det har oppstått en feil - {e.args}."
+            error_reason = str(e)
+            if error_reason.count("401 Unauthorized") > 0   :
+                informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
+                return web.HTTPSeeOther(
+                    location=f"/login?informasjon={informasjon}",
+                )
+
         return web.HTTPSeeOther(
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",
         )

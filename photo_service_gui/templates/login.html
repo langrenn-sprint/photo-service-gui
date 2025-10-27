@@ -1,9 +1,4 @@
-{% extends "open_base.html" %}
-{% block titlecontainer %}
-  <div class="w3-10"></div>
-  <div class="w3-80">
-{% endblock %}
-
+{% extends "open_base_new.html" %}
 {% block titleheader %}
   {{ lopsinfo }}
 {% endblock %}
@@ -13,6 +8,7 @@
 {% block titlemain %}
   <img id=menu_icon src="../static/icon_user.png"> {{ lopsinfo }}
 {% endblock %}
+
 {% block content %}
     {% if action == "create_new" %}
       <form action="/login?event_id={{ event_id }}" method="post">
@@ -41,24 +37,19 @@
       </form>
     {% else %}
       <form action="/login?event_id={{ event_id }}&action=login" method="post">
-        <table cellpadding=4>
-          <tr>
-            <td colspan=2 id=headerblue>
-              <b>Innlogging</b>
-            </td>
-          </tr>
-          <tr>
-            <td width=150>Brukernavn</td>
-            <td><input type=text name="username" value=""></td>
-          </tr>
-          <tr>
-            <td width=150>Passord</td>
-            <td><input type=password name="password" value=""></td>
-          </tr>
-          <td colspan=2>
-            <input type="submit" name=Login value="Logg inn">
-          </td>
-        </table>
+        <section class="row" aria-label="Event">
+          <div class="col-sm-12">
+            <h2>Innlogging</h2>
+            <div class="status-card" role="status" aria-live="polite">
+              Brukernavn<br>
+              <input type=text name="username" value=""><br>
+              Passord<br>
+              <input type=password name="password" value="">
+              <div id=spacer></div>
+              <input type="submit" name=Login value="Logg inn" class="btn btn-default">
+            </div>
+          </div>
+        </section>
       </form>
     {% endif %}
 {% endblock %}

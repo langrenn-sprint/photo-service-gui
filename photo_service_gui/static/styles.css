@@ -12,7 +12,8 @@ body {
 ul {
   list-style-type: none;
   margin: 0px;
-  padding: 0px;
+  padding: 2px;
+  border-radius:6px;
 }
 
 a {
@@ -79,7 +80,6 @@ height: auto;
 
 table {
 width: 100%;
-border-spacing: 0;
 }
 
 tr:nth-child(even) {
@@ -121,10 +121,7 @@ border-right: 1px solid #ddd;
   background-color: green;
 }
   /* minimal styling — info box */
-  .info-box { border:1px solid white; background:green; padding:8px; color: white;}
-  .info-box summary { cursor:pointer; font-weight:700; list-style:none; outline:none; }
-  .info-box summary::-webkit-details-marker { display:none; } /* hide default marker if needed */
-
+  .info-box { border:1px solid white; color: grey;}
 
 #green {
   color: green;
@@ -313,12 +310,12 @@ padding:0.01em 0px;
 }
 
 .w3-container-sticky {
-background-color: white;
-padding: 0.01em 0px;
-position: -webkit-sticky;
-position: sticky;
-z-index: 99;
-top: 0;
+  background-color: white;
+  padding: 0.01em 0px;
+  position: -webkit-sticky;
+  position: sticky;
+  z-index: 99;
+  top: 0;
 }
 
 .w3-footer-sticky {
