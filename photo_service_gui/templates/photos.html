@@ -29,20 +29,20 @@
         <div class="col-sm-12">
           <div class="status-card" role="status" aria-live="polite">
             <form action=/photos method=post>
-                <button id="toggleAll" class="btn btn-default">Velg alle</button>
-                  <button type="submit" name={{ action }} value="  Slett valgte " class="btn btn-warning">Slett valgte</button>
-                  <input type="hidden" name="event_id" value="{{ event_id }}">
-                  <input type="hidden" name=action value={{ action }}>
+              <button id="toggleAll" type="button" class="btn btn-default">Velg alle</button>
+              <button type="submit" name={{ action }} value="  Slett valgte " class="btn btn-warning">Slett valgte</button>
+              <input type="hidden" name="event_id" value="{{ event_id }}">
+              <input type="hidden" name=action value={{ action }}>
             <script>
               // Toggle all checkboxes
               const toggleBtn = document.getElementById('toggleAll');
-              toggleBtn.addEventListener('click', () => {
+              toggleBtn.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent any default button behavior
                 const itemsList = document.querySelectorAll('input.item-chk[type="checkbox"]');
                 const anyUnchecked = Array.from(itemsList).some(cb => !cb.checked);
                 itemsList.forEach(cb => cb.checked = anyUnchecked);
               });
             </script>
-          </form>
           </div>
         </div>
       </section>
@@ -51,7 +51,7 @@
 
     <section class="row" aria-label="Bilder">
       {% for foto in photos %}
-        <div class="col-sm-6">
+        <div class="col-sm-3">
           <div class="status-card" role="status" aria-live="polite">
             {% if action in ["delete_select"] %}
                 <input type="checkbox" class="item-chk" name="delete_photo_{{ loop.index }}" value="{{ foto.name }}">
@@ -89,10 +89,10 @@
                 modal_{{loop.index}}.style.display = "none";
               }
             </script>
-            Metadata: {{ foto.metadata }}
+            <br>Metadata: {{ foto.metadata }}
           </div>
         </div>
-        {% if loop.index is divisibleby 2 %}
+        {% if loop.index is divisibleby 4 %}
           </section>
           <div id="spacer"></div>
           <section class="row" aria-label="Bilder">
