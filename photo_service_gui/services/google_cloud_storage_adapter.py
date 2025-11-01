@@ -147,7 +147,9 @@ class GoogleCloudStorageAdapter:
 
         try:
             blobs = list(bucket.list_blobs(prefix=f"{event_id}/{prefix}"))
-            logging.debug(f"{servicename} found {len(blobs)} blobs from {event_id}/{prefix}.")
+            logging.debug(
+                f"{servicename} found {len(blobs)} blobs from {event_id}/{prefix}.",
+            )
 
             return [
                 {"name": f.name, "url": f.public_url}
