@@ -99,7 +99,7 @@ class VideoEvents(web.View):
                 response[
                     "cloud_captured_queue_length"
                 ] = GoogleCloudStorageAdapter().list_blobs(
-                    event_id, "CAPTURED/",
+                    event_id, "CAPTURE/",
                 ).__len__()
                 response[
                     "trigger_line_url"
