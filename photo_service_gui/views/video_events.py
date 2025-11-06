@@ -191,7 +191,7 @@ async def start_integration(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "INTEGRATION_SERVICE_START", "True",
     )
-    return "Integration started"
+    return "Integration started. "
 
 
 async def stop_integration(token: str, event: dict) -> str:
@@ -204,7 +204,7 @@ async def stop_integration(token: str, event: dict) -> str:
 
 async def start_video_analytics(token: str, event: dict) -> str:
     """Start video analytics."""
-    informasjon = "Video analytics started: "
+    informasjon = "Video analytics: "
     video_status = await get_service_status(token, event)
 
     await ConfigAdapter().update_config(
@@ -229,7 +229,7 @@ async def start_video_capture(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
     )
-    return "Video capture started."
+    return "Video capture started. "
 
 
 async def stop_video_capture(token: str, event: dict) -> str:
@@ -237,7 +237,7 @@ async def stop_video_capture(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
     )
-    return "Video capture stopped."
+    return "Video capture stopped. "
 
 
 async def start_video_detect(token: str, event: dict) -> str:
@@ -245,7 +245,7 @@ async def start_video_detect(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
     )
-    return "Video detect started."
+    return "Video detect started. "
 
 
 async def stop_video_detect(token: str, event: dict) -> str:
@@ -253,7 +253,7 @@ async def stop_video_detect(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
     )
-    return "Video detect stopped."
+    return "Video detect stopped. "
 
 
 async def stop_video_analytics(token: str, event: dict) -> str:
@@ -264,7 +264,7 @@ async def stop_video_analytics(token: str, event: dict) -> str:
     await ConfigAdapter().update_config(
         token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
     )
-    return "Video analytics stopped."
+    return "Video analytics stopped. "
 
 
 async def reset_config(token: str, event: dict) -> str:
@@ -279,7 +279,7 @@ async def reset_config(token: str, event: dict) -> str:
         await ConfigAdapter().update_config(
             token, event["id"], key, value,
         )
-    return "Video settings reset."
+    return "Video settings reset. "
 
 
 async def update_config(token: str, event: dict, form: dict) -> str:
@@ -313,7 +313,7 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         await ConfigAdapter().update_config(
             token, event["id"], "CONFIDENCE_LIMIT", str(form["confidence_limit"]),
         )
-        informasjon = "Video settings updated."
+        informasjon = "Video settings updated. "
 
     elif "sim_actual_url" in form:
         await ConfigAdapter().update_config(
@@ -329,25 +329,29 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         await ConfigAdapter().update_config(
             token, event["id"], "SIMULATION_CROSSINGS_START", "True",
         )
-        informasjon = "Simulering av passeringer er initiert."
+        informasjon = "Simulering av passeringer er initiert. "
     if "storage_mode" in form:
         new_storage_mode = str(form["storage_mode"])
-        if new_storage_mode != 0:
-            informasjon += await update_storage_mode(token, event, new_storage_mode)
+        informasjon += await update_storage_mode(token, event, new_storage_mode)
 
     return informasjon
 
 async def update_storage_mode(token: str, event: dict, new_storage_mode: str) -> str:
     """Update storage mode."""
-    if new_storage_mode == "local_storage":
+    if new_storage_mode == "0":
+        return "" # No change
+    elif new_storage_mode == "local_storage":
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "local_storage",
         )
+        return f"Oppdatert storage mode til {new_storage_mode}. "
     elif new_storage_mode == "cloud_storage":
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "cloud_storage",
         )
-    return f"Oppdatert storage mode til {new_storage_mode}."
+        return f"Oppdatert storage mode til {new_storage_mode}. "
+    else:
+        return "Ugyldig storage mode valgt. "
 
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""
