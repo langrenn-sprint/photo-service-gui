@@ -340,18 +340,17 @@ async def update_storage_mode(token: str, event: dict, new_storage_mode: str) ->
     """Update storage mode."""
     if new_storage_mode == "0":
         return "" # No change
-    elif new_storage_mode == "local_storage":
+    if new_storage_mode == "local_storage":
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "local_storage",
         )
         return f"Oppdatert storage mode til {new_storage_mode}. "
-    elif new_storage_mode == "cloud_storage":
+    if new_storage_mode == "cloud_storage":
         await ConfigAdapter().update_config(
             token, event["id"], "VIDEO_STORAGE_MODE", "cloud_storage",
         )
         return f"Oppdatert storage mode til {new_storage_mode}. "
-    else:
-        return "Ugyldig storage mode valgt. "
+    return "Ugyldig storage mode valgt. "
 
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""

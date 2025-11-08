@@ -47,7 +47,7 @@
     <body>
         <header class="container-fluid">
             <div class="text-center">
-                <h2>{% block headercontainer %}{% endblock %}{{ event.name }}</h2>
+                <h2>{{ event.name }}&nbsp;<span class="event-logo-small"></span></h2>
             </div>
         </header>
         <main class="container" id="main" role="main">
@@ -73,6 +73,7 @@
                 {% block titlemain %}{% endblock %}
                 </li>
                 {% block menuitems %}{% endblock %}
+                <li class=dropdown id=topborder>&nbsp;{{ event.name }}</li>
                 <li class=dropdown id=topborder style="float:right">
                 <a href=javascript:void(0) class=dropbtn><img id=menu_icon src="../static/icon_user.png">&nbsp;{{ username }}&nbsp;&nbsp;&nbsp;&nbsp;</a>
                 <div class=dropdown-content>
@@ -93,6 +94,7 @@
             <div id="spacer"></div>
             <details class="info-box">
                 <summary>TIPS (klikk for å utvide)</summary>
+                <br>
                 {% block tips %}{% endblock %}
             </details>
 
