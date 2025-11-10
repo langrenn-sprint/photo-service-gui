@@ -1,13 +1,19 @@
 """Module adapter for photos on file storage."""
 
 import logging
+import subprocess
 from pathlib import Path
 
-from .config_adapter import ConfigAdapter
+from photo_service_gui.services.google_cloud_storage_adapter import (
+    GoogleCloudStorageAdapter,
+)
 
 VISION_ROOT_PATH = f"{Path.cwd()}/photo_service_gui/files"
-PHOTOS_FILE_PATH = f"{Path.cwd()}/photo_service_gui/files/DETECT"
-VISION_ARCHIVE_PATH = f"{VISION_ROOT_PATH}/archive"
+CAPTURED_FILE_PATH = f"{VISION_ROOT_PATH}/CAPTURE"
+CAPTURED_RAW_FILE_PATH = f"{VISION_ROOT_PATH}/RAW_CAPTURE"
+CAPTURED_ARCHIVE_PATH = f"{VISION_ROOT_PATH}/CAPTURE/archive"
+CAPTURED_ERROR_ARCHIVE_PATH = f"{VISION_ROOT_PATH}/CAPTURE/error_archive"
+PHOTOS_ARCHIVE_PATH = f"{VISION_ROOT_PATH}/archive"
 PHOTOS_URL_PATH = "files"
 
 
@@ -17,75 +23,220 @@ class PhotosFileAdapter:
 
     def get_photos_folder_path(self) -> str:
         """Get path to photo folder."""
-        if not Path(PHOTOS_FILE_PATH).exists():
-            try:
-                Path(PHOTOS_FILE_PATH).mkdir(parents=True, exist_ok=True)
-            except Exception:
-                logging.exception(f"Error creating folder: {PHOTOS_FILE_PATH}")
-        # Return the path to the photos folder
-        return PHOTOS_FILE_PATH
+        return VISION_ROOT_PATH
+
+    def init_video_folders(self) -> None:
+        """Ensure folders exists."""
+        my_folder = Path(CAPTURED_FILE_PATH)
+        if not my_folder.exists():
+            my_folder.mkdir(parents=True, exist_ok=True)
+        my_folder = Path(CAPTURED_RAW_FILE_PATH)
+        if not my_folder.exists():
+            my_folder.mkdir(parents=True, exist_ok=True)
+
+    def get_capture_folder_path(self) -> str:
+        """Get path to captured videos folder."""
+        return CAPTURED_FILE_PATH
+
+    def get_raw_capture_folder_path(self) -> str:
+        """Get path to raw captured video folder."""
+        return CAPTURED_RAW_FILE_PATH
+
+    def get_photos_archive_folder_path(self) -> str:
+        """Get path to photo archive folder."""
+        return PHOTOS_ARCHIVE_PATH
+
+    def get_local_capture_queue_length(self) -> int:
+        """Get length of local capture queue."""
+        capture_folder = Path(self.get_capture_folder_path())
+
+        return sum(1 for f in capture_folder.iterdir() if f.is_file())
+
+    def get_local_raw_capture_queue_length(self) -> int:
+        """Get length of local raw capture queue."""
+        capture_folder = Path(self.get_raw_capture_folder_path())
+
+        return sum(1 for f in capture_folder.iterdir() if f.is_file())
 
     def get_all_photos(self) -> list:
         """Get all path/filename to all photos on file directory."""
         photos = []
         try:
-            files = list(Path(PHOTOS_FILE_PATH).iterdir())
+            files = list(Path(VISION_ROOT_PATH).iterdir())
             photos = [
-                f"{PHOTOS_FILE_PATH}/{f.name}"
+                f"{VISION_ROOT_PATH}/{f.name}"
                 for f in files
                 if f.suffix in [".jpg", ".png"] and "_config" not in f.name
             ]
-        except FileNotFoundError:
-            Path(PHOTOS_FILE_PATH).mkdir(parents=True, exist_ok=True)
         except Exception:
             logging.exception("Error getting photos")
         return photos
 
-    def get_all_photo_urls(self) -> list:
-        """Get all url to all photos on file directory."""
-        photos = []
+    def get_all_capture_files(self, event_id: str, storage_mode: str) ->  list[dict]:
+        """Get all url to all captured files on file directory."""
+        file_list = []
         try:
-            # loop files in directory and find all photos
-            photos.extend(
-                f"{PHOTOS_URL_PATH}/DETECT/{f.name}"
-                for f in Path(PHOTOS_FILE_PATH).iterdir()
-                if (
-                    f.is_file()
-                    and f.suffix in [".jpg", ".png"]
-                    and "_config" not in f.name
-                    and "_crop" not in f.name
-                )
-            )
-        except FileNotFoundError:
-            Path(PHOTOS_FILE_PATH).mkdir(parents=True, exist_ok=True)
+            if storage_mode == "cloud_storage":
+                file_list = GoogleCloudStorageAdapter().list_blobs(event_id, "CAPTURE/")
+            else:
+                # Local file system
+                files = list(Path(CAPTURED_FILE_PATH).iterdir())
+                file_list = [
+                    {"name": f.name, "url": f"{CAPTURED_FILE_PATH}/{f.name}"}
+                    for f in files
+                if f.is_file()
+                ]
         except Exception:
-            logging.exception("Error getting photos")
-        return photos
+            informasjon = "Error getting captured files"
+            logging.exception(informasjon)
+            return []
+        else:
+            return file_list
 
-    def get_local_capture_queue_length(self) -> int:
-        """Get length of local capture queue."""
-        capture_folder = Path(self.get_video_folder_path("CAPTURE"))
+    def get_all_raw_capture_files(
+            self, event_id: str, storage_mode: str,
+        ) ->  list[dict]:
+        """Get all url to all raw captured files on file directory."""
+        file_list = []
+        try:
+            if storage_mode == "cloud_storage":
+                file_list = GoogleCloudStorageAdapter().list_blobs(
+                    event_id, "RAW_CAPTURE/",
+                )
+            else:
+                # Local file system
+                files = list(Path(CAPTURED_RAW_FILE_PATH).iterdir())
+                file_list = [
+                    {"name": f.name, "url": f"{CAPTURED_RAW_FILE_PATH}/{f.name}"}
+                    for f in files
+                if f.is_file()
+                ]
+        except Exception:
+            informasjon = "Error getting captured files"
+            logging.exception(informasjon)
+            return []
+        else:
+            return file_list
 
-        return sum(1 for f in capture_folder.iterdir() if f.is_file())
+    def get_all_files(self, prefix: str, suffix: str) -> list:
+        """Get all url to all files on file directory with given prefix and suffix."""
+        my_files = []
+        try:
+            files = list(Path(VISION_ROOT_PATH).iterdir())  # Materialize close
+            my_files = [
+                f"{VISION_ROOT_PATH}/{file.name}"
+                for file in files
+                if file.suffix == suffix and prefix in file.name
+            ]
+        except Exception:
+            informasjon = f"Error getting files, prefix: {prefix}, suffix: {suffix}"
+            logging.exception(informasjon)
+        return my_files
 
-    def get_video_folder_path(self, mode: str) -> str:
-        """Get path to video folder."""
-        my_folder = Path(f"{VISION_ROOT_PATH}/{mode}")
-        if not my_folder.exists():
-            my_folder.mkdir(parents=True, exist_ok=True)
-        return f"{VISION_ROOT_PATH}/{mode}"
+    def move_photo_to_archive(self, filename: str) -> None:
+        """Move photo to archive."""
+        source_file = Path(VISION_ROOT_PATH) / filename
+        destination_file = Path(PHOTOS_ARCHIVE_PATH) / source_file.name
+
+        try:
+            source_file.rename(destination_file)
+        except FileNotFoundError:
+            logging.info("Destination folder not found. Creating...")
+            Path(PHOTOS_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+            source_file.rename(destination_file)
+        except Exception:
+            logging.exception("Error moving photo to archive.")
 
 
-def move_to_archive(filename: str) -> None:
-    """Move trigger line photo to archive."""
-    source_file = Path(VISION_ROOT_PATH) / filename
-    destination_file = Path(VISION_ARCHIVE_PATH) / source_file.name
+    def move_to_archive(self, filename: str) -> None:
+        """Move photo to archive."""
+        source_file = Path(VISION_ROOT_PATH) / filename
+        destination_file = Path(PHOTOS_ARCHIVE_PATH) / source_file.name
 
-    try:
-        source_file.rename(destination_file)
-    except FileNotFoundError:
-        logging.info("Destination folder not found. Creating...")
-        Path(VISION_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
-        source_file.rename(destination_file)
-    except Exception:
-        logging.exception("Error moving photo to archive.")
+        try:
+            source_file.rename(destination_file)
+        except FileNotFoundError:
+            logging.info("Destination folder not found. Creating...")
+            Path(PHOTOS_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+            source_file.rename(destination_file)
+        except Exception:
+            logging.exception("Error moving photo to archive.")
+
+    def move_to_capture_archive(
+            self, event_id: str, storage_mode: str, filename: str,
+        ) -> str:
+        """Move photo to local archive."""
+        if storage_mode == "cloud_storage":
+            return GoogleCloudStorageAdapter().move_to_capture_archive(
+                event_id, filename,
+            )
+        source_file = Path(CAPTURED_FILE_PATH) / filename
+        destination_file = Path(CAPTURED_ARCHIVE_PATH) / filename
+        try:
+            source_file.rename(destination_file)
+        except FileNotFoundError:
+            logging.info("Destination folder not found. Creating.")
+            Path(CAPTURED_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+            source_file.rename(destination_file)
+        except Exception:
+            logging.exception(f"Error moving photo to archive: {filename}")
+        return destination_file.name
+
+    def move_to_error_archive(
+            self, event_id: str, storage_mode: str, filename: str,
+        ) -> str:
+        """Move photo to local error archive."""
+        if storage_mode == "cloud_storage":
+            return GoogleCloudStorageAdapter().move_to_error_archive(
+                event_id, filename,
+            )
+        source_file = Path(CAPTURED_FILE_PATH) / filename
+        destination_file = Path(CAPTURED_ERROR_ARCHIVE_PATH) / filename
+        try:
+            source_file.rename(destination_file)
+        except FileNotFoundError:
+            logging.info("Destination folder not found. Creating.")
+            Path(CAPTURED_ERROR_ARCHIVE_PATH).mkdir(parents=True, exist_ok=True)
+            source_file.rename(destination_file)
+        except Exception:
+            logging.exception(f"Error moving photo to error archive: {filename}")
+        return destination_file.name
+
+    def convert_raw_to_mp4(self, input_file: str) -> None:
+        """Convert (and repair) a video file to MP4 using FFmpeg."""
+        # Validate file paths to prevent command injection (S603)
+        # Ensure paths are resolved and don't contain shell metacharacters
+        try:
+            input_path = Path(input_file).resolve()
+            output_path = Path(CAPTURED_FILE_PATH) / input_path.name
+        except (ValueError, OSError) as e:
+            err_msg = f"Invalid file path provided: {e}"
+            logging.exception(err_msg)
+            raise ValueError(err_msg) from e
+
+        try:
+            # Build ffmpeg command with conditional audio handling
+            # Using -c:a aac if audio exists, otherwise ffmpeg will ignore it
+            command = [
+                "ffmpeg",
+                "-i", input_file,
+                "-c:v", "libx264",    # H.264 video codec
+                "-preset", "fast",     # Encoding speed preset
+                "-crf", "23",          # Constant Rate Factor (quality)
+                "-c:a", "aac",        # AAC audio codec (ignored if no audio stream)
+                "-b:a", "128k",        # Audio bitrate (ignored if no audio stream)
+                "-map", "0:v:0",       # Map first video stream
+                "-map", "0:a?",        # Map audio if present (? makes it optional)
+                str(output_path),
+            ]
+            subprocess.run(command, check=True)  # noqa: S603
+
+            # delete input file
+            input_path.unlink()
+            logging.debug(f"Deleted raw video file: {input_file}")
+
+        except subprocess.CalledProcessError as e:
+            informasjon = f"FFmpeg command failed with error for {input_file}"
+            logging.exception(informasjon)
+            raise Exception(informasjon) from e
+

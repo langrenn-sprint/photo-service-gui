@@ -16,8 +16,8 @@
   Dette er kontrollpanel for video service. Siden inneholder både mulighet til å konfigurere tjenesten samt overvåke. Video tjenesten analyserer en videostrøm og identifiserer personer som krysser en (mål)linje.
   Det lages to bilder av passeringen, ett av bare selve personen (crop) og ett av hele skjermen.
   <ul>
-    <li><b>Målkamera</b>: Her vises status på tjenesten som lagrer video av målpassering. I tillegg kan man se bilde av registrert mål-linje.</li>
-    <li><b>Passeringer</b>: Her vises status på tjenesten som detekterer passeringer. I tillegg kan man se bilde av sist registrerte passering.</li>
+    <li><b>Målkamera</b>: Her vises status på tjenesten som lagrer video av målpassering. I tillegg kan man se bilde av registrert mål-linje. I køen vises antall råfiler og antall video filer ferdig prosessert.</li>
+    <li><b>Passeringer</b>: Her vises status på tjenesten som detekterer passeringer. I tillegg kan man se bilde av sist registrerte passering. I køen vises antall filer som venter på deteksjon.</li>
     <li><b>Siste hendelser</b>: Her vises informasjon om de siste hendelsene som er registrert av systemet.</li>
     <li><b>Avansert</b>: Mulighet for å nullstille, dette krever normalt påfølgende restart av VIDEO SERVICE og INTEGRATION SERVICE.</li>
   </ul>
@@ -53,6 +53,7 @@
           // load new info
           const jsonDoc = JSON.parse(xhttp.response);
           document.getElementById("send_result").innerHTML = jsonDoc.video_status;
+          document.getElementById("local_raw_captured_queue_length").innerHTML = jsonDoc.local_raw_captured_queue_length;
           document.getElementById("local_captured_queue_length").innerHTML = jsonDoc.local_captured_queue_length;
           document.getElementById("cloud_captured_queue_length").innerHTML = jsonDoc.cloud_captured_queue_length;
           const photo_latest = jsonDoc.photo_latest;
@@ -163,7 +164,7 @@
             <span id="capture_video_service_status" class="label label-danger">-</span>
             <span id="integration_service_status" class="label label-danger">-</span>
           </p>
-          <small>Kø: <strong id="local_captured_queue_length">0</strong></small>
+          <small>Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler) / <strong id="local_captured_queue_length">0</strong> (videoer)</small>
           <form action=/video_events method=post>
             <button type="submit" id="capture_video_service" name="capture_video_service" value="-" class="btn btn-default">-</button>
             <input type="hidden" name=event_id value="{{ event_id }}">
@@ -183,7 +184,12 @@
           <p>
             <span id="detect_video_service_status" class="label label-danger">-</span>
           </p>
-          <small>Kø: <strong id="cloud_captured_queue_length">0</strong></small>
+          {% if service_status.storage_mode_name == "cloud_storage" %}
+            <small>Kø: <strong id="cloud_captured_queue_length">0</strong></small>
+          {% else %}
+            <input type="hidden" id="cloud_captured_queue_length" value="0">
+            <small>Kø: <strong id="local_captured_queue_length">0</strong> (videoer)</small>
+          {% endif %}
           <form action=/video_events method=post>
             <button type="submit" id="detect_video_service" name="detect_video_service" value="-" class="btn btn-default">-</button>
             <input type="hidden" name=event_id value="{{ event_id }}">

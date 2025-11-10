@@ -68,6 +68,7 @@ class VideoEvents(web.View):
             "pub_message": "",
             "video_analytics": "",
             "video_status": "",
+            "local_raw_captured_queue_length": 0,
             "local_captured_queue_length": 0,
             "cloud_captured_queue_length": 0,
             "trigger_line_url": "",
@@ -93,6 +94,9 @@ class VideoEvents(web.View):
                 response["video_status"] = await get_analytics_status(
                     user["token"], event,
                 )
+                response[
+                    "local_raw_captured_queue_length"
+                ] = PhotosFileAdapter().get_local_raw_capture_queue_length()
                 response[
                     "local_captured_queue_length"
                 ] = PhotosFileAdapter().get_local_capture_queue_length()
