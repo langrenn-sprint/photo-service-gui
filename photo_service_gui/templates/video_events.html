@@ -75,7 +75,7 @@
           if (jsonDoc.service_status.capture_video_start) {
               document.getElementById("capture_video_service_status").innerHTML = "Video: Kjører";
               document.getElementById("capture_video_service_status").className = "label label-success";
-              document.getElementById("capture_video_service").innerHTML = "Stop";
+              document.getElementById("capture_video_service").innerHTML = "Stopp";
               document.getElementById("capture_video_service").value = "Stop";
           } else if (jsonDoc.service_status.capture_video_available) {
               document.getElementById("capture_video_service_status").innerHTML = "Video: Pauset";
@@ -94,9 +94,13 @@
           if (jsonDoc.service_status.integration_start) {
               document.getElementById("integration_service_status").innerHTML = "Opplasting: Kjører";
               document.getElementById("integration_service_status").className = "label label-success";
+              document.getElementById("capture_video_service").innerHTML = "Stopp";
+              document.getElementById("capture_video_service").value = "Stop";
           } else if (jsonDoc.service_status.integration_available) {
               document.getElementById("integration_service_status").innerHTML = "Opplasting: Pauset";
               document.getElementById("integration_service_status").className = "label label-warning";
+              document.getElementById("capture_video_service").innerHTML = "Start";
+              document.getElementById("capture_video_service").value = "Start";
           }
           else {
               document.getElementById("integration_service_status").innerHTML = "Opplasting: Ikke tilgjengelig";
@@ -107,7 +111,7 @@
           if (jsonDoc.service_status.detect_video_start) {
               document.getElementById("detect_video_service_status").innerHTML = "Deteksjon: Kjører";
               document.getElementById("detect_video_service_status").className = "label label-success";
-              document.getElementById("detect_video_service").innerHTML = "Stop";
+              document.getElementById("detect_video_service").innerHTML = "Stopp";
               document.getElementById("detect_video_service").value = "Stop";
           } else if (jsonDoc.service_status.detect_video_available) {
               document.getElementById("detect_video_service_status").innerHTML = "Deteksjon: Pauset";

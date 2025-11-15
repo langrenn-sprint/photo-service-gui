@@ -55,6 +55,8 @@ class PhotosFileAdapter:
     def get_local_raw_capture_queue_length(self) -> int:
         """Get length of local raw capture queue."""
         capture_folder = Path(self.get_raw_capture_folder_path())
+        if not capture_folder.exists():
+            return 0
 
         return sum(1 for f in capture_folder.iterdir() if f.is_file())
 
