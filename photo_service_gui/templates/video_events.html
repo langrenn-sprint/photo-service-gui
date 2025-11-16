@@ -168,12 +168,14 @@
             <span id="capture_video_service_status" class="label label-danger">-</span>
             <span id="integration_service_status" class="label label-danger">-</span>
           </p>
-          <small>Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler) / <strong id="local_captured_queue_length">0</strong> (videoer)</small>
+          <small>Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler)
+            {% if service_status.storage_mode_name == "cloud_storage" %} / <strong id="local_captured_queue_length">0</strong> (videoer)</small>{% endif %}
           <form action=/video_events method=post>
             <button type="submit" id="capture_video_service" name="capture_video_service" value="-" class="btn btn-default">-</button>
             <input type="hidden" name=event_id value="{{ event_id }}">
           </form>
         </div>
+        <hr>
         <!-- preview inside the card -->
         <figure class="preview-figure">
           <img id="trigger_line_photo" class="preview-img" src="../static/no_image.png"
@@ -199,6 +201,7 @@
             <input type="hidden" name=event_id value="{{ event_id }}">
           </form>
         </div>
+        <hr>
         <!-- preview inside the card -->
         <img id="photo_latest" class="preview-img" src="../static/no_image.png"
             alt="Latest detection">
@@ -214,6 +217,7 @@
       </div>
     </section>
   <div id="spacer"></div>
+  <hr>
   <details class="content-box">
     <summary>Konfigurasjon (klikk for å utvide)</summary>
 
