@@ -152,7 +152,7 @@ class GoogleCloudStorageAdapter:
             )
 
             return [
-                {"name": f.name, "url": f.public_url}
+                {"name": f.name, "url": f.public_url, "metadata": f.metadata}
                 for f in blobs
             ]
         except Forbidden as e:

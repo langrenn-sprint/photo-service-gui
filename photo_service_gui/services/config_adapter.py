@@ -45,7 +45,12 @@ class ConfigAdapter:
                 # config not found - find default value
                 config_file = Path(f"{PROJECT_ROOT}/config/global_settings.json")
                 with config_file.open() as json_file:
-                    settings = json.load(json_file)
+                    try:
+                        settings = json.load(json_file)
+                    except json.JSONDecodeError as e:
+                        informasjon = f"Error decoding JSON from {config_file}"
+                        logging.exception(informasjon)
+                        raise web.HTTPBadRequest(reason=informasjon) from e
                     if key in settings:
                         value = settings[key]
                         # create config

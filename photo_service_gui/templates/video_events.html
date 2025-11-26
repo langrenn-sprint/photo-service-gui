@@ -164,12 +164,11 @@
       <div class="col-sm-4">
         <div class="status-card" role="status" aria-live="polite">
           <h4>Målkamera</h4>
-          <p>
-            <span id="capture_video_service_status" class="label label-danger">-</span>
-            <span id="integration_service_status" class="label label-danger">-</span>
-          </p>
-          <small>Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler)
-            {% if service_status.storage_mode_name == "cloud_storage" %} / <strong id="local_captured_queue_length">0</strong> (videoer)</small>{% endif %}
+          <span id="capture_video_service_status" class="label label-danger">-</span>
+          <span id="integration_service_status" class="label label-danger">-</span>
+          <br>
+          Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler)
+          {% if service_status.storage_mode_name == "cloud_storage" %} / <strong id="local_captured_queue_length">0</strong> (videoer){% endif %}
           <form action=/video_events method=post>
             <button type="submit" id="capture_video_service" name="capture_video_service" value="-" class="btn btn-default">-</button>
             <input type="hidden" name=event_id value="{{ event_id }}">
@@ -181,20 +180,17 @@
           <img id="trigger_line_photo" class="preview-img" src="../static/no_image.png"
               alt="Crossing line, click to view big size" title="Click to enlarge">
         </figure>
-
       </div>
-
       <div class="col-sm-4">
         <div class="status-card" role="status" aria-live="polite">
           <h4>Passeringer</h4>
-          <p>
-            <span id="detect_video_service_status" class="label label-danger">-</span>
-          </p>
+          <span id="detect_video_service_status" class="label label-danger">-</span>
+          <br>
           {% if service_status.storage_mode_name == "cloud_storage" %}
-            <small>Kø: <strong id="cloud_captured_queue_length">0</strong></small>
+            Kø: <strong id="cloud_captured_queue_length">0</strong>
           {% else %}
+            Kø: <strong id="local_captured_queue_length">0</strong> (videoer)
             <input type="hidden" id="cloud_captured_queue_length" value="0">
-            <small>Kø: <strong id="local_captured_queue_length">0</strong> (videoer)</small>
           {% endif %}
           <form action=/video_events method=post>
             <button type="submit" id="detect_video_service" name="detect_video_service" value="-" class="btn btn-default">-</button>
@@ -203,14 +199,14 @@
         </div>
         <hr>
         <!-- preview inside the card -->
-        <img id="photo_latest" class="preview-img" src="../static/no_image.png"
-            alt="Latest detection">
-
-
+        <figure class="preview-figure">
+          <img id="photo_latest" class="preview-img" src="../static/no_image.png"
+              alt="Latest detection">
+        </figure>
       </div>
 
       <div class="col-sm-4">
-        <div class="status-card">
+        <div class="status-card" role="status" aria-live="polite">
           <h4>Siste hendelser (logg)</h4>
           <p id="send_result">—</p> 
         </div>
