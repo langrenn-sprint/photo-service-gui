@@ -289,6 +289,7 @@
                   <option value="F">F</option>
                 </select>
                 <small><span id="actual_url"></span></small>
+                <input type="hidden" name=event_id value="{{ event_id }}">
                 <input type="hidden" name=sim_actual_url id=sim_actual_url value="">
                 <script>update_simulation_url()</script>
               </div>
@@ -299,7 +300,7 @@
               </div>
 
               <div style="margin-top:8px;">
-                <button type="submit" name="update_config" class="btn btn-default">Start</button>
+                <button type="submit" name="update_config" class="btn btn-success">Start simulering</button>
               </div>
 
             </fieldset>
