@@ -29,8 +29,6 @@
     <li><b>local_storage</b>: local file system used for storage. Detections are pushed directly to cloud storage by the video service.</li>
     <li><b>cloud_storage</b>: capture run locally and integration service pushing captured files directly to cloud bucket, detection stored directly on cloud storage.</li>
   </ul>
-  <br>
-  <b>Simulering</b>: (For testing) Her er det mulig å få systemet til å generere passeringer. Krever at url til resultatserver (eksempel http://ragdesprinten.norwayeast.azure.com:8080) gis som input.
 {% endblock %}
 <! --- End Information --->
 
@@ -149,15 +147,6 @@
     xhttp.send(formData);
   }
 
-  /* this function will show actual simulation_url */
-  function update_simulation_url() {
-              var sim_url = document.getElementById("sim_list").value;
-              var sim_round = document.getElementById("sim_round").value;
-              var actual_url = sim_url + "/csv?event_id={{ event_id }}&action=startlist&round=" + sim_round;
-              document.getElementById("actual_url").innerHTML = actual_url;
-              document.getElementById("sim_actual_url").value = actual_url;
-            }
-
 </script>
 
     <section class="row" aria-label="Service status">
@@ -216,96 +205,65 @@
   <hr>
   <details class="content-box">
     <summary>Konfigurasjon (klikk for å utvide)</summary>
+    <fieldset>
+      <legend>Video innstillinger</legend>
 
-    <section class="row" aria-label="Previews and configuration">
-      <div class="col-md-6 preview-col">
+      <section class="row" aria-label="Previews and configuration">
+        <div class="col-md-6 preview-col">
           <form action="/video_events" method="post" class="form-vertical" id="config-form" aria-label="Video configuration">
-            <fieldset>
-              <legend>Video innstillinger</legend>
+            <div class="form-group">
+              <label for="trigger_line_xyxyn">Mållinjen</label> (x1:y1:x2:y2 , eks: 0.0:0.75:1.0:0.75)
+              <input id="trigger_line_xyxyn" name="trigger_line_xyxyn" type="text" class="form-control" value="{{ trigger_line_xyxyn }}">
+            </div>
 
-              <div class="form-group">
-                <label for="trigger_line_xyxyn">Mållinjen</label> (x1:y1:x2:y2 , eks: 0.0:0.75:1.0:0.75)
-                <input id="trigger_line_xyxyn" name="trigger_line_xyxyn" type="text" class="form-control" value="{{ trigger_line_xyxyn }}">
-              </div>
+            <div class="form-group">
+              <label for="video_url">Video URL</label>
+              <input id="video_url" name="video_url" type="url" class="form-control" value="{{ video_url }}">
+            </div>
 
-              <div class="form-group">
-                <label for="video_url">Video URL</label>
-                <input id="video_url" name="video_url" type="url" class="form-control" value="{{ video_url }}">
-              </div>
+            <div class="form-group">
+              <label for="video_clip_duration">Videoklipp varighet (s)</label>
+              <input id="video_clip_duration" name="video_clip_duration" type="number" class="form-control" value="{{ service_status.video_clip_duration }}">
+            </div>
 
-              <div class="form-group">
-                <label for="video_clip_duration">Videoklipp varighet (s)</label>
-                <input id="video_clip_duration" name="video_clip_duration" type="number" class="form-control" value="{{ service_status.video_clip_duration }}">
-              </div>
+            <div class="form-group">
+              <label for="video_clip_fps">FPS</label> (antall bilder per sekund)
+              <input id="video_clip_fps" name="video_clip_fps" type="number" class="form-control" value="{{ service_status.video_clip_fps }}">
+            </div>
+        </div>
+        <div class="col-md-6 preview-col">
+            <div class="form-group">
+              <label for="confidence_limit">Confidence limit</label> (minimum confidence for detections)
+              <input id="confidence_limit" name="confidence_limit" type="number" class="form-control" value="{{ service_status.confidence_limit }}">
+            </div>
 
-              <div class="form-group">
-                <label for="video_clip_fps">FPS</label> (antall bilder per sekund)
-                <input id="video_clip_fps" name="video_clip_fps" type="number" class="form-control" value="{{ service_status.video_clip_fps }}">
-              </div>
+            <div class="form-group">
+              <label for="detect_image_size">Image resolution</label>
+              <select name="detect_image_size" class="form-control">
+                <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
+                {% for one_res in service_status.video_analytics_im_size_def %}
+                  <option value={{ one_res }}>{{ one_res }}</option>
+                {% endfor %}
+              </select>
+            </div>
 
-              <div class="form-group">
-                <label for="confidence_limit">Confidence limit</label> (minimum confidence for detections)
-                <input id="confidence_limit" name="confidence_limit" type="number" class="form-control" value="{{ service_status.confidence_limit }}">
-              </div>
-
-              <div class="form-group">
-                <label for="detect_image_size">Image resolution</label>
-                <select name="detect_image_size" class="form-control">
-                  <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
-                  {% for one_res in service_status.video_analytics_im_size_def %}
-                    <option value={{ one_res }}>{{ one_res }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label for="storage_mode">Video storage mode</label>
-                <select id="storage_mode" name="storage_mode" class="form-control">
-                  <option value="0">{{ service_status.storage_mode_name }}</option>
-                  <option value="cloud_storage">Cloud storage</option>
-                  <option value="local_storage">Local storage</option>
-                </select>
-              </div>
-
-              <div style="margin-top:8px;">
-                <input type="hidden" name=event_id value="{{ event_id }}">
-                <button type="submit" name="update_config" class="btn btn-success">Lagre</button>
-                <button type="submit" name="reset_config" class="btn btn-warning">Nullstill</button>
-              </div>
-            </fieldset>
+            <div class="form-group">
+              <label for="storage_mode">Video storage mode</label>
+              <select id="storage_mode" name="storage_mode" class="form-control">
+                <option value="0">{{ service_status.storage_mode_name }}</option>
+                <option value="cloud_storage">Cloud storage</option>
+                <option value="local_storage">Local storage</option>
+              </select>
+            </div>
+            <br>
+            <div style="margin-top:8px;">
+              <input type="hidden" name=event_id value="{{ event_id }}">
+              <button type="submit" name="update_config" class="btn btn-success">Lagre</button>
+              <button type="submit" name="reset_config" class="btn btn-warning">Nullstill</button>
+            </div>
           </form>
-      </div>
-      <div class="col-md-6 preview-col">
-          <form action="/video_events" method="post" class="form-vertical" id="config-form" aria-label="Video configuration">
-            <fieldset>
-              <legend>Simulering av passeringer</legend>
-
-              <div class="form-group">
-                <label for="sim_list">Startlister</label> (url til server som leverer startlister)
-                <input id="sim_list" name="sim_list" type="text" class="form-control" value="http://localhost:8080" onchange=update_simulation_url()>
-                Runde: <select name="sim_round" id="sim_round" onchange=update_simulation_url()>
-                  <option value="Q">Q</option>
-                  <option value="S">S</option>
-                  <option value="F">F</option>
-                </select>
-                <small><span id="actual_url"></span></small>
-                <input type="hidden" name=event_id value="{{ event_id }}">
-                <input type="hidden" name=sim_actual_url id=sim_actual_url value="">
-                <script>update_simulation_url()</script>
-              </div>
-
-              <div class="form-group">
-                <label for="sim_fastest_time">Raskeste tid</label> (antatt løpstid i sekunder)
-                <input id="sim_fastest_time" name="sim_fastest_time" type="number" class="form-control" value="{{ sim_fastest_time }}">
-              </div>
-
-              <div style="margin-top:8px;">
-                <button type="submit" name="update_config" class="btn btn-success">Start simulering</button>
-              </div>
-
-            </fieldset>
-          </form>
-      </div>
+        </div>
+      </fieldset>
   </details>
 
   <script>

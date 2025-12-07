@@ -23,7 +23,4 @@
     "VIDEO_CLIP_FPS": 20,
     "DRAW_TRIGGER_LINE": "False",
     "VIDEO_URL": "",
-    "SIMULATION_CROSSINGS_START": "False",
-    "SIMULATION_START_LIST_FILE": "tests/files/startliste.csv",
-    "SIMULATION_FASTEST_TIME": "300"
 }

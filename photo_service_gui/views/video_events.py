@@ -50,12 +50,6 @@ class VideoEvents(web.View):
                         user["token"], event_id, "VIDEO_URL",
                     ),
                     "service_status": await get_service_status(user["token"], event),
-                    "sim_list": await ConfigAdapter().get_config(
-                        user["token"], event_id, "SIMULATION_START_LIST_FILE",
-                    ),
-                    "sim_fastest_time": await ConfigAdapter().get_config(
-                        user["token"], event_id, "SIMULATION_FASTEST_TIME",
-                    ),
                 },
             )
         except Exception as e:
@@ -287,7 +281,7 @@ async def reset_config(token: str, event: dict) -> str:
 
 
 async def update_config(token: str, event: dict, form: dict) -> str:
-    """Draw trigger line or initiate simulation."""
+    """Draw trigger line."""
     informasjon = ""
     if "trigger_line_xyxyn" in form:
         await ConfigAdapter().update_config(
@@ -319,21 +313,6 @@ async def update_config(token: str, event: dict, form: dict) -> str:
         )
         informasjon = "Video settings updated. "
 
-    elif "sim_actual_url" in form:
-        await ConfigAdapter().update_config(
-            token,
-            event["id"],
-            "SIMULATION_START_LIST_FILE",
-            str(form["sim_actual_url"]),
-        )
-        fastest_time = str(form["sim_fastest_time"])
-        await ConfigAdapter().update_config(
-            token, event["id"], "SIMULATION_FASTEST_TIME", fastest_time,
-        )
-        await ConfigAdapter().update_config(
-            token, event["id"], "SIMULATION_CROSSINGS_START", "True",
-        )
-        informasjon = "Simulering av passeringer er initiert. "
     if "storage_mode" in form:
         new_storage_mode = str(form["storage_mode"])
         informasjon += await update_storage_mode(token, event, new_storage_mode)
