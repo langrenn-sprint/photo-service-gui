@@ -1,5 +1,5 @@
 /*****************************************
-* styles for langrenn sprint webpages    *
+* styles for langrenn sprint webpages    *
 * generic part                           *
 *****************************************/
 
@@ -9,11 +9,30 @@ body {
   background-color: #ddd;
 }
 
+/* Inline form control - styled input that stays inline */
+.form-control-inline {
+  display: inline-block;
+  padding: 4px 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #555;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+
+.form-control-inline:focus {
+  border-color: #66afe9;
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 ul {
   list-style-type: none;
-  margin: 0px;
-  padding: 2px;
-  border-radius:6px;
+  padding: 1px;
+  border-radius:4px;
+  box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2);
 }
 
 a {
@@ -41,7 +60,6 @@ display: none;
 position: absolute;
 background-color: #f9f9f9;
 min-width: 160px;
-box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2);
 }
 
 .dropdown-content a {
@@ -58,6 +76,22 @@ background-color: #f0f0f0;
 
 .dropdown:hover .dropdown-content {
 display: block;
+}
+
+.dropdown-content td {
+  padding: 1px 4px;
+}
+.w3-container td {
+  padding: 1px 4px;
+}
+.w3-container-sticky td {
+  padding: 1px 4px;
+}
+.w3-half td, .w3-third td, .w3-quart td, .w3-fifth td, .w3-sixth td, .w3-row-padding td {
+  padding: 1px 4px;
+}
+.w3-half, .w3-third, .w3-quart, .w3-fifth, .w3-sixth {
+  padding: 1px 1px;
 }
 
 /* tooltip that shows image, centered and covering 80% of the screen */
@@ -79,26 +113,25 @@ height: auto;
 }
 
 table {
-width: 100%;
-border-spacing: 0;
-}
-
-tr:nth-child(even) {
-background-color: #f2f2f2;
+  width: 100%;
+  border-radius: 4px;
+  border-collapse: separate;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 td {
-border-bottom: 1px solid #ddd;
-padding: 2px 2px 2px 2px;
+  padding: 1px 4px;
+  border-bottom: 1px solid #ddd;
 }
 
 #table_border {
-border-left: 1px solid #ddd;
-border-right: 1px solid #ddd;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
 }
 
 #table_border_l {
-border-left: 1px solid #ddd;
+  border-left: 1px solid #ddd;
 }
 
 #table_border_r {
@@ -121,8 +154,6 @@ border-right: 1px solid #ddd;
   color: white;
   background-color: green;
 }
-  /* minimal styling — info box */
-  .info-box { border:1px solid white; color: grey;}
 
 #green {
   color: green;
@@ -144,11 +175,9 @@ border-right: 1px solid #ddd;
   color: black;
   font-weight: bold;
 }
-
 .black {
   color: black;
 }
-
 #white-text {
   color: white;
 }
@@ -160,7 +189,6 @@ border-right: 1px solid #ddd;
 
 #danger-zone {
   color: red;
-  padding: 4px;
   vertical-align: top;
 }
 
@@ -180,9 +208,12 @@ height: 400px;
 
 #spacer {
 height: 4px;
-background-color: white;
 }
 
+#spacer20 {
+  height: 20px;
+  }
+  
 #minispacer {
 height: 1px;
 }
@@ -202,23 +233,20 @@ text-align: center;
 }
 
 #table_header_red {
-  background-color: red;
-  font-weight: bold;
-  color: white;
-  padding: 4px;
+background-color: red;
+font-weight: bold;
+color: white;
 }
 
 #table_header_orange {
 background-color: orange;
 font-weight: bold;
-padding: 4px;
 }
 
 #table_header_green {
   background-color: green;
   font-weight: bold;
   color: white;
-  padding: 4px;
 }
 
 #tablespacer {
@@ -264,13 +292,14 @@ vertical-align: bottom;
 }
 
 /**** Colors and tooltip for race dashboard - KPIs ****/
-#kpi1 {background-color: rgba(200, 200, 200, 0.7); padding: 4px;}  /* 1 not started */
-#kpi2 {background-image: linear-gradient(to right, rgba(200, 200, 200, 0.7), white, rgba(255, 255, 0, 0.7)); padding: 4px;}  /* 2 not started - with DNS */
-#kpi3 {background-color: rgba(255, 255, 0, 0.7); padding: 4px;}  /* 3 started - no results */
-#kpi4 {background-image: linear-gradient(to right, rgba(255, 255, 0, 0.7), white, rgba(0, 255, 0, 0.7)); padding: 4px;}  /* 4 partial results - with DNF */
-#kpix {background-color: rgba(155, 255, 0, 0.7); padding: 4px;}
-#kpi5 {background-color: rgba(0, 255, 0, 0.7); padding: 4px;}  /* 5 all results ok */
-#kpi6 {background-color: rgba(255, 0, 0, 0.7); padding: 4px;}  /* 6 other error */
+.kpi0 {padding: 4px;}  /* 0 empty heat */
+.kpi1 {background-color: rgba(200, 200, 200, 0.7); padding: 4px;}  /* 1 not started */
+.kpi2 {background-image: linear-gradient(to right, rgba(200, 200, 200, 0.7), white, rgba(255, 255, 0, 0.7)); padding: 4px;}  /* 2 not started - with DNS */
+.kpi3 {background-color: rgba(255, 255, 0, 0.7); padding: 4px;}  /* 3 started - no results */
+.kpi4 {background-image: linear-gradient(to right, rgba(255, 255, 0, 0.7), white, rgba(0, 255, 0, 0.7)); padding: 4px;}  /* 4 partial results - with DNF */
+.kpi5 {background-color: rgba(0, 255, 0, 0.7); padding: 4px;}  /* 5 all results ok */
+.kpi6 {background-color: rgba(255, 0, 0, 0.7); padding: 4px;}  /* 6 other error */
+.kpix {background-color: rgba(155, 255, 0, 0.7); padding: 4px;}
 
 .tooltip_race {
   position: relative;
@@ -282,7 +311,7 @@ vertical-align: bottom;
   background-color: black;
   color: #fff;
   text-align: center;
-  border-radius: 6px;
+  border-radius: 4px;
   padding: 5px 0;
   position: absolute;
   z-index: 100;
@@ -307,28 +336,22 @@ vertical-align: bottom;
 /**** Responsivt design ****/
 .w3-container {
 background-color: white;
-padding:0.01em 0px;
 }
 
 .w3-container-sticky {
-  background-color: white;
-  padding: 0.01em 0px;
-  position: -webkit-sticky;
-  position: sticky;
-  z-index: 99;
-  top: 0;
+background-color: white;
+position: -webkit-sticky;
+position: sticky;
+z-index: 99;
+top: 0;
 }
 
 .w3-footer-sticky {
-  padding:0.01em 0px;
   position: fixed;
   width: 100%;
   bottom: 0;
 }
 
-.w3-third,.w3-twothird,.w3-quart,.w3-10,.w3-80,.w3-row-padding,.w3-half {
-padding:0.01em 2px;
-}
 .w3-container:after,.w3-container:before,.w3-row-padding:after,.w3-row-padding:before {
 content:"";
 display:table;
@@ -403,7 +426,6 @@ content: "";
 clear: both;
 display: table;
 }
-
 
 /* End responsive design */
 
@@ -684,29 +706,4 @@ img.hover-shadow {
 
 .hover-shadow:hover {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-}
-
-.lamp {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin: 0 8px;
-  position: relative;
-  vertical-align: middle;
-  box-shadow: 0 0 8px #0002;
-}
-.lamp-red {
-  background: #e53935;
-}
-.lamp-green {
-  background: #43a047;
-  animation: blink-green 1s infinite alternate;
-}
-.lamp-yellow {
-  background: #ffd600;
-}
-@keyframes blink-green {
-  from { opacity: 1; }
-  to   { opacity: 0.5; }
 }

@@ -2,44 +2,40 @@
 * styles for langrenn sprint webpages    *
 * club specific part                     *
 *
-* Lyn farger: Rød vanlig:  #A30013
-*             Rød mørk (hover) #75000e
+* Lyn farger: Rød vanlig:  lightgray
+*             Rød mørk (hover) gray
               Blå #1f3d8e
 *
-* Kjelsås farger:
-              Kongeblå (PMS 280) - #00247d
-              Orange PMS 1365 - #ffb549
-              Lys blå PMS 278 - #94b5e0
 *****************************************/
 
 
 ul {
-  background-color: #94b5e0;
+  background-color: lightgray;
 }
 
 .active {
-  background-color: #00247d;
+  background-color: gray;
 }
 
 li:hover, .dropdown:hover, .dropbtn:hover {
-background-color: #00247d;
+background-color: gray;
 }
 
 .visible_link {
-background-color: #94b5e0;
+background-color: lightgray;
 text-decoration: none;
 color: white;
 }
 
 #headerblue {
 color: white;
-background-color: #00247d;
+background-color: lightgray;
 font-weight: bold;
 }
 
 #headerblack {
-color: black;
-background-color: #ffb549;
+color: white;
+background-color: #1f3d8e;
 font-weight: bold;
 }
 
@@ -47,7 +43,7 @@ font-weight: bold;
   text-align: left;
   font-size: 1.5em;
   color: white;
-  background-color: #94b5e0;
+  background-color: lightgray;
   padding: 1px 4px;
   border-radius:6px;
   box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2);
@@ -57,13 +53,13 @@ font-weight: bold;
 text-align: center;
 color: white;
 font-size: 1.5em;
-background-color: #94b5e0;
+background-color: lightgray;
 }
-
 #footeradmin {
-background-color: #94b5e0;
+background-color: lightgray;
 color: white;
 text-align: center;
+width: 100%;
 padding: 5px 5px 5px 5px;
 }
 
@@ -72,14 +68,14 @@ padding: 5px 5px 5px 5px;
   margin-bottom:12px;
   padding:6px;
   border-radius:6px;
-  background-color: #94b5e0;
+  background-color: lightgray;
   color: white;
   box-shadow: 0px 2px 2px 0px rgba(0,0,0,0.2);
 }
-.content-box { margin-bottom:12px; padding:6px; border:1px solid #94b5e0; border-radius:6px; }
+.content-box { margin-bottom:12px; padding:6px; border:1px solid lightgray; border-radius:6px; }
 
 .event-logo-small {
-  content: url('logo/kjelsaas_logo.png');
+  content: url('icon_live.png');
   width: 25px;
   height: 25px;
 }

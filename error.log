@@ -240,3 +240,325 @@ Traceback (most recent call last):
   File "/usr/lib/python3.12/json/decoder.py", line 355, in raw_decode
     raise JSONDecodeError("Expecting value", s, err.value) from None
 json.decoder.JSONDecodeError: Expecting value: line 1 column 2 (char 1)
+2025-12-07 22:03:52,046 - ERROR - Video events update
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 141, in start_connection
+    raise OSError(first_errno, msg)
+ConnectionRefusedError: [Errno 111] Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 88, in post
+    response["video_status"] = await get_analytics_status(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        user["token"], event,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 156, in get_analytics_status
+    result_list = await StatusAdapter().get_status(token, event["id"], 8)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/status_adapter.py", line 36, in get_status
+    async with ClientSession() as session, session.get(
+                                           ~~~~~~~~~~~^
+        f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event_id}",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        headers=headers,
+        ^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1581, in _create_direct_connection
+    raise last_exc
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1291, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host localhost:8092 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)]
+2025-12-07 22:03:52,187 - ERROR - Error. Redirect to main page.
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 141, in start_connection
+    raise OSError(first_errno, msg)
+ConnectionRefusedError: [Errno 111] Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 46, in get
+    "trigger_line_xyxyn": await ConfigAdapter().get_config(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        user["token"], event_id, "TRIGGER_LINE_XYXYN",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ),
+    ^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 35, in get_config
+    async with ClientSession() as session, session.get(
+                                           ~~~~~~~~~~~^
+        f"{PHOTO_SERVICE_URL}/config?key={key}&eventId={event_id}",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        headers=headers,
+        ^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1581, in _create_direct_connection
+    raise last_exc
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1291, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host localhost:8092 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)]
+2025-12-07 22:06:35,842 - ERROR - Video events update
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 141, in start_connection
+    raise OSError(first_errno, msg)
+ConnectionRefusedError: [Errno 111] Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 88, in post
+    response["video_status"] = await get_analytics_status(
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        user["token"], event,
+        ^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 156, in get_analytics_status
+    result_list = await StatusAdapter().get_status(token, event["id"], 8)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/status_adapter.py", line 36, in get_status
+    async with ClientSession() as session, session.get(
+                                           ~~~~~~~~~~~^
+        f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event_id}",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        headers=headers,
+        ^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1581, in _create_direct_connection
+    raise last_exc
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1291, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host localhost:8092 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)]
+2025-12-07 22:06:35,851 - ERROR - Error. Redirect to main page.
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 141, in start_connection
+    raise OSError(first_errno, msg)
+ConnectionRefusedError: [Errno 111] Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/video_events.py", line 46, in get
+    "trigger_line_xyxyn": await ConfigAdapter().get_config(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        user["token"], event_id, "TRIGGER_LINE_XYXYN",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ),
+    ^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/config_adapter.py", line 35, in get_config
+    async with ClientSession() as session, session.get(
+                                           ~~~~~~~~~~~^
+        f"{PHOTO_SERVICE_URL}/config?key={key}&eventId={event_id}",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        headers=headers,
+        ^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1581, in _create_direct_connection
+    raise last_exc
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1291, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host localhost:8092 ssl:default [Multiple exceptions: [Errno 111] Connect call failed ('::1', 8092, 0, 0), [Errno 111] Connect call failed ('127.0.0.1', 8092)]
+2025-12-16 20:35:52,472 - ERROR - Error
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1268, in _wrap_create_connection
+    sock = await aiohappyeyeballs.start_connection(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 122, in start_connection
+    raise first_exception
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 73, in start_connection
+    sock = await _connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^
+    ...<6 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohappyeyeballs/impl.py", line 208, in _connect_sock
+    await loop.sock_connect(sock, address)
+  File "/usr/lib/python3.13/asyncio/selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "/usr/lib/python3.13/asyncio/selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+OSError: [Errno 113] Connect call failed ('10.0.0.20', 8080)
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hh/github/photo-service-gui/photo_service_gui/views/main.py", line 60, in post
+    informasjon = await EventsAdapter().sync_events(
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        user["token"], server_url,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/photo_service_gui/services/events_adapter.py", line 163, in sync_events
+    async with ClientSession() as session, session.get(
+                                           ~~~~~~~~~~~^
+        url, headers=headers,
+        ^^^^^^^^^^^^^^^^^^^^^
+    ) as resp:
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 1510, in __aenter__
+    self._resp: _RetType = await self._coro
+                           ^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 779, in _request
+    resp = await handler(req)
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/client.py", line 734, in _connect_and_send_request
+    conn = await self._connector.connect(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        req, traces=traces, timeout=real_timeout
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 642, in connect
+    proto = await self._create_connection(req, traces, timeout)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1209, in _create_connection
+    _, proto = await self._create_direct_connection(req, traces, timeout)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1581, in _create_direct_connection
+    raise last_exc
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1550, in _create_direct_connection
+    transp, proto = await self._wrap_create_connection(
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+    )
+    ^
+  File "/home/hh/github/photo-service-gui/.venv/lib/python3.13/site-packages/aiohttp/connector.py", line 1291, in _wrap_create_connection
+    raise client_error(req.connection_key, exc) from exc
+aiohttp.client_exceptions.ClientConnectorError: Cannot connect to host 10.0.0.20:8080 ssl:default [Connect call failed ('10.0.0.20', 8080)]
