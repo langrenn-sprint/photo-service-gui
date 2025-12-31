@@ -21,6 +21,7 @@ from .views import (
     Main,
     Photos,
     Ping,
+    Status,
     VideoEvents,
 )
 
@@ -75,6 +76,7 @@ async def create_app() -> web.Application:
             web.view("/logout", Logout),
             web.view("/ping", Ping),
             web.view("/photos", Photos),
+            web.view("/status", Status),
             web.view("/video_events", VideoEvents),
         ],
     )

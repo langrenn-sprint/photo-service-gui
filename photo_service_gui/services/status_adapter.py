@@ -127,13 +127,19 @@ class StatusAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ],
         )
-        url = f"{PHOTO_SERVICE_URL}/status?event_id={event['id']}"
+        url = f"{PHOTO_SERVICE_URL}/status?eventId={event['id']}"
         async with ClientSession() as session, session.delete(
             url, headers=headers,
         ) as resp:
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.debug(f"result - got response {resp}")
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"401 Unathorized - {servicename}"
+                raise web.HTTPBadRequest(reason=err_msg)
             else:
-                logging.error(f"{servicename} failed - {resp.status} - {resp}")
-                raise web.HTTPBadRequest(reason=f"Error - {resp.status}: {resp}.")
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}.",
+                )
         return resp.status

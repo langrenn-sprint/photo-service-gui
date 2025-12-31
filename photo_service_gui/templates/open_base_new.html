@@ -61,10 +61,11 @@
                     <a id="myIndex" href=/><img id=menu_icon src="../static/icon_event.png"> Forsiden</a>
                     {% if event_id %}
                         {% if username != "Gjest" %}
-                        </td><td>
+                        </td><td width=200></td><td>
                             <a href=photos?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Foto</a>
                             <a href=video_events?event_id={{ event_id }}><img id=menu_icon src="../static/icon_photos_adm.png"> Admin: Deteksjon målpassering</a>
                             <a href=config?event_id={{ event_id }}><img id=menu_icon src="../static/icon_settings.png"> Admin: Innstillinger</a>
+                            <a href=status?event_id={{ event_id }}><img id=menu_icon src="../static/icon_timing.png"> Admin: Status</a>
                         {% endif %}
                     {% endif %}
                     </td></tr></table>
