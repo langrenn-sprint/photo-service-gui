@@ -163,7 +163,12 @@ async def get_analytics_status(token: str, event: dict) -> str:
             res_type = "(detect)"
         elif res["type"] == "integration_status":
             res_type = "(upload)"
-        response += f"{info_time} {res_type} - {res['message']}<br>"
+        if "Error" in res["message"]:
+            response += f"{info_time} {res_type} - <span id=red>{
+                res['message']
+            }</span><br>"
+        else:
+            response += f"{info_time} {res_type} - {res['message']}<br>"
     return response
 
 

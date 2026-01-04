@@ -65,7 +65,12 @@
                     {% elif status_message.type == "video_status_CAPTURE" %}(video)
                     {% elif status_message.type == "video_status_DETECT" %}(detect)
                     {% endif %}:
-                    {{ status_message.message }} (<a title="{{ status_message.details }}">mer</a>)<br>
+                    {% if "Error" in status_message.message %}
+                        <span id=red>{{ status_message.message }}</span>
+                    {% else %}
+                        {{ status_message.message }}
+                    {% endif %}
+                    (<a title="{{ status_message.details }}">mer</a>)<br>
                 {% endfor %}
           </div>
         </div>
