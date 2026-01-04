@@ -79,7 +79,7 @@ class StatusAdapter:
         return status
 
     async def create_status(
-        self, token: str, event: dict, status_type: str, message: str,
+        self, token: str, event: dict, status_type: str, message: str, details: dict,
     ) -> str:
         """Create new status function."""
         servicename = "create_status"
@@ -96,6 +96,7 @@ class StatusAdapter:
             "time": time,
             "type": status_type,
             "message": message,
+            "details": details,
         }
         request_body = copy.deepcopy(status_dict)
 
