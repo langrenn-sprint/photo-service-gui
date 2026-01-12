@@ -17,6 +17,62 @@ class Photos(web.View):
 
     """Class representing the photos edit view."""
 
+    def _delete_photos(self, form: dict) -> tuple[str, str]:
+        """Delete selected photos."""
+        informasjon = "Sletting utført: "
+        error_text = ""
+        for key, value in form.items():
+            if key.startswith("edit_photo"):
+                photo_name = str(value)
+                result = GoogleCloudStorageAdapter().delete_blob(photo_name)
+                logging.debug(f"Deleted photo - {result}")
+                informasjon += f"{key} "
+        return informasjon, error_text
+
+    def _move_photos_to_capture(self, form: dict) -> tuple[str, str]:
+        """Move selected photos from archive to capture (inbox)."""
+        informasjon = "Flytting til innboks utført: "
+        error_text = ""
+        for key, value in form.items():
+            if key.startswith("edit_photo"):
+                photo_name = str(value)
+                if "/DETECT_ARCHIVE/" in photo_name:
+                    new_photo_name = photo_name.replace(
+                        "/DETECT_ARCHIVE/",
+                        "/DETECT/",
+                    )
+                    result = GoogleCloudStorageAdapter().move_blob(
+                        photo_name,
+                        new_photo_name,
+                    )
+                    logging.debug(f"Moved photo to capture - {result}")
+                    informasjon += f"{key}. "
+                else:
+                    error_text += f" {key}. "
+        return informasjon, error_text
+
+    def _move_photos_to_archive(self, form: dict) -> tuple[str, str]:
+        """Move selected photos from capture (inbox) to archive."""
+        informasjon = "Flytting til arkiv utført: "
+        error_text = ""
+        for key, value in form.items():
+            if key.startswith("edit_photo"):
+                photo_name = str(value)
+                if "/DETECT/" in photo_name:
+                    new_photo_name = photo_name.replace(
+                        "/DETECT/",
+                        "/DETECT_ARCHIVE/",
+                    )
+                    result = GoogleCloudStorageAdapter().move_blob(
+                        photo_name,
+                        new_photo_name,
+                    )
+                    logging.debug(f"Moved photo to archive - {result}")
+                    informasjon += f"{key}. "
+                else:
+                    error_text += f" {key}. "
+        return informasjon, error_text
+
     async def get(self) -> web.Response:
         """Get route function that return the dashboards page."""
         try:
@@ -24,10 +80,9 @@ class Photos(web.View):
         except Exception:
             action = ""
         try:
-            my_filter = self.request.rel_url.query["filter"]
+            photo_type = self.request.rel_url.query["photo_type"]
         except Exception:
-            my_filter = ""
-        logging.debug(f"Action: {action}, Filter: {my_filter}")
+            photo_type = ""
         try:
             event_id = self.request.rel_url.query["event_id"]
         except Exception:
@@ -48,6 +103,9 @@ class Photos(web.View):
             )
             photos.reverse()
 
+            if photo_type:
+                photos = [photo for photo in photos if photo_type in photo["name"]]
+
             return await aiohttp_jinja2.render_template_async(
                 "photos.html",
                 self.request,
@@ -59,6 +117,7 @@ class Photos(web.View):
                     "informasjon": informasjon,
                     "local_time_now": EventsAdapter().get_local_time(event, "HH:MM"),
                     "photos": photos,
+                    "photo_type": photo_type,
                     "username": user["name"],
                 },
             )
@@ -68,34 +127,38 @@ class Photos(web.View):
 
     async def post(self) -> web.Response:
         """Post route function that updates a collection of photos."""
-        informasjon = ""
         form = dict(await self.request.post())
         event_id = str(form["event_id"])
         user = await check_login(self)
+
         if not user:
-                informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-                return web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}",
-                )
+            informasjon = "Ingen tilgang, vennligst logg inn på nytt."
+            return web.HTTPSeeOther(
+                location=f"/login?informasjon={informasjon}",
+            )
 
         try:
             if "delete_select" in form:
-                informasjon = "Sletting utført: "
-                for key, value in form.items():
-                    if key.startswith("delete_photo"):
-                        photo_name = str(value)
-                        result = GoogleCloudStorageAdapter().delete_blob(photo_name)
-                        logging.debug(f"Deleted photo - {result}")
-                        informasjon += f"{key} "
+                informasjon, error_text = self._delete_photos(form)
+            elif "move_to_capture" in form:
+                informasjon, error_text = self._move_photos_to_capture(form)
+            elif "move_to_archive" in form:
+                informasjon, error_text = self._move_photos_to_archive(form)
+            else:
+                informasjon, error_text = "", ""
+
+            if error_text:
+                informasjon += f"Feil (ulovlig flytting): {error_text}"
+
         except Exception as e:
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
-            error_reason = str(e)
-            if error_reason.count("401 Unauthorized") > 0   :
+            if "401 Unauthorized" in str(e):
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
                 )
+
         return web.HTTPSeeOther(
             location=f"/photos?event_id={event_id}&informasjon={informasjon}",
         )

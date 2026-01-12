@@ -70,7 +70,14 @@
                     {% else %}
                         {{ status_message.message }}
                     {% endif %}
-                    (<a title="{{ status_message.details }}">mer</a>)<br>
+                    {% if status_message.details %}
+                      <details style="display: inline;">
+                          <summary style="display: inline; list-style: none; color: #0066cc; text-decoration: underline; cursor: pointer;">(detaljer)</summary>
+                          <pre style="margin: 5px 0; padding: 8px; background: #f5f5f5; border-left: 3px solid #ccc; font-size: 0.9em; white-space: pre-wrap;">{{ status_message.details | tojson(indent=2) }}</pre>
+                      </details>
+                    {% else %}
+                      <br>
+                    {% endif %}
                 {% endfor %}
           </div>
         </div>
