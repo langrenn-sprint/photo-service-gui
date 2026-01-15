@@ -89,11 +89,11 @@ Then install the dependencies:
 
 ## Start the server locally (with all required services):
 
-```Zsh
-% uv run adev runserver -p 8096 photo_service_gui
+set -a
+source .env
+set +a
+uv run adev runserver -p 8096 photo_service_gui
 docker compose up integration-service race-service competition-format-service photo-service user-service event-service mongodb capture-video-service
-
-```
 
 ## Running the wsgi-server in Docker
 

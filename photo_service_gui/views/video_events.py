@@ -44,10 +44,10 @@ class VideoEvents(web.View):
                     "informasjon": informasjon,
                     "username": user["name"],
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
-                        user["token"], event_id, "TRIGGER_LINE_XYXYN",
+                        user["token"], event_id, "TRIGGER_LINE_XYXYN"
                     ),
                     "video_url": await ConfigAdapter().get_config(
-                        user["token"], event_id, "VIDEO_URL",
+                        user["token"], event_id, "VIDEO_URL"
                     ),
                     "service_status": await get_service_status(user["token"], event),
                 },
