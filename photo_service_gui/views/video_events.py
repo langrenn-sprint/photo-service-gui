@@ -8,6 +8,7 @@ from aiohttp import web
 
 from photo_service_gui.services import (
     ConfigAdapter,
+    EventsAdapter,
     GoogleCloudStorageAdapter,
     PhotosFileAdapter,
     StatusAdapter,
@@ -42,12 +43,13 @@ class VideoEvents(web.View):
                     "event": event,
                     "event_id": event_id,
                     "informasjon": informasjon,
+                    "local_time_now": EventsAdapter().get_local_time(event, "HH:MM"),
                     "username": user["name"],
                     "trigger_line_xyxyn": await ConfigAdapter().get_config(
-                        user["token"], event_id, "TRIGGER_LINE_XYXYN"
+                        user["token"], event_id, "TRIGGER_LINE_XYXYN",
                     ),
                     "video_url": await ConfigAdapter().get_config(
-                        user["token"], event_id, "VIDEO_URL"
+                        user["token"], event_id, "VIDEO_URL",
                     ),
                     "service_status": await get_service_status(user["token"], event),
                 },
@@ -158,11 +160,11 @@ async def get_analytics_status(token: str, event: dict) -> str:
         info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"
         res_type = ""
         if res["type"] == "video_status_CAPTURE":
-            res_type = "(video)"
+            res_type = "<img id=menu_icon src=../static/capture.png title=Video>"
         elif res["type"] == "video_status_DETECT":
-            res_type = "(detect)"
+            res_type = "<img id=menu_icon src=../static/detect.png title=Deteksjon>"
         elif res["type"] == "integration_status":
-            res_type = "(upload)"
+            res_type = "<img id=menu_icon src=../static/upload.png title=Opplasting>"
         if "Error" in res["message"]:
             response += f"{info_time} {res_type} - <span id=red>{
                 res['message']

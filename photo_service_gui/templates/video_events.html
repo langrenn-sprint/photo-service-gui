@@ -9,7 +9,11 @@
 {% block titlemain %}
   <img id=menu_icon src="../static/icon_photos.png"> Deteksjon målpassering
 {% endblock %}
-{% block menuitems %}{% endblock %}
+{% block menuitems %}
+  <li class=dropdown>
+    <a class=dropbtn><b>Kl: {{ local_time_now }}</b></a>
+  </li>
+{% endblock %}
 
 <! --- Information --->
 {% block tips %}
