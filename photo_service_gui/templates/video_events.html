@@ -38,6 +38,79 @@
 
 {% block content %}
 <script>
+  /* Calculate time elapsed since timestamp in HH:MM:SS format */
+  function getTimeAgo(timestamp) {
+    if (!timestamp) return '-';
+    
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now - then;
+    
+    if (diffMs < 0) return '0:00:00';
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(seconds).padStart(2, '0');
+    
+    if (hours > 0) {
+      return `${hours} hours`;
+    } else if (minutes > 0) {
+      return `${minutes} min`;
+    } else {
+      return `${ss} sek`;
+    }
+  }
+
+  /* Format service instances for display */
+  function formatServiceInstances(instances, service_type) {
+    if (!instances || instances.length === 0) {
+      return '<p>Ingen aktive tjenester</p>';
+    }
+    
+    let html = '';
+    instances.forEach(instance => {
+      if (!instance.service_type.includes(service_type)) {
+        return;
+      }
+      
+      const statusClass = instance.status === 'running' ? 'label-success' : 
+                          instance.status === 'stopped' ? 'label-default' : 'label-warning';
+      const actionButton = instance.status === 'running' ? 'stop' : 'start';
+      
+      html += `
+          <div class="status-card" role="status" aria-live="polite">
+            <table>
+              <tr>
+                <td><strong>${instance.service_type}</strong></td>
+                <td rowspan="2"><span class="label ${statusClass}" style="padding: 7px;">${instance.status}</span></td>
+              </tr>
+              <tr>
+                <td><strong>Instance:</strong> ${instance.instance_name}</td>
+              </tr>
+              <tr>
+                <td><strong>Started:</strong> ${instance.started_at}</td>
+                <td rowspan="2">
+                  <form action=/video_events method=post>
+                    <button type="submit" name="action" value="${actionButton}" class="btn btn-default">${actionButton}</button>
+                    <input type="hidden" name=instance_id value="${instance.id}">
+                    <input type="hidden" name=event_id value="{{ event_id }}">
+                  </form></div>
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Last seen:</strong> ${getTimeAgo(instance.last_heartbeat)} ago</td>
+              </tr>
+            </table>
+      `;
+      html += '</div><br>';
+    });
+    
+    return html;
+  }
+
   /* this function will sync (update+get) status updates with backend */
   let syncRunning = false;
   function sync_status() {
@@ -55,6 +128,8 @@
           // load new info
           const jsonDoc = JSON.parse(xhttp.response);
           document.getElementById("send_result").innerHTML = jsonDoc.video_status;
+          document.getElementById("capture_service_instances").innerHTML = formatServiceInstances(jsonDoc.service_instances, 'CAPTURE');
+          document.getElementById("detect_service_instances").innerHTML = formatServiceInstances(jsonDoc.service_instances, 'DETECT');
           document.getElementById("local_raw_captured_queue_length").innerHTML = jsonDoc.local_raw_captured_queue_length;
           document.getElementById("local_captured_queue_length").innerHTML = jsonDoc.local_captured_queue_length;
           document.getElementById("cloud_captured_queue_length").innerHTML = jsonDoc.cloud_captured_queue_length;
@@ -71,73 +146,6 @@
           }
           else {
             document.getElementById("trigger_line_photo").src = "../static/no_image.png";
-          }
-
-          // Update service status indicators - capture video service
-          if (jsonDoc.service_status.capture_video_available) {
-            if (jsonDoc.service_status.capture_video_start) {
-              document.getElementById("capture_video_service_status").innerHTML = "Video: Kjører";
-              document.getElementById("capture_video_service_status").className = "label label-success";
-              document.getElementById("capture_video_service").innerHTML = "Stopp";
-              document.getElementById("capture_video_service").value = "Stop";
-              document.getElementById("capture_stop").innerHTML = "Stopp video";
-              document.getElementById("capture_stop").value = "Stop capture";
-              document.getElementById("capture_stop").style.display = "inline-block";
-            } else {
-                document.getElementById("capture_video_service_status").innerHTML = "Video: Pauset";
-                document.getElementById("capture_video_service_status").className = "label label-warning";
-                document.getElementById("capture_video_service").innerHTML = "Start";
-                document.getElementById("capture_video_service").value = "Start";
-                document.getElementById("capture_stop").innerHTML = "-";
-                document.getElementById("capture_stop").value = "-";
-                document.getElementById("capture_stop").style.display = "none";
-            }
-          } else {
-            document.getElementById("capture_video_service_status").innerHTML = "Video: Ikke tilgjengelig";
-            document.getElementById("capture_video_service_status").className = "label label-danger";
-            document.getElementById("capture_video_service").innerHTML = "-";
-            document.getElementById("capture_video_service").value = "-";
-            document.getElementById("capture_stop").innerHTML = "-";
-            document.getElementById("capture_stop").value = "-";
-            document.getElementById("capture_stop").style.display = "none";
-          }
-
-          // Update service status indicators - integration service
-          if (jsonDoc.service_status.integration_available) {
-            if (jsonDoc.service_status.integration_start) {
-              document.getElementById("integration_service_status").innerHTML = "Opplasting: Kjører";
-              document.getElementById("integration_service_status").className = "label label-success";
-              document.getElementById("capture_video_service").innerHTML = "Stopp";
-              document.getElementById("capture_video_service").value = "Stop";
-            } else {
-              document.getElementById("integration_service_status").innerHTML = "Opplasting: Pauset";
-              document.getElementById("integration_service_status").className = "label label-warning";
-              document.getElementById("capture_video_service").innerHTML = "Start";
-              document.getElementById("capture_video_service").value = "Start";
-            }
-          } else {
-            document.getElementById("integration_service_status").innerHTML = "Opplasting: Ikke tilgjengelig";
-            document.getElementById("integration_service_status").className = "label label-danger";
-          }
-
-          // Update service status indicators - detect video service
-          if (jsonDoc.service_status.detect_video_available) {
-            if (jsonDoc.service_status.detect_video_start) {
-              document.getElementById("detect_video_service_status").innerHTML = "Deteksjon: Kjører";
-              document.getElementById("detect_video_service_status").className = "label label-success";
-              document.getElementById("detect_video_service").innerHTML = "Stopp";
-              document.getElementById("detect_video_service").value = "Stop";
-            } else {
-              document.getElementById("detect_video_service_status").innerHTML = "Deteksjon: Pauset";
-              document.getElementById("detect_video_service_status").className = "label label-warning";
-              document.getElementById("detect_video_service").innerHTML = "Start";
-              document.getElementById("detect_video_service").value = "Start";
-            }
-          } else {
-            document.getElementById("detect_video_service_status").innerHTML = "Deteksjon: Ikke tilgjengelig";
-            document.getElementById("detect_video_service_status").className = "label label-danger";
-            document.getElementById("detect_video_service").innerHTML = "-";
-            document.getElementById("detect_video_service").value = "-";
           }
 
         }
@@ -164,23 +172,18 @@
   }
 
 </script>
-
     <section class="row" aria-label="Service status">
       <div class="col-sm-4">
-        <div class="status-card" role="status" aria-live="polite">
-          <h4>Målkamera</h4>
-          <span id="capture_video_service_status" class="label label-danger">-</span>
-          <span id="integration_service_status" class="label label-danger">-</span>
-          <br>
-          Kø: <strong id="local_raw_captured_queue_length">0</strong> (råfiler)
-          {% if service_status.storage_mode_name == "cloud_storage" %} / <strong id="local_captured_queue_length">0</strong> (videoer){% endif %}
-          <form action=/video_events method=post>
-            <button type="submit" id="capture_video_service" name="capture_video_service" value="-" class="btn btn-default">-</button>
-            <button type="submit" id="capture_stop" name="capture_stop" value="-" class="btn btn-default">-</button>
-            <input type="hidden" name=event_id value="{{ event_id }}">
-          </form>
-        </div>
-        <hr>
+        <table>
+          <tr>
+            <td><h4>Målkamera</h4></td>
+            <td>
+              (<strong id="local_raw_captured_queue_length">0</strong> råfiler
+              {% if service_status.storage_mode_name == "cloud_storage" %} og <strong id="local_captured_queue_length">0</strong> videoer{% endif %} i kø)
+            </td>
+          </tr>
+        </table>
+        <span id="capture_service_instances"></span>
         <!-- preview inside the card -->
         <figure class="preview-figure">
           <img id="trigger_line_photo" class="preview-img" src="../static/no_image.png"
@@ -188,32 +191,39 @@
         </figure>
       </div>
       <div class="col-sm-4">
+        <table>
+          <tr>
+            <td><h4>Passeringer</h4></td>
+            <td>(
+              {% if service_status.storage_mode_name == "cloud_storage" %}
+                <strong id="cloud_captured_queue_length">0</strong>
+              {% else %}
+                <strong id="local_captured_queue_length">0</strong>
+                <input type="hidden" id="cloud_captured_queue_length" value="0">
+              {% endif %} videoer i kø)
+            </td>
+          </tr>
+        </table>
         <div class="status-card" role="status" aria-live="polite">
-          <h4>Passeringer</h4>
-          <span id="detect_video_service_status" class="label label-danger">-</span>
-          <br>
-          {% if service_status.storage_mode_name == "cloud_storage" %}
-            Kø: <strong id="cloud_captured_queue_length">0</strong>
-          {% else %}
-            Kø: <strong id="local_captured_queue_length">0</strong> (videoer)
-            <input type="hidden" id="cloud_captured_queue_length" value="0">
-          {% endif %}
-          <form action=/video_events method=post>
-            <button type="submit" id="detect_video_service" name="detect_video_service" value="-" class="btn btn-default">-</button>
-            <input type="hidden" name=event_id value="{{ event_id }}">
-          </form>
+          <span id="detect_service_instances"></span>
         </div>
-        <hr>
         <!-- preview inside the card -->
         <figure class="preview-figure">
           <img id="photo_latest" class="preview-img" src="../static/no_image.png"
               alt="Latest detection">
         </figure>
+        <div class="status-card" role="status" aria-live="polite">
+          <form action=/video_events method=post>
+            <button type="submit" name="start_all" class="btn btn-default">Start all services</button>
+            <button type="submit" name="stop_all" class="btn btn-default">Stop all services</button>
+            <input type="hidden" name=event_id value="{{ event_id }}">
+          </form>
+        </div>
       </div>
 
       <div class="col-sm-4">
+        <h4>Siste hendelser (logg)</h4>
         <div class="status-card" role="status" aria-live="polite">
-          <h4>Siste hendelser (logg)</h4>
           <p id="send_result">—</p> 
         </div>
       </div>

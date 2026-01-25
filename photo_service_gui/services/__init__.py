@@ -7,5 +7,6 @@ from .foto_service import FotoService
 from .google_cloud_storage_adapter import GoogleCloudStorageAdapter
 from .photos_adapter import PhotosAdapter
 from .photos_file_adapter import PhotosFileAdapter
+from .service_instance_adapter import ServiceInstanceAdapter
 from .status_adapter import StatusAdapter
 from .user_adapter import UserAdapter

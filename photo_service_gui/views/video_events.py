@@ -11,6 +11,7 @@ from photo_service_gui.services import (
     EventsAdapter,
     GoogleCloudStorageAdapter,
     PhotosFileAdapter,
+    ServiceInstanceAdapter,
     StatusAdapter,
 )
 
@@ -34,6 +35,9 @@ class VideoEvents(web.View):
         try:
             user = await check_login(self)
             event = await get_event(user, event_id)
+            _instances = await ServiceInstanceAdapter().get_all_service_instances(
+                        user["token"], event_id,
+                    )
 
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
@@ -52,6 +56,7 @@ class VideoEvents(web.View):
                         user["token"], event_id, "VIDEO_URL",
                     ),
                     "service_status": await get_service_status(user["token"], event),
+                    "service_instances": _instances,
                 },
             )
         except Exception as e:
@@ -70,6 +75,7 @@ class VideoEvents(web.View):
             "trigger_line_url": "",
             "photo_latest": "",
             "service_status": {},
+            "service_instances": [],
         }
         event_id = ""
         try:
@@ -112,6 +118,11 @@ class VideoEvents(web.View):
                 response["service_status"] = await get_service_status(
                     user["token"], event,
                 )
+                response[
+                    "service_instances"
+                ] = await ServiceInstanceAdapter().get_all_service_instances(
+                    user["token"], event_id,
+                )
         except Exception as e:
             err_msg = f"Error updating video events: {e}"
             logging.exception("Video events update")
@@ -127,29 +138,12 @@ async def handle_form_actions(user: dict, event: dict, form: dict) -> str:
     """Handle form actions for video events."""
     informasjon = ""
 
+    if "instance_action" in form:
+        informasjon = await ServiceInstanceAdapter().send_service_instance_action(
+            user["token"], event, form["instance_id"], form["action"],
+        )
     if "update_config" in form:
-        informasjon = await update_config(user["token"], event, form)
-    elif "reset_config" in form:
-        informasjon = await reset_config(user["token"], event)
-    elif "integration_start" in form:
-        informasjon = await start_integration(user["token"], event)
-    elif "integration_stop" in form:
-        informasjon = await stop_integration(user["token"], event)
-    elif "video_start" in form:
-        informasjon = await start_video_analytics(user["token"], event)
-    elif "video_stop" in form:
-        informasjon = await stop_video_analytics(user["token"], event)
-    elif "capture_video_service" in form:
-        informasjon = await update_capture_video_service(
-            user["token"], event, form["capture_video_service"],
-        )
-    elif "detect_video_service" in form:
-        informasjon = await update_detect_video_service(
-            user["token"], event, form["detect_video_service"],
-        )
-    elif "capture_stop" in form:
-        informasjon = await stop_video_capture(user["token"], event)
-
+        informasjon += await update_config(user["token"], event, form)
     return informasjon
 
 async def get_analytics_status(token: str, event: dict) -> str:
@@ -159,140 +153,19 @@ async def get_analytics_status(token: str, event: dict) -> str:
     for res in result_list:
         info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"
         res_type = ""
-        if res["type"] == "video_status_CAPTURE":
+        if res["type"] in ["video_status_CAPTURE_SRT", "video_status_CAPTURE_LOCAL"]:
             res_type = "<img id=menu_icon src=../static/capture.png title=Video>"
         elif res["type"] == "video_status_DETECT":
             res_type = "<img id=menu_icon src=../static/detect.png title=Deteksjon>"
         elif res["type"] == "integration_status":
             res_type = "<img id=menu_icon src=../static/upload.png title=Opplasting>"
         if "Error" in res["message"]:
-            response += f"{info_time} {res_type} - <span id=red>{
+            response += f"{info_time} {res_type} <span id=red>{
                 res['message']
             }</span><br>"
         else:
-            response += f"{info_time} {res_type} - {res['message']}<br>"
+            response += f"{info_time} {res_type} {res['message']}<br>"
     return response
-
-
-async def update_capture_video_service(token: str, event: dict, action: str) -> str:
-    """Update capture video service and integration service."""
-    informasjon = ""
-    if action == "Start":
-        informasjon += await start_integration(token, event)
-        informasjon += await start_video_capture(token, event)
-    elif action == "Stop":
-        informasjon += await stop_video_capture(token, event)
-        informasjon += await stop_integration(token, event)
-
-    return informasjon
-
-
-async def update_detect_video_service(token: str, event: dict, action: str) -> str:
-    """Update detect video service."""
-    informasjon = ""
-    if action == "Start":
-        informasjon += await start_video_detect(token, event)
-    elif action == "Stop":
-        informasjon += await stop_video_detect(token, event)
-
-    return informasjon
-
-
-async def start_integration(token: str, event: dict) -> str:
-    """Start video analytics."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "INTEGRATION_SERVICE_START", "True",
-    )
-    return "Integration started. "
-
-
-async def stop_integration(token: str, event: dict) -> str:
-    """Stop video analytics."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "INTEGRATION_SERVICE_START", "False",
-    )
-    return "Stop video analytics initiert."
-
-
-async def start_video_analytics(token: str, event: dict) -> str:
-    """Start video analytics."""
-    informasjon = "Video analytics: "
-    video_status = await get_service_status(token, event)
-
-    await ConfigAdapter().update_config(
-        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
-    )
-    await ConfigAdapter().update_config(
-        token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
-    )
-    if video_status["capture_video_available"]:
-        informasjon += "CAPTURE started. "
-    else:
-        informasjon += "Warning: CAPTURE not available. "
-    if video_status["detect_video_available"]:
-        informasjon += "DETECT started. "
-    else:
-        informasjon += "Warning: DETECTION not available."
-    return informasjon
-
-
-async def start_video_capture(token: str, event: dict) -> str:
-    """Start video capture."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "True",
-    )
-    return "Video capture started. "
-
-
-async def stop_video_capture(token: str, event: dict) -> str:
-    """Stop video analytics."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
-    )
-    return "Video capture stopped. "
-
-
-async def start_video_detect(token: str, event: dict) -> str:
-    """Start video detect."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "DETECT_VIDEO_SERVICE_START", "True",
-    )
-    return "Video detect started. "
-
-
-async def stop_video_detect(token: str, event: dict) -> str:
-    """Stop video detect."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
-    )
-    return "Video detect stopped. "
-
-
-async def stop_video_analytics(token: str, event: dict) -> str:
-    """Stop video analytics."""
-    await ConfigAdapter().update_config(
-        token, event["id"], "CAPTURE_VIDEO_SERVICE_START", "False",
-    )
-    await ConfigAdapter().update_config(
-        token, event["id"], "DETECT_VIDEO_SERVICE_START", "False",
-    )
-    return "Video analytics stopped. "
-
-
-async def reset_config(token: str, event: dict) -> str:
-    """Reset config for video service."""
-    config_map = {
-        "INTEGRATION_SERVICE_AVAILABLE": "False",
-        "CAPTURE_VIDEO_SERVICE_AVAILABLE": "False",
-        "DETECT_VIDEO_SERVICE_AVAILABLE": "False",
-    }
-
-    for key, value in config_map.items():
-        await ConfigAdapter().update_config(
-            token, event["id"], key, value,
-        )
-    return "Video settings reset. "
-
 
 async def update_config(token: str, event: dict, form: dict) -> str:
     """Draw trigger line."""
@@ -352,18 +225,7 @@ async def update_storage_mode(token: str, event: dict, new_storage_mode: str) ->
 async def get_service_status(token: str, event: dict) -> dict:
     """Get config details from db."""
     config_map = {
-        "capture_video_available": (
-            "CAPTURE_VIDEO_SERVICE_AVAILABLE", "get_config_bool",
-        ),
-        "capture_video_running": ("CAPTURE_VIDEO_SERVICE_RUNNING", "get_config_bool"),
-        "capture_video_start": ("CAPTURE_VIDEO_SERVICE_START", "get_config_bool"),
         "confidence_limit": ("CONFIDENCE_LIMIT", "get_config"),
-        "detect_video_available": ("DETECT_VIDEO_SERVICE_AVAILABLE", "get_config_bool"),
-        "detect_video_running": ("DETECT_VIDEO_SERVICE_RUNNING", "get_config_bool"),
-        "detect_video_start": ("DETECT_VIDEO_SERVICE_START", "get_config_bool"),
-        "integration_available": ("INTEGRATION_SERVICE_AVAILABLE", "get_config_bool"),
-        "integration_running": ("INTEGRATION_SERVICE_RUNNING", "get_config_bool"),
-        "integration_start": ("INTEGRATION_SERVICE_START", "get_config_bool"),
         "storage_mode_name": ("VIDEO_STORAGE_MODE", "get_config"),
         "detect_analytics_im_size": (
             "DETECT_ANALYTICS_IMAGE_SIZE", "get_config",

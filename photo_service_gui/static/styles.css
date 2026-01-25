@@ -117,12 +117,10 @@ table {
   border-radius: 4px;
   border-collapse: separate;
   overflow: hidden;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
 td {
   padding: 1px 4px;
-  border-bottom: 1px solid #ddd;
 }
 
 #table_border {

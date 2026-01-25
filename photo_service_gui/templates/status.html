@@ -61,10 +61,10 @@
                         <input type="checkbox" class="item-chk" name="delete_status_{{ loop.index }}" value="{{ status_message.id }}">
                     {% endif %}
                     <b>{{ status_message.time }}</b>
-                    {% if status_message.type == "integration_status" %}<img id=menu_icon src="../static/upload.png">
-                    {% elif status_message.type == "video_status_CAPTURE" %}<img id=menu_icon src="../static/capture.png">
-                    {% elif status_message.type == "video_status_DETECT" %}<img id=menu_icon src="../static/detect.png">
-                    {% endif %} - 
+                    {% if status_message.type == "integration_status" %}<img id=menu_icon src="../static/upload.png" title="{{ status_message.type }}">
+                    {% elif status_message.type in ["video_status_CAPTURE_SRT", "video_status_CAPTURE_LOCAL"] %}<img id=menu_icon src="../static/capture.png" title="{{ status_message.type }}">
+                    {% elif status_message.type == "video_status_DETECT" %}<img id=menu_icon src="../static/detect.png" title="{{ status_message.type }}">
+                    {% endif %}
                     {% if "Error" in status_message.message %}
                         <span id=red>{{ status_message.message }}</span>
                     {% else %}
