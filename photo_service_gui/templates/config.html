@@ -25,10 +25,43 @@
     <span id="informasjon"></span>
   </p>
   <section class="row" aria-label="Event">
+    {% for service_instance in service_instances %}
+      <div class="col-sm-12">
+        <div class="status-card" role="status" aria-live="polite">
+          <h4>Service Instance: {{ service_instance.instance_name }}</h4>
+          <table>
+            {% set items = service_instance.items() | list %}
+            {% for i in range(0, items | length, 2) %}
+              <tr {% if loop.index % 2 == 0 %}bgcolor="#ddd"{% endif %}>
+                <td><strong>{{ items[i][0] }}</strong></td>
+                <td>{{ items[i][1] }}</td>
+                {% if i + 1 < items | length %}
+                  <td><strong>{{ items[i + 1][0] }}</strong></td>
+                  <td>{{ items[i + 1][1] }}</td>
+                {% else %}
+                  <td></td>
+                  <td></td>
+                  {% endif %}
+              </tr>
+            {% endfor %}
+          </table>
+          {% if action == "edit" %}
+            <form action=/config method=post>
+              <input type="submit" class="btn btn-warning" name=delete_instance value="  Slett  ">
+              <input type=hidden name="event_id" value="{{ event_id }}">
+              <input type=hidden name="id" value="{{ service_instance.id }}">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+  <hr>
+  <section class="row" aria-label="Event">
     <div class="col-sm-12">
       <div class="status-card" role="status" aria-live="polite">
         <h4>Config for event {{ event.name }}, {{ event.date_of_event }}</h4>
-        <table cellpadding="4">
+        <table>
           {% for oneconfig in event_config %}
             <tr {% if loop.index % 2 == 0 %}bgcolor="#ddd"{% endif %}>
               <td>&nbsp;{{ oneconfig.key }}&nbsp;</td>

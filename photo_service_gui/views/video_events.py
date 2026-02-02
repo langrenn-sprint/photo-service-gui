@@ -83,15 +83,13 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
-
-            informasjon = await handle_form_actions(
-                user, event, dict(form),
-            )
-
-            if informasjon:
-                return web.HTTPSeeOther(
-                    location=f"/video_events?event_id={event_id}&informasjon={informasjon}",
+            if "instance_action" in form or "update_config" in form:
+                informasjon = await handle_form_actions(
+                    user, event, dict(form),
                 )
+                json_response = json.dumps(informasjon)
+                return web.Response(body=json_response)
+
             if "video_status" in form or "photo_queue" in form:
                 response["video_status"] = await get_analytics_status(
                     user["token"], event,
@@ -140,7 +138,7 @@ async def handle_form_actions(user: dict, event: dict, form: dict) -> str:
 
     if "instance_action" in form:
         informasjon = await ServiceInstanceAdapter().send_service_instance_action(
-            user["token"], event, form["instance_id"], form["action"],
+            user["token"], event, form["instance_id"], form["instance_action"],
         )
     if "update_config" in form:
         informasjon += await update_config(user["token"], event, form)
@@ -160,9 +158,25 @@ async def get_analytics_status(token: str, event: dict) -> str:
         elif res["type"] == "integration_status":
             res_type = "<img id=menu_icon src=../static/upload.png title=Opplasting>"
         if "Error" in res["message"]:
-            response += f"{info_time} {res_type} <span id=red>{
-                res['message']
-            }</span><br>"
+            msg = res["message"]
+            response += f"{info_time} {res_type} <span id=red>{msg}</span><br>"
+            if res["details"]:
+                details_tag = '<details style="display: inline;">'
+                summary_tag = (
+                    '<summary style="display: inline; list-style: none; '
+                    'color: #0066cc; text-decoration: underline; '
+                    'cursor: pointer;">'
+                )
+                pre_style = (
+                    "margin: 5px 0; padding: 8px; background: #f5f5f5; "
+                    "border-left: 3px solid #ccc; font-size: 0.9em; "
+                    "white-space: pre-wrap;"
+                )
+                details = res["details"]
+                response += (
+                    f'{details_tag}{summary_tag}(detaljer)</summary>'
+                    f'<pre style="{pre_style}">{details}</pre></details>'
+                )
         else:
             response += f"{info_time} {res_type} {res['message']}<br>"
     return response

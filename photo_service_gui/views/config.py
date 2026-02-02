@@ -5,7 +5,7 @@ import logging
 import aiohttp_jinja2
 from aiohttp import web
 
-from photo_service_gui.services import ConfigAdapter
+from photo_service_gui.services import ConfigAdapter, ServiceInstanceAdapter
 
 from .utils import check_login, get_event
 
@@ -41,6 +41,10 @@ class Config(web.View):
                 event_config = []
                 informasjon += " Feil ved innlasting av config."
 
+            s_instances = await ServiceInstanceAdapter().get_all_service_instances(
+                user["token"], event_id,
+            )
+
             return await aiohttp_jinja2.render_template_async(
                 "config.html",
                 self.request,
@@ -51,6 +55,7 @@ class Config(web.View):
                     "event_id": event_id,
                     "event_config": event_config,
                     "informasjon": informasjon,
+                    "service_instances": s_instances,
                     "username": user["name"],
                 },
             )
@@ -73,6 +78,12 @@ class Config(web.View):
                     user["token"], event_id, key, str(form["value"]),
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
+            elif "delete_instance" in form:
+                await ServiceInstanceAdapter().delete_service_instance(
+                    user["token"], str(form["id"]),
+                )
+                informasjon = "Suksess. Instans er slettet."
+
         except Exception as e:
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."

@@ -64,6 +64,22 @@
     }
   }
 
+    function action_toggle(action, instance_id, event_id, new_value) {
+      var xhttp = new XMLHttpRequest();
+      xhttp.open("POST", "/video_events", true);
+      xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xhttp.send("instance_action=" + action + "&instance_id=" + instance_id + "&event_id=" + event_id + "&new_value=" + new_value);
+      xhttp.onload = function() {
+
+        // load new info
+        const jsonDoc = JSON.parse(this.response);
+
+        document.getElementById("info").innerHTML = jsonDoc;
+      }
+    }
+
+
+
   /* Format service instances for display */
   function formatServiceInstances(instances, service_type) {
     if (!instances || instances.length === 0) {
@@ -79,29 +95,29 @@
       const statusClass = instance.status === 'running' ? 'label-success' : 
                           instance.status === 'stopped' ? 'label-default' : 'label-warning';
       const actionButton = instance.status === 'running' ? 'stop' : 'start';
+      const icon_url = instance.service_type === 'VIDEO_SERVICE_CAPTURE_SRT' ? '<img id=menu_icon src=../static/capture.png title=Video> Video to cloud' : 
+                       instance.service_type === 'VIDEO_SERVICE_CAPTURE_LOCAL' ? '<img id=menu_icon src=../static/capture.png title=Video> Video to local' : 
+                       instance.service_type === 'VIDEO_SERVICE_DETECT' ? '<img id=menu_icon src=../static/upload.png title=Video> Detect' : '<img id=menu_icon src=../static/upload.png title=Video> Upload';
       
       html += `
           <div class="status-card" role="status" aria-live="polite">
             <table>
               <tr>
-                <td><strong>${instance.service_type}</strong></td>
-                <td rowspan="2"><span class="label ${statusClass}" style="padding: 7px;">${instance.status}</span></td>
+                <td>${icon_url}</td>
+                <td align="right"><span class="label ${statusClass}">${instance.status}</span></td>
               </tr>
               <tr>
-                <td><strong>Instance:</strong> ${instance.instance_name}</td>
+                <td>Instance:<strong> ${instance.instance_name}</strong></td>
+                <td></td>
               </tr>
               <tr>
-                <td><strong>Started:</strong> ${instance.started_at}</td>
-                <td rowspan="2">
-                  <form action=/video_events method=post>
-                    <button type="submit" name="action" value="${actionButton}" class="btn btn-default">${actionButton}</button>
-                    <input type="hidden" name=instance_id value="${instance.id}">
-                    <input type="hidden" name=event_id value="{{ event_id }}">
-                  </form></div>
+                <td>Last seen:<strong> ${getTimeAgo(instance.last_heartbeat)} ago</strong></td>
+                <td align="right" rowspan="2">
+                    <button type="submit" onclick="action_toggle('${actionButton}', '${instance.id}', '{{ event_id }}', '')" class="btn btn-default">${actionButton}</button>
                 </td>
               </tr>
               <tr>
-                <td><strong>Last seen:</strong> ${getTimeAgo(instance.last_heartbeat)} ago</td>
+                <td>Trigger line: <input type="text" onchange="action_toggle('trigger_line', '${instance.id}', '{{ event_id }}', this.value)" value="${instance.metadata.trigger_line_xyxyn}"></td>
               </tr>
             </table>
       `;
@@ -158,7 +174,7 @@
         alert(err);
     } finally {
       syncRunning = false; // Ensure flag is cleared even on errors
-      setTimeout(sync_status, 4000);
+      setTimeout(sync_status, 10000);
     }
   }
 
@@ -204,24 +220,19 @@
             </td>
           </tr>
         </table>
-        <div class="status-card" role="status" aria-live="polite">
-          <span id="detect_service_instances"></span>
-        </div>
+        <span id="detect_service_instances"></span>
         <!-- preview inside the card -->
         <figure class="preview-figure">
           <img id="photo_latest" class="preview-img" src="../static/no_image.png"
               alt="Latest detection">
         </figure>
-        <div class="status-card" role="status" aria-live="polite">
-          <form action=/video_events method=post>
-            <button type="submit" name="start_all" class="btn btn-default">Start all services</button>
-            <button type="submit" name="stop_all" class="btn btn-default">Stop all services</button>
-            <input type="hidden" name=event_id value="{{ event_id }}">
-          </form>
-        </div>
       </div>
 
       <div class="col-sm-4">
+        <div class="status-card" role="status" aria-live="polite">
+            <button type="submit" onclick="action_toggle('start_all', '', '{{ event_id }}', '')" class="btn btn-default">Start all services</button>
+            <button type="submit" onclick="action_toggle('stop_all', '', '{{ event_id }}', '')" class="btn btn-default">Stop all services</button>
+        </div>
         <h4>Siste hendelser (logg)</h4>
         <div class="status-card" role="status" aria-live="polite">
           <p id="send_result">—</p> 

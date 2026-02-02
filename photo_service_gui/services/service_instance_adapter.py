@@ -154,7 +154,6 @@ class ServiceInstanceAdapter:
         action: str,
     ) -> str:
         """Update service instance function."""
-        informasjon = ""
         service_instances = []
 
         if instance_id:
@@ -172,10 +171,11 @@ class ServiceInstanceAdapter:
             instance["action"] = action
             instance["last_updated"] = EventsAdapter().get_local_time(event, "log")
             # Update the service instance
-            informasjon = await self.update_service_instance(
+            await self.update_service_instance(
                 token, instance["id"], instance,
             )
-        return informasjon
+
+        return f"Sent '{action}' to {len(service_instances)} service instance(s)."
 
 
     async def send_heartbeat(
