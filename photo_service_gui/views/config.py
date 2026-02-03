@@ -5,7 +5,11 @@ import logging
 import aiohttp_jinja2
 from aiohttp import web
 
-from photo_service_gui.services import ConfigAdapter, ServiceInstanceAdapter
+from photo_service_gui.services import (
+    ConfigAdapter,
+    LiveStreamService,
+    ServiceInstanceAdapter,
+)
 
 from .utils import check_login, get_event
 
@@ -33,6 +37,9 @@ class Config(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
+            service = LiveStreamService()
+            channels = await service.list_active_channels()
+
             try:
                 event_config = await ConfigAdapter().get_all_configs(
                     user["token"], event_id,
@@ -55,6 +62,7 @@ class Config(web.View):
                     "event_id": event_id,
                     "event_config": event_config,
                     "informasjon": informasjon,
+                    "channels": channels,
                     "service_instances": s_instances,
                     "username": user["name"],
                 },
@@ -83,6 +91,10 @@ class Config(web.View):
                     user["token"], str(form["id"]),
                 )
                 informasjon = "Suksess. Instans er slettet."
+            elif "delete_channel" in form:
+                channel_name = str(form["name"])
+                service = LiveStreamService()
+                informasjon = service.delete_channel(channel_name)
 
         except Exception as e:
             logging.exception("Error")

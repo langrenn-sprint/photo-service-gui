@@ -5,6 +5,8 @@ from .config_adapter import ConfigAdapter
 from .events_adapter import EventsAdapter
 from .foto_service import FotoService
 from .google_cloud_storage_adapter import GoogleCloudStorageAdapter
+from .live_stream_adapter import LiveStreamAdapter
+from .live_stream_service import LiveStreamService
 from .photos_adapter import PhotosAdapter
 from .photos_file_adapter import PhotosFileAdapter
 from .service_instance_adapter import ServiceInstanceAdapter

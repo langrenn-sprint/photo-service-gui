@@ -24,12 +24,127 @@
   <p>
     <span id="informasjon"></span>
   </p>
+  <section class="row" aria-label="Live stream channels">
+    {% for channel in channels %}
+      <div class="col-sm-12">
+        <div class="status-card" role="status" aria-live="polite">
+          <h4>Live Stream Channel</h4>
+          <table>
+            <tr>
+              <td><strong>Status</strong></td>
+              <td><span class="label {% if channel.streaming_state == 'STREAMING' %}label-success{% elif channel.streaming_state == 'AWAITING_INPUT' %}label-warning{% else %}label-default{% endif %}">{{ channel.streaming_state }}</span></td>
+              <td><strong>Active Input</strong></td>
+              <td>{{ channel.active_input }}</td>
+            </tr>
+            <tr>
+              <td><strong>Channel ID</strong></td>
+              <td colspan="3"><code style="font-size: 0.85em;">{{ channel.name }}</code></td>
+            </tr>
+            <tr>
+              <td><strong>Output Location</strong></td>
+              <td colspan="3"><code style="font-size: 0.85em;">{{ channel.output.uri if channel.output else 'N/A' }}</code></td>
+            </tr>
+          </table>
+          
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #0066cc;"><strong>Video Settings</strong></summary>
+            <table style="margin-top: 10px;">
+              {% for stream in channel.elementary_streams %}
+                {% if stream.video_stream %}
+                  <tr bgcolor="#f5f5f5">
+                    <td><strong>Resolution</strong></td>
+                    <td>{{ stream.video_stream.h264.width_pixels }}x{{ stream.video_stream.h264.height_pixels }}</td>
+                    <td><strong>Frame Rate</strong></td>
+                    <td>{{ stream.video_stream.h264.frame_rate }} fps</td>
+                  </tr>
+                  <tr bgcolor="#f5f5f5">
+                    <td><strong>Bitrate</strong></td>
+                    <td>{{ (stream.video_stream.h264.bitrate_bps / 1000000) | round(2) }} Mbps</td>
+                    <td><strong>Profile</strong></td>
+                    <td>{{ stream.video_stream.h264.profile }}</td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </table>
+          </details>
+          
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #0066cc;"><strong>Audio Settings</strong></summary>
+            <table style="margin-top: 10px;">
+              {% for stream in channel.elementary_streams %}
+                {% if stream.audio_stream %}
+                  <tr bgcolor="#f5f5f5">
+                    <td><strong>Codec</strong></td>
+                    <td>{{ stream.audio_stream.codec | upper }}</td>
+                    <td><strong>Bitrate</strong></td>
+                    <td>{{ (stream.audio_stream.bitrate_bps / 1000) | round(0) | int }} kbps</td>
+                  </tr>
+                  <tr bgcolor="#f5f5f5">
+                    <td><strong>Sample Rate</strong></td>
+                    <td>{{ stream.audio_stream.sample_rate_hertz }} Hz</td>
+                    <td><strong>Channels</strong></td>
+                    <td>{{ stream.audio_stream.channel_count }}</td>
+                  </tr>
+                {% endif %}
+              {% endfor %}
+            </table>
+          </details>
+          
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #0066cc;"><strong>Input Attachments</strong></summary>
+            <table style="margin-top: 10px;">
+              {% for attachment in channel.input_attachments %}
+                <tr bgcolor="#f5f5f5">
+                  <td><strong>{{ attachment.key }}</strong></td>
+                  <td colspan="3"><code style="font-size: 0.85em;">{{ attachment.input }}</code></td>
+                </tr>
+              {% endfor %}
+            </table>
+          </details>
+          
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #0066cc;"><strong>Advanced Details</strong></summary>
+            <table style="margin-top: 10px;">
+              <tr bgcolor="#f5f5f5">
+                <td><strong>Created</strong></td>
+                <td>{{ channel.create_time }}</td>
+                <td><strong>Updated</strong></td>
+                <td>{{ channel.update_time }}</td>
+              </tr>
+              <tr bgcolor="#f5f5f5">
+                <td><strong>Segment Duration</strong></td>
+                <td>{{ channel.mux_streams[0].segment_settings.segment_duration.seconds if channel.mux_streams else 'N/A' }}s</td>
+                <td><strong>Max Segments</strong></td>
+                <td>{{ channel.manifests[0].max_segment_count if channel.manifests else 'N/A' }}</td>
+              </tr>
+              <tr bgcolor="#f5f5f5">
+                <td><strong>Manifest</strong></td>
+                <td>{{ channel.manifests[0].file_name if channel.manifests else 'N/A' }}</td>
+                <td><strong>Type</strong></td>
+                <td>{{ channel.manifests[0].type_ if channel.manifests else 'N/A' }}</td>
+              </tr>
+            </table>
+          </details>
+          {% if action == "edit" %}
+            <form action=/config method=post>
+              <input type="submit" class="btn btn-warning" name=delete_channel value="  Slett  ">
+              <input type=hidden name="event_id" value="{{ event_id }}">
+              <input type=hidden name="name" value="{{ channel.name }}">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+  <hr>
   <section class="row" aria-label="Event">
     {% for service_instance in service_instances %}
       <div class="col-sm-12">
         <div class="status-card" role="status" aria-live="polite">
-          <h4>Service Instance: {{ service_instance.instance_name }}</h4>
-          <table>
+          <h4>
+            Service Instance: {{ service_instance.instance_name }}
+            <span class="label {% if service_instance.status == 'running' %}label-success{% elif service_instance.status == 'stopped' %}label-default{% else %}label-warning{% endif %}">{{ service_instance.status }}</span>
+          </h4>
             {% set items = service_instance.items() | list %}
             {% for i in range(0, items | length, 2) %}
               <tr {% if loop.index % 2 == 0 %}bgcolor="#ddd"{% endif %}>

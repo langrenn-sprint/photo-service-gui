@@ -20,6 +20,7 @@ dependencies = [
     "aiohttp-jinja2>=1.6",
     "cryptography>=44.0.2",
     "google-cloud-storage>=3.4.0",
+    "google-cloud-video-live-stream>=1.15.0",
 ]
 
 [dependency-groups]

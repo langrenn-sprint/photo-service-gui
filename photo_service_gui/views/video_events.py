@@ -137,7 +137,7 @@ async def handle_form_actions(user: dict, event: dict, form: dict) -> str:
     informasjon = ""
 
     if "instance_action" in form:
-        informasjon = await ServiceInstanceAdapter().send_service_instance_action(
+        informasjon = await ServiceInstanceAdapter().update_service_instance_action(
             user["token"], event, form["instance_id"], form["instance_action"],
         )
     if "update_config" in form:

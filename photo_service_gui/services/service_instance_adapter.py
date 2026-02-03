@@ -146,14 +146,15 @@ class ServiceInstanceAdapter:
         return result
 
 
-    async def send_service_instance_action(
+    async def update_service_instance_action(
         self,
         token: str,
         event: dict,
         instance_id: str,
         action: str,
     ) -> str:
-        """Update service instance function."""
+        """Update service instance action function."""
+        informasjon = ""
         service_instances = []
 
         if instance_id:
@@ -168,14 +169,38 @@ class ServiceInstanceAdapter:
             action = action.replace("_all", "")
 
         for instance in service_instances:
+            # Update the service instance
             instance["action"] = action
             instance["last_updated"] = EventsAdapter().get_local_time(event, "log")
-            # Update the service instance
-            await self.update_service_instance(
+            informasjon = await self.update_service_instance(
                 token, instance["id"], instance,
             )
+        return informasjon
 
-        return f"Sent '{action}' to {len(service_instances)} service instance(s)."
+
+    async def update_service_instance_status(
+        self,
+        token: str,
+        event: dict,
+        instance_id: str,
+        status: str,
+    ) -> str:
+        """Update service instance status function."""
+        informasjon = ""
+        service_instances = []
+
+        if instance_id:
+            service_instances.append(
+                await self.get_service_instance_by_id(token, instance_id),
+            )
+        for instance in service_instances:
+            # Update the service instance
+            instance["status"] = status
+            instance["last_updated"] = EventsAdapter().get_local_time(event, "log")
+            informasjon = await self.update_service_instance(
+                token, instance["id"], instance,
+            )
+        return informasjon
 
 
     async def send_heartbeat(
