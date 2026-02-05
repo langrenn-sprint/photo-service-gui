@@ -24,20 +24,31 @@
   <p>
     <span id="informasjon"></span>
   </p>
-  <section class="row" aria-label="Live stream channels">
-    {% for channel in channels %}
-      <div class="col-sm-12">
+    <section class="row" aria-label="Live stream channels">
+      <div class="col-sm-6">
+        <h4>Live Stream Channels</h4>
+      </div>
+      <div class="col-sm-6">
+        <h4>SRT Push Inputs</h4>
+      </div>
+    </section>
+    <section class="row" aria-label="Live stream inputs">
+      {% for channel in stream_channels %}
+      <div class="col-sm-6">
         <div class="status-card" role="status" aria-live="polite">
-          <h4>Live Stream Channel</h4>
           <table>
             <tr>
               <td><strong>Status</strong></td>
-              <td><span class="label {% if channel.streaming_state == 'STREAMING' %}label-success{% elif channel.streaming_state == 'AWAITING_INPUT' %}label-warning{% else %}label-default{% endif %}">{{ channel.streaming_state }}</span></td>
+              <td>
+                <span class="label {% if channel.streaming_state == 6 %}label-success{% elif channel.streaming_state == 2 %}label-warning{% else %}label-default{% endif %}">
+                  {{ channel.streaming_state.name }}
+                </span>
+              </td>
               <td><strong>Active Input</strong></td>
               <td>{{ channel.active_input }}</td>
             </tr>
             <tr>
-              <td><strong>Channel ID</strong></td>
+              <td><strong>Channel Name</strong></td>
               <td colspan="3"><code style="font-size: 0.85em;">{{ channel.name }}</code></td>
             </tr>
             <tr>
@@ -135,7 +146,63 @@
         </div>
       </div>
     {% endfor %}
+    {% for input in stream_inputs %}
+      <div class="col-sm-6">
+        <div class="status-card" role="status" aria-live="polite">
+          <table>
+            <tr>
+              <td><strong>Type</strong></td>
+              <td><span class="label label-success">{{ input.type_.name }}</span></td>
+              <td><strong>Tier</strong></td>
+              <td><span class="label label-default">{{ input.tier.name }}</span></td>
+            </tr>
+            <tr>
+              <td><strong>Input name</strong></td>
+              <td colspan="3"><code style="font-size: 0.85em;">{{ input.name }}</code></td>
+            </tr>
+            <tr>
+              <td><strong>SRT Push URL</strong></td>
+              <td colspan="3">
+                <code style="font-size: 0.85em; word-break: break-all;">{{ input.uri }}</code>
+                <button type="button" onclick="navigator.clipboard.writeText('{{ input.uri }}')" class="btn btn-default btn-sm" style="margin-left: 8px;">Kopier</button>
+              </td>
+            </tr>
+          </table>
+          
+          <details style="margin-top: 10px;">
+            <summary style="cursor: pointer; color: #0066cc;"><strong>Timestamps</strong></summary>
+            <table style="margin-top: 10px;">
+              <tr bgcolor="#f5f5f5">
+                <td><strong>Created</strong></td>
+                <td>{{ input.create_time }}</td>
+                <td><strong>Updated</strong></td>
+                <td>{{ input.update_time }}</td>
+              </tr>
+            </table>
+          </details>
+          {% if action == "edit" %}
+            <form action=/config method=post>
+              <input type="submit" class="btn btn-warning" name=delete_input value="  Slett  ">
+              <input type=hidden name="event_id" value="{{ event_id }}">
+              <input type=hidden name="name" value="{{ input.name }}">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
   </section>
+    {% if action == "edit" %}
+    <br>
+    <section class="row" aria-label="Event">
+      <div class="col-sm-12">
+        <form action=/config method=post>
+          <input type="submit" class="btn btn-success" name=create_channel value="  Opprett ny kanal og input ">
+          <input type=hidden name="event_id" value="{{ event_id }}">
+        </form>
+      </div>
+    </section>
+    {% endif %}
+
   <hr>
   <section class="row" aria-label="Event">
     {% for service_instance in service_instances %}

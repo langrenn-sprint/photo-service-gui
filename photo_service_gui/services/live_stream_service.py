@@ -72,7 +72,7 @@ class LiveStreamService:
     async def create_and_start_channel(
         self,
         token: str,
-        event: dict,
+        event_id: str,
     ) -> dict[str, Any]:
         """Create and start a live stream channel for an event.
 
@@ -81,7 +81,7 @@ class LiveStreamService:
 
         Args:
             token: Authentication token
-            event: Unique identifier for the event
+            event_id: Unique identifier for the event
 
         Returns:
             Dictionary containing channel information:
@@ -93,11 +93,10 @@ class LiveStreamService:
 
         """
         clip_duration = await ConfigAdapter().get_config_int(
-            token, event["id"], "VIDEO_CLIP_DURATION",
+            token, event_id, "VIDEO_CLIP_DURATION",
         )
 
         # Generate resource IDs
-        event_id = event["id"]
         input_prefix = await ConfigAdapter().get_config(
             token, event_id, "LIVESTREAM_INPUT_PREFIX",
         )
@@ -109,21 +108,21 @@ class LiveStreamService:
 
         # Create output path in cloud storage
         output_path_template = await ConfigAdapter().get_config(
-            token, event["id"], "VIDEO_OUTPUT_PATH_TEMPLATE",
+            token, event_id, "VIDEO_OUTPUT_PATH_TEMPLATE",
         )
-        output_path = output_path_template.format(event_id=event["id"])
+        output_path = output_path_template.format(event_id=event_id)
         output_uri = f"gs://{self.bucket_name}/{output_path}"
 
         try:
             # Create input endpoint
-            logging.info("Creating input endpoint for event: %s", event["id"])
+            logging.info("Creating input endpoint for event: %s", event_id)
             input_resource = await asyncio.to_thread(
                 self.adapter.create_input,
                 input_id=input_id,
             )
 
             # Create channel
-            logging.info("Creating channel for event: %s", event["id"])
+            logging.info("Creating channel for event: %s", event_id)
             adapter = ConfigAdapter()
             video_bitrate = await adapter.get_config_int(
                 token, event_id, "VIDEO_BITRATE_BPS",
@@ -155,15 +154,16 @@ class LiveStreamService:
             )
 
             # Start channel
-            logging.info("Starting channel for event: %s", event["id"])
-            await asyncio.to_thread(
+            logging.info("Starting channel for event: %s", event_id)
+            result = await asyncio.to_thread(
                 self.adapter.start_channel,
                 channel_id=channel_id,
             )
+            logging.info("Started channel: %s", result)
 
         except Exception:
             logging.exception(
-                "Failed to create and start channel for event: %s", event["id"],
+                "Failed to create and start channel for event: %s", event_id,
             )
             # Cleanup on failure
             try:
@@ -177,7 +177,7 @@ class LiveStreamService:
 
             logging.info(
                 "Successfully created and started channel for event: %s, SRT URL: %s",
-                event["id"],
+                event_id,
                 srt_push_url,
             )
 
@@ -187,7 +187,7 @@ class LiveStreamService:
                 "srt_push_url": srt_push_url,
                 "output_uri": output_uri,
                 "segment_duration": clip_duration,
-                "event_id": event["id"],
+                "event_id": event_id,
             }
 
     def cleanup_resources(self) -> str:
@@ -224,6 +224,21 @@ class LiveStreamService:
         self.adapter.delete_channel(channel_name)
         logging.info("Successfully deleted channel: %s", channel_name)
         return f"Suksess. Kanal {channel_name} er slettet."
+
+    def delete_input(self, input_name: str) -> str:
+        """Delete a live stream input by name.
+
+        Args:
+            input_name: Name of the input to delete
+
+        Returns:
+            Confirmation message upon successful deletion
+
+        """
+        logging.info("Deleting input: %s", input_name)
+        self.adapter.delete_input(input_name)
+        logging.info("Successfully deleted input: %s", input_name)
+        return f"Suksess. Input {input_name} er slettet."
 
     async def get_channel_status(self, token: str, event: dict) -> dict[str, Any]:
         """Get the status of a live stream channel.
@@ -263,3 +278,12 @@ class LiveStreamService:
 
         """
         return await asyncio.to_thread(self.adapter.list_channels)
+
+    async def list_active_inputs(self) -> list[Any]:
+        """List all active inputs.
+
+        Returns:
+            List of Input objects with all information from the adapter
+
+        """
+        return await asyncio.to_thread(self.adapter.list_inputs)

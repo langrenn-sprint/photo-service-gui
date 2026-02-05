@@ -39,6 +39,7 @@ class Config(web.View):
 
             service = LiveStreamService()
             channels = await service.list_active_channels()
+            inputs = await service.list_active_inputs()
 
             try:
                 event_config = await ConfigAdapter().get_all_configs(
@@ -62,7 +63,8 @@ class Config(web.View):
                     "event_id": event_id,
                     "event_config": event_config,
                     "informasjon": informasjon,
-                    "channels": channels,
+                    "stream_inputs": inputs,
+                    "stream_channels": channels,
                     "service_instances": s_instances,
                     "username": user["name"],
                 },
@@ -95,6 +97,15 @@ class Config(web.View):
                 channel_name = str(form["name"])
                 service = LiveStreamService()
                 informasjon = service.delete_channel(channel_name)
+            elif "delete_input" in form:
+                input_name = str(form["name"])
+                service = LiveStreamService()
+                informasjon = service.delete_input(input_name)
+            elif "create_channel" in form:
+                service = LiveStreamService()
+                informasjon = await service.create_and_start_channel(
+                    user["token"], event_id,
+                )
 
         except Exception as e:
             logging.exception("Error")

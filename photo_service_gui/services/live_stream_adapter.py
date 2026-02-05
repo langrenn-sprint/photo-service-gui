@@ -184,7 +184,7 @@ class LiveStreamAdapter:
 
         return response  # type: ignore[return-value]
 
-    def start_channel(self, channel_id: str) -> Channel:
+    def start_channel(self, channel_id: str) -> str:
         """Start a live stream channel.
 
         Args:
@@ -199,9 +199,7 @@ class LiveStreamAdapter:
 
         logging.info("Starting channel: %s", channel_id)
         response = operation.result(timeout=600)
-        logging.info("Started channel: %s", response.name)  # type: ignore[union-attr]
-
-        return response  # type: ignore[return-value]
+        return f"Started channel: {channel_name} {response}"
 
     def stop_channel(self, channel_name: str) -> Channel:
         """Stop a live stream channel.
@@ -233,18 +231,16 @@ class LiveStreamAdapter:
         operation.result(timeout=600)
         logging.info("Deleted channel: %s", channel_name)
 
-    def delete_input(self, input_id: str) -> None:
+    def delete_input(self, input_name: str) -> None:
         """Delete an input endpoint.
 
         Args:
-            input_id: ID of the input to delete
+            input_name: Name of the input to delete
 
         """
-        input_name = f"{self.parent}/inputs/{input_id}"
-
         operation = self.client.delete_input(name=input_name)
 
-        logging.info("Deleting input: %s", input_id)
+        logging.info("Deleting input: %s", input_name)
         operation.result(timeout=600)
         logging.info("Deleted input: %s", input_name)
 
