@@ -8,7 +8,9 @@ from typing import Any
 from dotenv import load_dotenv
 
 from .config_adapter import ConfigAdapter
+from .events_adapter import EventsAdapter
 from .live_stream_adapter import LiveStreamAdapter
+from .service_instance_adapter import ServiceInstanceAdapter
 
 
 class LiveStreamService:
@@ -72,8 +74,9 @@ class LiveStreamService:
     async def create_and_start_channel(
         self,
         token: str,
-        event_id: str,
-    ) -> dict[str, Any]:
+        event: dict,
+        name: str,
+    ) -> str:
         """Create and start a live stream channel for an event.
 
         This method creates an SRT Push input endpoint and a channel that
@@ -81,60 +84,64 @@ class LiveStreamService:
 
         Args:
             token: Authentication token
-            event_id: Unique identifier for the event
+            event: The event dictionary
+            name: The name of the channel
 
         Returns:
-            Dictionary containing channel information:
-                - channel_id: ID of the created channel
-                - input_id: ID of the created input
+            A string containing information about the created channel and input:
                 - srt_push_url: URL for streaming via SRT Push
-                - output_uri: GCS URI where videos are stored
-                - segment_duration: Duration of each segment in seconds
 
         """
+        information = ""
         clip_duration = await ConfigAdapter().get_config_int(
-            token, event_id, "VIDEO_CLIP_DURATION",
+            token, event["id"], "VIDEO_CLIP_DURATION",
         )
 
         # Generate resource IDs
         input_prefix = await ConfigAdapter().get_config(
-            token, event_id, "LIVESTREAM_INPUT_PREFIX",
+            token, event["id"], "LIVESTREAM_INPUT_PREFIX",
         )
-        channel_prefix = await ConfigAdapter().get_config(
-            token, event_id, "LIVESTREAM_CHANNEL_PREFIX",
-        )
-        input_id = f"{input_prefix}-{event_id}"
-        channel_id = f"{channel_prefix}-{event_id}"
+        input_id = f"{input_prefix}-{name}"
+        channel_id = name
 
         # Create output path in cloud storage
         output_path_template = await ConfigAdapter().get_config(
-            token, event_id, "VIDEO_OUTPUT_PATH_TEMPLATE",
+            token, event["id"], "VIDEO_OUTPUT_PATH_TEMPLATE",
         )
-        output_path = output_path_template.format(event_id=event_id)
+        output_path = output_path_template.format(event_id=event["id"])
         output_uri = f"gs://{self.bucket_name}/{output_path}"
+
+        # register new instance in database
+        instance_id = await create_service_instance(
+            token,
+            event,
+            name,
+        )
+        logging.debug("Registered new service instance with ID: %s", instance_id)
+
 
         try:
             # Create input endpoint
-            logging.info("Creating input endpoint for event: %s", event_id)
+            logging.info("Creating input endpoint for event: %s", event["id"])
             input_resource = await asyncio.to_thread(
                 self.adapter.create_input,
                 input_id=input_id,
             )
 
             # Create channel
-            logging.info("Creating channel for event: %s", event_id)
+            logging.info("Creating channel for event: %s", event["id"])
             adapter = ConfigAdapter()
             video_bitrate = await adapter.get_config_int(
-                token, event_id, "VIDEO_BITRATE_BPS",
+                token, event["id"], "VIDEO_BITRATE_BPS",
             )
             video_width = await adapter.get_config_int(
-                token, event_id, "VIDEO_WIDTH",
+                token, event["id"], "VIDEO_WIDTH",
             )
             video_height = await adapter.get_config_int(
-                token, event_id, "VIDEO_HEIGHT",
+                token, event["id"], "VIDEO_HEIGHT",
             )
             video_fps = await adapter.get_config_int(
-                token, event_id, "VIDEO_CLIP_FPS",
+                token, event["id"], "VIDEO_CLIP_FPS",
             )
 
             await asyncio.to_thread(
@@ -154,7 +161,7 @@ class LiveStreamService:
             )
 
             # Start channel
-            logging.info("Starting channel for event: %s", event_id)
+            logging.info("Starting channel for event: %s", event["id"])
             result = await asyncio.to_thread(
                 self.adapter.start_channel,
                 channel_id=channel_id,
@@ -163,7 +170,7 @@ class LiveStreamService:
 
         except Exception:
             logging.exception(
-                "Failed to create and start channel for event: %s", event_id,
+                "Failed to create and start channel for event: %s", event["id"],
             )
             # Cleanup on failure
             try:
@@ -174,21 +181,14 @@ class LiveStreamService:
         else:
             # Get SRT Push URL from input resource
             srt_push_url = input_resource.uri
-
+            information = f"Suksess. Kanal/input er opprettet. Url: {srt_push_url}"
             logging.info(
                 "Successfully created and started channel for event: %s, SRT URL: %s",
-                event_id,
+                event["name"],
                 srt_push_url,
             )
 
-            return {
-                "channel_id": channel_id,
-                "input_id": input_id,
-                "srt_push_url": srt_push_url,
-                "output_uri": output_uri,
-                "segment_duration": clip_duration,
-                "event_id": event_id,
-            }
+        return information
 
     def cleanup_resources(self) -> str:
         """Delete all channels.
@@ -240,22 +240,15 @@ class LiveStreamService:
         logging.info("Successfully deleted input: %s", input_name)
         return f"Suksess. Input {input_name} er slettet."
 
-    async def get_channel_status(self, token: str, event: dict) -> dict[str, Any]:
+    async def get_channel_status(self, channel_id: str) -> dict[str, Any]:
         """Get the status of a live stream channel.
 
         Args:
-            token: Authentication token
-            event: Event dictionary containing event ID
+            channel_id: The ID of the channel to check status for
         Returns:
             Dictionary containing channel status information
 
         """
-        event_id = event["id"]
-        channel_prefix = await ConfigAdapter().get_config(
-            token, event_id, "LIVESTREAM_CHANNEL_PREFIX",
-        )
-        channel_id = f"{channel_prefix}-{event_id}"
-
         channel = await asyncio.to_thread(
             self.adapter.get_channel,
             channel_id=channel_id,
@@ -263,7 +256,6 @@ class LiveStreamService:
 
         return {
             "channel_id": channel_id,
-            "event_id": event["id"],
             "state": channel.streaming_state.name,
             "streaming_error": str(channel.streaming_error)
             if channel.streaming_error
@@ -287,3 +279,40 @@ class LiveStreamService:
 
         """
         return await asyncio.to_thread(self.adapter.list_inputs)
+
+async def create_service_instance(
+    token: str,
+    event: dict,
+    name: str,
+) -> None:
+    """Create a service instance dictionary for the video srt_service.
+
+    Args:
+        token: Authentication token for database access
+        event: The event dictionary
+        name: Name of the SRT input
+
+    Returns:
+        None
+
+    """
+    time_now = EventsAdapter().get_local_time(event, "log")
+    service_instance = {
+        "service_type": "VIDEO_SERVICE_CAPTURE_SRT",
+        "instance_name": name,
+        "status": "",
+        "host_name": "",
+        "action": "",
+        "event_id": event["id"],
+        "started_at": time_now,
+        "last_heartbeat": time_now,
+        "metadata": {
+            "latest_photo_url": "",
+            "trigger_line_xyxyn": await ConfigAdapter().get_config(
+                token, event["id"], "TRIGGER_LINE_XYXYN",
+            ),
+        },
+    }
+    await ServiceInstanceAdapter().create_service_instance(token, service_instance)
+
+

@@ -10,6 +10,7 @@ from photo_service_gui.services import (
     ConfigAdapter,
     EventsAdapter,
     GoogleCloudStorageAdapter,
+    LiveStreamService,
     PhotosFileAdapter,
     ServiceInstanceAdapter,
     StatusAdapter,
@@ -116,11 +117,7 @@ class VideoEvents(web.View):
                 response["service_status"] = await get_service_status(
                     user["token"], event,
                 )
-                response[
-                    "service_instances"
-                ] = await ServiceInstanceAdapter().get_all_service_instances(
-                    user["token"], event_id,
-                )
+                response["service_instances"] = await get_service_instances(user, event)
         except Exception as e:
             err_msg = f"Error updating video events: {e}"
             logging.exception("Video events update")
@@ -130,6 +127,23 @@ class VideoEvents(web.View):
         json_response = json.dumps(response)
 
         return web.Response(body=json_response)
+
+async def get_service_instances(user: dict, event: dict) -> list:
+    """Get active service instances."""
+    service_instances = await ServiceInstanceAdapter().get_all_service_instances(
+        user["token"], event["id"],
+    )
+    if service_instances:
+        service = LiveStreamService()
+        for instance in service_instances:
+            try:
+                channel = await service.get_channel_status(instance["instance_name"])
+                instance["status"] = channel["state"]
+            except Exception:
+                logging.exception(f"Error getting channel {instance['instance_name']}")
+                instance["status"] = "ERROR"
+    return service_instances
+
 
 
 async def handle_form_actions(user: dict, event: dict, form: dict) -> str:

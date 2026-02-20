@@ -37,9 +37,7 @@ class Config(web.View):
             user = await check_login(self)
             event = await get_event(user, event_id)
 
-            service = LiveStreamService()
-            channels = await service.list_active_channels()
-            inputs = await service.list_active_inputs()
+            srt_streams = await get_srt_streams()
 
             try:
                 event_config = await ConfigAdapter().get_all_configs(
@@ -63,8 +61,7 @@ class Config(web.View):
                     "event_id": event_id,
                     "event_config": event_config,
                     "informasjon": informasjon,
-                    "stream_inputs": inputs,
-                    "stream_channels": channels,
+                    "srt_streams": srt_streams,
                     "service_instances": s_instances,
                     "username": user["name"],
                 },
@@ -81,6 +78,7 @@ class Config(web.View):
             form = await self.request.post()
             user = await check_login(self)
             event_id = str(form["event_id"])
+            event = await get_event(user, event_id)
 
             if "update_one" in form:
                 key = str(form["key"])
@@ -96,15 +94,22 @@ class Config(web.View):
             elif "delete_channel" in form:
                 channel_name = str(form["name"])
                 service = LiveStreamService()
+                await delete_instance_by_channel_name(
+                    user["token"], event_id, channel_name,
+                )
                 informasjon = service.delete_channel(channel_name)
+                if "input" in form:
+                    input_name = str(form["input"])
+                    informasjon += " " + service.delete_input(input_name)
             elif "delete_input" in form:
                 input_name = str(form["name"])
                 service = LiveStreamService()
                 informasjon = service.delete_input(input_name)
             elif "create_channel" in form:
+                name = str(form["name"]).strip().lower()
                 service = LiveStreamService()
                 informasjon = await service.create_and_start_channel(
-                    user["token"], event_id,
+                    user["token"], event, name,
                 )
 
         except Exception as e:
@@ -120,3 +125,24 @@ class Config(web.View):
         return web.HTTPSeeOther(
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",
         )
+
+async def get_srt_streams() -> dict:
+    """Get all srt streams."""
+    service = LiveStreamService()
+    channels = await service.list_active_channels()
+    inputs = await service.list_active_inputs()
+    return {"channels": channels, "inputs": inputs}
+
+async def delete_instance_by_channel_name(
+        token: str, event_id: str, channel_name: str,
+    ) -> None:
+    """Delete service instance by channel name."""
+    instances = await ServiceInstanceAdapter().get_all_service_instances(
+        token, event_id,
+    )
+    for instance in instances:
+        if channel_name.endswith(instance["instance_name"]):
+            await ServiceInstanceAdapter().delete_service_instance(
+                token, instance["id"],
+            )
+            break

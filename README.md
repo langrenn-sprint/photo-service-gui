@@ -152,3 +152,14 @@ VIDEO_URL=https://storage.googleapis.com/langrenn-sprint/photos/20240309_Ragde_k
 VIDEO_URL=rtsp://stream:Video1@10.0.0.18:88/videoMain
 VIDEO_URL=rtsp://stream:Video1@192.168.1.160:88/videoSub
 VIDEO_URL=<http://192.168.1.152:8080/video>
+
+## CAPTURE_SRT
+Capture video using Google Live Stream API. Creates an SRT Push endpoint that waits for incoming video streams and stores them directly to cloud storage with configurable clip duration. This is a cloud-native approach that requires no local compute resources.
+
+**When to use CAPTURE_SRT:**
+- Event-based or sporadic streaming (lower cost for low usage)
+- Serverless/cloud-native architecture preferred
+- Minimal infrastructure maintenance desired
+
+See [video-streaming/README.md](video-streaming/README.md) for detailed documentation, [video-streaming/COMPARISON.md](video-streaming/COMPARISON.md) for feature comparison, and [video-streaming/SETUP.md](video-streaming/SETUP.md) for setup instructions.
+

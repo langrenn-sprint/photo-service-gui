@@ -94,8 +94,12 @@
       
       const statusClass = instance.status === 'running' ? 'label-success' : 
                           instance.status === 'stopped' ? 'label-default' : 'label-warning';
-      const actionButton = instance.status === 'running' ? 'stop' : 'start';
-      const icon_url = instance.service_type === 'VIDEO_SERVICE_CAPTURE_SRT' ? '<img id=menu_icon src=../static/capture.png title=Video> Video to cloud' : 
+      let actionButton = '';
+      if (instance.service_type != 'VIDEO_SERVICE_CAPTURE_SRT') {
+        actionText = instance.status === 'running' ? 'stop' : 'start';
+        actionButton = `<button type="submit" onclick="action_toggle('${actionText}', '${instance.id}', '{{ event_id }}', '')" class="btn btn-default">${actionText}</button>`;
+      }
+      const icon_url = instance.service_type === 'VIDEO_SERVICE_CAPTURE_SRT' ? '<img id=menu_icon src=../static/capture.png title=Video> Cloud streaming' : 
                        instance.service_type === 'VIDEO_SERVICE_CAPTURE_LOCAL' ? '<img id=menu_icon src=../static/capture.png title=Video> Video to local' : 
                        instance.service_type === 'VIDEO_SERVICE_DETECT' ? '<img id=menu_icon src=../static/upload.png title=Video> Detect' : '<img id=menu_icon src=../static/upload.png title=Video> Upload';
       
@@ -113,11 +117,11 @@
               <tr>
                 <td>Last seen:<strong> ${getTimeAgo(instance.last_heartbeat)} ago</strong></td>
                 <td align="right" rowspan="2">
-                    <button type="submit" onclick="action_toggle('${actionButton}', '${instance.id}', '{{ event_id }}', '')" class="btn btn-default">${actionButton}</button>
+                    ${actionButton}
                 </td>
               </tr>
               <tr>
-                <td>Trigger line: <input type="text" onchange="action_toggle('trigger_line', '${instance.id}', '{{ event_id }}', this.value)" value="${instance.metadata.trigger_line_xyxyn}"></td>
+                <td>Trigger line: ${instance.metadata.trigger_line_xyxyn}</td>
               </tr>
             </table>
       `;

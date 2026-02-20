@@ -33,7 +33,7 @@
       </div>
     </section>
     <section class="row" aria-label="Live stream inputs">
-      {% for channel in stream_channels %}
+      {% for channel in srt_streams.channels %}
       <div class="col-sm-6">
         <div class="status-card" role="status" aria-live="polite">
           <table>
@@ -138,15 +138,18 @@
           </details>
           {% if action == "edit" %}
             <form action=/config method=post>
-              <input type="submit" class="btn btn-warning" name=delete_channel value="  Slett  ">
+              <input type="submit" class="btn btn-warning" name=delete_channel value="  Slett kanal og input ">
               <input type=hidden name="event_id" value="{{ event_id }}">
               <input type=hidden name="name" value="{{ channel.name }}">
+              {% for attachment in channel.input_attachments %}
+                <input type=hidden name="input" value="{{ attachment.input }}">
+              {% endfor %}
             </form>
           {% endif %}
         </div>
       </div>
     {% endfor %}
-    {% for input in stream_inputs %}
+    {% for input in srt_streams.inputs %}
       <div class="col-sm-6">
         <div class="status-card" role="status" aria-live="polite">
           <table>
@@ -196,6 +199,7 @@
     <section class="row" aria-label="Event">
       <div class="col-sm-12">
         <form action=/config method=post>
+          Navn: <input type="text" class="form-control" name=name value="" minlength="1" maxlength="63" pattern="[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?" title="Must be 1-63 characters, begin and end with a lower-case letter or number, and contain only lower-case letters, numbers, or hyphens.">
           <input type="submit" class="btn btn-success" name=create_channel value="  Opprett ny kanal og input ">
           <input type=hidden name="event_id" value="{{ event_id }}">
         </form>

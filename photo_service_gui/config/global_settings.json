@@ -8,7 +8,6 @@
     "TRIGGER_LINE_PHOTO_URL": "",
     "NEW_TRIGGER_LINE_PHOTO": "True",
     "SRT_PORT": 5000,
-    "LIVESTREAM_CHANNEL_PREFIX": "video-capture",
     "LIVESTREAM_INPUT_PREFIX": "srt-input",
     "LIVESTREAM_OUTPUT_PREFIX": "gcs-output",
     "VIDEO_OUTPUT_PATH_TEMPLATE": "{event_id}/CAPTURE_SRT/",
