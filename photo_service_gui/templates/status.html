@@ -13,8 +13,8 @@
     <div class=dropdown-content>
       <a href=status?event_id={{ event_id }}>Vis alle</a>
       <a href=status?event_id={{ event_id }}&filter=integration_status>Integration service</a>
-      <a href=status?event_id={{ event_id }}&filter=video_status_CAPTURE>Video service (CAPTURE)</a>
-      <a href=status?event_id={{ event_id }}&filter=video_status_DETECT>Video service (DETECT)</a>
+      <a href=status?event_id={{ event_id }}&filter=VIDEO_SERVICE_CAPTURE>Video service (CAPTURE)</a>
+      <a href=status?event_id={{ event_id }}&filter=VIDEO_SERVICE_DETECT>Video service (DETECT)</a>
       <a href=status?event_id={{ event_id }}&filter={{ filter }}&action=delete_select>Sletting</a>
     </div>
   </li>
@@ -62,8 +62,8 @@
                     {% endif %}
                     <b>{{ status_message.time }}</b>
                     {% if status_message.type == "integration_status" %}<img id=menu_icon src="../static/upload.png" title="{{ status_message.type }}">
-                    {% elif status_message.type in ["video_status_CAPTURE_SRT", "video_status_CAPTURE_LOCAL"] %}<img id=menu_icon src="../static/capture.png" title="{{ status_message.type }}">
-                    {% elif status_message.type == "video_status_DETECT" %}<img id=menu_icon src="../static/detect.png" title="{{ status_message.type }}">
+                    {% elif status_message.type in ["VIDEO_SERVICE_CAPTURE_SRT", "VIDEO_SERVICE_CAPTURE_LOCAL"] %}<img id=menu_icon src="../static/capture.png" title="{{ status_message.type }}">
+                    {% elif status_message.type == "VIDEO_SERVICE_DETECT" %}<img id=menu_icon src="../static/detect.png" title="{{ status_message.type }}">
                     {% endif %}
                     {% if "Error" in status_message.message %}
                         <span id=red>{{ status_message.message }}</span>

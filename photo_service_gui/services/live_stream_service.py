@@ -308,8 +308,12 @@ async def create_service_instance(
         "last_heartbeat": time_now,
         "metadata": {
             "latest_photo_url": "",
+            "trigger_line_photo_url": "",
             "trigger_line_xyxyn": await ConfigAdapter().get_config(
                 token, event["id"], "TRIGGER_LINE_XYXYN",
+            ),
+            "video_url": await ConfigAdapter().get_config(
+                token, event["id"], "VIDEO_URL",
             ),
         },
     }

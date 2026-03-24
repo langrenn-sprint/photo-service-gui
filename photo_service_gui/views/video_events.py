@@ -2,6 +2,7 @@
 
 import json
 import logging
+from datetime import UTC, datetime, timezone
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -36,9 +37,8 @@ class VideoEvents(web.View):
         try:
             user = await check_login(self)
             event = await get_event(user, event_id)
-            _instances = await ServiceInstanceAdapter().get_all_service_instances(
-                        user["token"], event_id,
-                    )
+
+            _instances = await get_service_instances(user, event)
 
             """Get route function."""
             return await aiohttp_jinja2.render_template_async(
@@ -50,12 +50,6 @@ class VideoEvents(web.View):
                     "informasjon": informasjon,
                     "local_time_now": EventsAdapter().get_local_time(event, "HH:MM"),
                     "username": user["name"],
-                    "trigger_line_xyxyn": await ConfigAdapter().get_config(
-                        user["token"], event_id, "TRIGGER_LINE_XYXYN",
-                    ),
-                    "video_url": await ConfigAdapter().get_config(
-                        user["token"], event_id, "VIDEO_URL",
-                    ),
                     "service_status": await get_service_status(user["token"], event),
                     "service_instances": _instances,
                 },
@@ -84,12 +78,18 @@ class VideoEvents(web.View):
             user = await check_login(self)
             event_id = str(form["event_id"])
             event = await get_event(user, event_id)
-            if "instance_action" in form or "update_config" in form:
-                informasjon = await handle_form_actions(
-                    user, event, dict(form),
-                )
-                json_response = json.dumps(informasjon)
-                return web.Response(body=json_response)
+            if form.keys() & {"instance_action", "update_config", "new_trigger_line"}:
+                try:
+                    informasjon = await handle_form_actions(
+                        user, event, dict(form),
+                    )
+                    json_response = json.dumps(informasjon)
+                    return web.Response(body=json_response)
+                except Exception as e:
+                    err_msg = f"Error handling form actions: {e}"
+                    logging.exception(err_msg)
+                    json_response = json.dumps(err_msg)
+                    return web.Response(body=json_response)
 
             if "video_status" in form or "photo_queue" in form:
                 response["video_status"] = await get_analytics_status(
@@ -128,6 +128,33 @@ class VideoEvents(web.View):
 
         return web.Response(body=json_response)
 
+_SECONDS_PER_MINUTE = 60
+_MINUTES_PER_HOUR = 60
+
+
+def get_time_ago(timestamp: str, event: dict) -> str:
+    """Return human-readable time elapsed since timestamp."""
+    if not timestamp:
+        return "-"
+    try:
+        then = datetime.fromisoformat(timestamp)
+        now = EventsAdapter().get_local_datetime_now(event)
+        if now.tzinfo is not None:
+            now = now.replace(tzinfo=None)
+        diff = now - then
+        total_seconds = int(diff.total_seconds())
+        if total_seconds < _SECONDS_PER_MINUTE:
+            return f"{total_seconds} sec"
+        minutes = total_seconds // _SECONDS_PER_MINUTE
+        if minutes < _MINUTES_PER_HOUR:
+            return f"{minutes} min"
+        hours = minutes // _MINUTES_PER_HOUR
+    except Exception:
+        return "Error"
+    else:
+        return f"{hours} hours"
+
+
 async def get_service_instances(user: dict, event: dict) -> list:
     """Get active service instances."""
     service_instances = await ServiceInstanceAdapter().get_all_service_instances(
@@ -136,12 +163,38 @@ async def get_service_instances(user: dict, event: dict) -> list:
     if service_instances:
         service = LiveStreamService()
         for instance in service_instances:
-            try:
-                channel = await service.get_channel_status(instance["instance_name"])
-                instance["status"] = channel["state"]
-            except Exception:
-                logging.exception(f"Error getting channel {instance['instance_name']}")
-                instance["status"] = "ERROR"
+            if instance["service_type"].startswith("VIDEO_SERVICE_"):
+                instance["icon_url"] = "capture.png"
+            elif instance["service_type"] == "VIDEO_SERVICE_DETECT":
+                instance["icon_url"] = "detect.png"
+            elif instance["service_type"] == "INTEGRATION_SERVICE":
+                instance["icon_url"] = "upload.png"
+            else:
+                instance["icon_url"] = ""
+            instance["last_seen"] = get_time_ago(instance["last_heartbeat"], event)
+            if instance["service_type"] == "VIDEO_SERVICE_CAPTURE_SRT":
+                try:
+                    channel = await service.get_channel_status(
+                        instance["instance_name"],
+                    )
+                    instance["status"] = channel["state"]
+                except Exception:
+                    logging.exception(
+                        f"Error getting channel {instance['instance_name']}",
+                    )
+                    instance["status"] = "ERROR"
+                instance["status_class"] = (
+                    "label-critical" if instance["status"] == "ERROR"
+                    else "label-default" if instance["status"] == "AWAITING_INPUT"
+                    else "label-success"
+                )
+            else:
+                instance["status_class"] = (
+                    "label-success" if instance["status"] == "running"
+                    else "label-default" if instance["status"] == "stopped"
+                    else "label-warning"
+                )
+
     return service_instances
 
 
@@ -149,10 +202,17 @@ async def get_service_instances(user: dict, event: dict) -> list:
 async def handle_form_actions(user: dict, event: dict, form: dict) -> str:
     """Handle form actions for video events."""
     informasjon = ""
-
     if "instance_action" in form:
         informasjon = await ServiceInstanceAdapter().update_service_instance_action(
             user["token"], event, form["instance_id"], form["instance_action"],
+        )
+    if "new_trigger_line" in form:
+        informasjon += await ServiceInstanceAdapter().update_instance_details(
+            user["token"],
+            event,
+            form["instance_id"],
+            form["new_trigger_line"],
+            form["video_url"],
         )
     if "update_config" in form:
         informasjon += await update_config(user["token"], event, form)
@@ -165,9 +225,9 @@ async def get_analytics_status(token: str, event: dict) -> str:
     for res in result_list:
         info_time = f"<a title={res['time']}>{res['time'][-8:]}</a>"
         res_type = ""
-        if res["type"] in ["video_status_CAPTURE_SRT", "video_status_CAPTURE_LOCAL"]:
+        if res["type"] in ["VIDEO_SERVICE_CAPTURE_SRT", "VIDEO_SERVICE_CAPTURE_LOCAL"]:
             res_type = "<img id=menu_icon src=../static/capture.png title=Video>"
-        elif res["type"] == "video_status_DETECT":
+        elif res["type"] == "VIDEO_SERVICE_DETECT":
             res_type = "<img id=menu_icon src=../static/detect.png title=Deteksjon>"
         elif res["type"] == "integration_status":
             res_type = "<img id=menu_icon src=../static/upload.png title=Opplasting>"
@@ -198,15 +258,9 @@ async def get_analytics_status(token: str, event: dict) -> str:
 async def update_config(token: str, event: dict, form: dict) -> str:
     """Draw trigger line."""
     informasjon = ""
-    if "trigger_line_xyxyn" in form:
-        await ConfigAdapter().update_config(
-            token, event["id"], "TRIGGER_LINE_XYXYN", str(form["trigger_line_xyxyn"]),
-        )
+    if "detect_image_size" in form:
         await ConfigAdapter().update_config(
             token, event["id"], "NEW_TRIGGER_LINE_PHOTO", "True",
-        )
-        await ConfigAdapter().update_config(
-            token, event["id"], "VIDEO_URL", str(form["video_url"]),
         )
         await ConfigAdapter().update_config(
             token,

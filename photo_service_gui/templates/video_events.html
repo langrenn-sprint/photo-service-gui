@@ -64,71 +64,79 @@
     }
   }
 
-    function action_toggle(action, instance_id, event_id, new_value) {
+    function action_toggle(action, instance_id, event_id) {
       var xhttp = new XMLHttpRequest();
       xhttp.open("POST", "/video_events", true);
       xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      xhttp.send("instance_action=" + action + "&instance_id=" + instance_id + "&event_id=" + event_id + "&new_value=" + new_value);
+
+      let formData = "";
+      let new_trigger_line = "";
+      let video_url = "";
+      if (action === "trigger_line") {
+        new_trigger_line = document.getElementById("trigger_line_" + instance_id).value;
+        video_url = document.getElementById("video_url_" + instance_id).value;
+        formData = new URLSearchParams({
+          new_trigger_line: new_trigger_line,
+          video_url: video_url,
+          instance_id: instance_id,
+          event_id: event_id,
+        }).toString();
+      }
+      else {
+        formData = new URLSearchParams({
+          instance_action: action,
+          instance_id: instance_id,
+          event_id: event_id,
+        }).toString();
+      }
+      xhttp.send(formData);
       xhttp.onload = function() {
 
         // load new info
         const jsonDoc = JSON.parse(this.response);
-
-        document.getElementById("info").innerHTML = jsonDoc;
+        if (jsonDoc == "204") {
+          if (action === "trigger_line") {
+            document.getElementById("info").innerHTML = "Trigger linje og video url er oppdatert";
+            document.getElementById("_trigger_line_" + instance_id).innerHTML = new_trigger_line;
+            const short_url = video_url.length > 25 ? video_url.slice(0, 10) + '...' + video_url.slice(-10) : video_url;
+            const urlSpan = document.getElementById("_video_url_" + instance_id);
+            urlSpan.title = video_url;
+            urlSpan.innerHTML = short_url;
+            document.getElementById("details_" + instance_id).open = false;
+          }
+          else {
+            document.getElementById("info").innerHTML = "Sendt instruksjon til tjeneste: " + action + ".";
+          } 
+        }
+        else {
+          document.getElementById("info").innerHTML = jsonDoc;
+        }
       }
     }
-
-
 
   /* Format service instances for display */
-  function formatServiceInstances(instances, service_type) {
-    if (!instances || instances.length === 0) {
-      return '<p>Ingen aktive tjenester</p>';
-    }
-    
-    let html = '';
+  function formatServiceInstances(instances) {
     instances.forEach(instance => {
-      if (!instance.service_type.includes(service_type)) {
-        return;
+      const okStatuses = ['running', 'STREAMING'];
+      const errorStatuses = ['ERROR'];
+      const statusClass = okStatuses.includes(instance.status)
+        ? 'label-success'
+        : errorStatuses.includes(instance.status)
+          ? 'label-critical'
+          : 'label-default';
+      const buttonName = `button_${instance.id}`;
+      actionText = instance.action === 'start' ? 'stop' : 'start';
+      document.getElementById(`status_${instance.id}`).className = `label ${statusClass}`;
+      document.getElementById(`status_${instance.id}`).innerHTML = instance.status;
+      if (instance.service_type != "VIDEO_SERVICE_CAPTURE_SRT") {
+        document.getElementById(buttonName).innerHTML = actionText;
+
       }
-      
-      const statusClass = instance.status === 'running' ? 'label-success' : 
-                          instance.status === 'stopped' ? 'label-default' : 'label-warning';
-      let actionButton = '';
-      if (instance.service_type != 'VIDEO_SERVICE_CAPTURE_SRT') {
-        actionText = instance.status === 'running' ? 'stop' : 'start';
-        actionButton = `<button type="submit" onclick="action_toggle('${actionText}', '${instance.id}', '{{ event_id }}', '')" class="btn btn-default">${actionText}</button>`;
+      if (instance.service_type.startsWith('VIDEO_SERVICE_')) {
+        document.getElementById(`trigger_line_photo_${instance.id.slice(-5)}`).src = instance.metadata.trigger_line_photo_url || '../static/no_image.png';
       }
-      const icon_url = instance.service_type === 'VIDEO_SERVICE_CAPTURE_SRT' ? '<img id=menu_icon src=../static/capture.png title=Video> Cloud streaming' : 
-                       instance.service_type === 'VIDEO_SERVICE_CAPTURE_LOCAL' ? '<img id=menu_icon src=../static/capture.png title=Video> Video to local' : 
-                       instance.service_type === 'VIDEO_SERVICE_DETECT' ? '<img id=menu_icon src=../static/upload.png title=Video> Detect' : '<img id=menu_icon src=../static/upload.png title=Video> Upload';
-      
-      html += `
-          <div class="status-card" role="status" aria-live="polite">
-            <table>
-              <tr>
-                <td>${icon_url}</td>
-                <td align="right"><span class="label ${statusClass}">${instance.status}</span></td>
-              </tr>
-              <tr>
-                <td>Instance:<strong> ${instance.instance_name}</strong></td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Last seen:<strong> ${getTimeAgo(instance.last_heartbeat)} ago</strong></td>
-                <td align="right" rowspan="2">
-                    ${actionButton}
-                </td>
-              </tr>
-              <tr>
-                <td>Trigger line: ${instance.metadata.trigger_line_xyxyn}</td>
-              </tr>
-            </table>
-      `;
-      html += '</div><br>';
+
     });
-    
-    return html;
   }
 
   /* this function will sync (update+get) status updates with backend */
@@ -148,8 +156,7 @@
           // load new info
           const jsonDoc = JSON.parse(xhttp.response);
           document.getElementById("send_result").innerHTML = jsonDoc.video_status;
-          document.getElementById("capture_service_instances").innerHTML = formatServiceInstances(jsonDoc.service_instances, 'CAPTURE');
-          document.getElementById("detect_service_instances").innerHTML = formatServiceInstances(jsonDoc.service_instances, 'DETECT');
+          formatServiceInstances(jsonDoc.service_instances);
           document.getElementById("local_raw_captured_queue_length").innerHTML = jsonDoc.local_raw_captured_queue_length;
           document.getElementById("local_captured_queue_length").innerHTML = jsonDoc.local_captured_queue_length;
           document.getElementById("cloud_captured_queue_length").innerHTML = jsonDoc.cloud_captured_queue_length;
@@ -160,14 +167,6 @@
           else {
             document.getElementById("photo_latest").src = "../static/no_image.png";
           }
-          const trigger_line_url = jsonDoc.trigger_line_url;
-          if (trigger_line_url != "") {
-            document.getElementById("trigger_line_photo").src = trigger_line_url;
-          }
-          else {
-            document.getElementById("trigger_line_photo").src = "../static/no_image.png";
-          }
-
         }
         catch(err) {
             alert(err);
@@ -178,6 +177,7 @@
         alert(err);
     } finally {
       syncRunning = false; // Ensure flag is cleared even on errors
+      document.getElementById("info").innerHTML = "";
       setTimeout(sync_status, 10000);
     }
   }
@@ -194,49 +194,92 @@
 </script>
     <section class="row" aria-label="Service status">
       <div class="col-sm-4">
-        <table>
-          <tr>
-            <td><h4>Målkamera</h4></td>
-            <td>
-              (<strong id="local_raw_captured_queue_length">0</strong> råfiler
-              {% if service_status.storage_mode_name == "cloud_storage" %} og <strong id="local_captured_queue_length">0</strong> videoer{% endif %} i kø)
-            </td>
-          </tr>
-        </table>
-        <span id="capture_service_instances"></span>
-        <!-- preview inside the card -->
-        <figure class="preview-figure">
-          <img id="trigger_line_photo" class="preview-img" src="../static/no_image.png"
-              alt="Crossing line, click to view big size" title="Click to enlarge">
-        </figure>
-      </div>
-      <div class="col-sm-4">
-        <table>
-          <tr>
-            <td><h4>Passeringer</h4></td>
-            <td>(
-              {% if service_status.storage_mode_name == "cloud_storage" %}
-                <strong id="cloud_captured_queue_length">0</strong>
-              {% else %}
-                <strong id="local_captured_queue_length">0</strong>
-                <input type="hidden" id="cloud_captured_queue_length" value="0">
-              {% endif %} videoer i kø)
-            </td>
-          </tr>
-        </table>
-        <span id="detect_service_instances"></span>
+        {% for instance in service_instances %}
+          <div class="status-card" role="status" aria-live="polite">
+            {% if instance.service_type.startswith('VIDEO_SERVICE_') %}
+              <figure class="preview-figure">
+                <img id="trigger_line_photo_{{ instance.id[-5:] }}" class="preview-img" src="{{ instance.metadata.trigger_line_photo_url or '../static/no_image.png' }}"
+                    alt="Crossing line, click to view big size" title="Click to enlarge">
+              </figure>
+            {% endif %}
+            <table>
+              <tr>
+                <td><img id=menu_icon src=../static/{{ instance.icon_url }}> {{ instance.service_type }}</td>
+                <td align="right"><span id="status_{{ instance.id }}" name="status_{{ instance.id }}" class="label {{ instance.status_class }}">{{ instance.status }}</span></td>
+              </tr>
+              <tr>
+                <td>Instance: <strong>{{ instance.instance_name }}</strong></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>
+                  {% if instance.service_type.startswith('VIDEO_SERVICE_') %}
+                    <details id="details_{{ instance.id }}" class="content-box">
+                      <summary>
+                        Trigger line: <b><span id="_trigger_line_{{ instance.id }}">{{ instance.metadata.trigger_line_xyxyn }}</span></b><br>
+                        {% set video_url = instance.metadata.video_url or '' %}
+                        Video url: <b><span id="_video_url_{{ instance.id }}" title="{{ video_url }}">{% if video_url|length > 25 %}{{ video_url[:10] }}...{{ video_url[-10:] }}{% else %}{{ video_url }}{% endif %}</span></b>
+                      </summary>
+                        <div class="form-group">
+                          <input id="trigger_line_{{ instance.id }}" name="trigger_line_xyxyn" type="text" class="form-control" value="{{ instance.metadata.trigger_line_xyxyn }}">
+                          <input id="video_url_{{ instance.id }}" name="video_url" type="text" class="form-control" value="{{ instance.metadata.video_url }}">
+                          <button type="submit" onclick="action_toggle('trigger_line', '{{ instance.id }}', '{{ event_id }}', '')" class="btn btn-success">Lagre</button>
+                        </div>
+                    </details>
+                  {% endif %}
+                </td>
+              </tr>
+              <tr>
+                <td>Last seen:<strong> <span id="last_seen_{{ instance.id }}"></span> ago</strong>
+                  <script>document.getElementById('last_seen_{{ instance.id }}').textContent = getTimeAgo('{{ instance.last_heartbeat }}');</script>
+                </td>
+                <td align="right" rowspan="2">
+                    {% if instance.service_type != "VIDEO_SERVICE_CAPTURE_SRT" %}
+                      {% set action_text = 'stop' if instance.action == 'start' else 'start' %}
+                      <button type="submit" id="button_{{ instance.id }}" onclick="action_toggle(this.innerHTML, '{{ instance.id }}', '{{ event_id }}', '')" class="btn btn-default">{{ action_text }}</button>
+                    {% endif %}
+                </td>
+              </tr>
+            </table>
+          </div><br>
+            {% if loop.index == ((service_instances | length) // 2) or ((service_instances | length) < 2) %}
+              </div>
+              <div class="col-sm-4">
+            {% endif %}
+        {% endfor %}
         <!-- preview inside the card -->
         <figure class="preview-figure">
           <img id="photo_latest" class="preview-img" src="../static/no_image.png"
               alt="Latest detection">
         </figure>
-      </div>
-
-      <div class="col-sm-4">
         <div class="status-card" role="status" aria-live="polite">
             <button type="submit" onclick="action_toggle('start_all', '', '{{ event_id }}', '')" class="btn btn-default">Start all services</button>
             <button type="submit" onclick="action_toggle('stop_all', '', '{{ event_id }}', '')" class="btn btn-default">Stop all services</button>
         </div>
+      </div>
+
+      <div class="col-sm-4">
+        <h4>Status (kø)</h4>
+        <table>
+          <tr>
+            <td>Video tjenester:</td>
+            <td>
+              <strong id="local_raw_captured_queue_length">0</strong> råfiler
+              {% if service_status.storage_mode_name == "cloud_storage" %} og <strong id="local_captured_queue_length">0</strong> videoer{% endif %} i kø
+            </td>
+          </tr>
+          <tr>
+            <td>Passeringer:</td>
+            <td>
+              {% if service_status.storage_mode_name == "cloud_storage" %}
+                <strong id="cloud_captured_queue_length">0</strong>
+              {% else %}
+                <strong id="local_captured_queue_length">0</strong>
+                <input type="hidden" id="cloud_captured_queue_length" value="0">
+              {% endif %} videoer i kø
+            </td>
+          </tr>
+        </table>
         <h4>Siste hendelser (logg)</h4>
         <div class="status-card" role="status" aria-live="polite">
           <p id="send_result">—</p> 
@@ -253,16 +296,6 @@
       <section class="row" aria-label="Previews and configuration">
         <div class="col-md-6 preview-col">
           <form action="/video_events" method="post" class="form-vertical" id="config-form" aria-label="Video configuration">
-            <div class="form-group">
-              <label for="trigger_line_xyxyn">Mållinjen</label> (x1:y1:x2:y2 , eks: 0.0:0.75:1.0:0.75)
-              <input id="trigger_line_xyxyn" name="trigger_line_xyxyn" type="text" class="form-control" value="{{ trigger_line_xyxyn }}">
-            </div>
-
-            <div class="form-group">
-              <label for="video_url">Video URL</label>
-              <input id="video_url" name="video_url" class="form-control" value="{{ video_url }}">
-            </div>
-
             <div class="form-group">
               <label for="video_clip_duration">Videoklipp varighet (s)</label>
               <input id="video_clip_duration" name="video_clip_duration" type="number" class="form-control" value="{{ service_status.video_clip_duration }}">
@@ -281,7 +314,7 @@
 
             <div class="form-group">
               <label for="detect_image_size">Image resolution</label>
-              <select name="detect_image_size" class="form-control">
+              <select id="detect_image_size" name="detect_image_size" class="form-control">
                 <option value={{ service_status.detect_analytics_im_size }}>{{ service_status.detect_analytics_im_size }}</option>
                 {% for one_res in service_status.video_analytics_im_size_def %}
                   <option value={{ one_res }}>{{ one_res }}</option>
@@ -310,19 +343,22 @@
 
   <script>
       // Initial call to start the cycle
-      setTimeout(sync_status, 4000);
+      setTimeout(sync_status, 10000);
 
       // Get the modal
       document.addEventListener('DOMContentLoaded', function() {
         const modal = document.getElementById('photo-modal');
         const modalImg = document.getElementById('modal-img');
-        const trigger = document.getElementById('trigger_line_photo');
         const closeBtn = document.querySelector('.close-modal');
-
-        trigger.onclick = function() {
-          modal.style.display = "block";
-          modalImg.src = this.src;
-        }
+        {% for instance in service_instances %}
+            {% if instance.service_type.startswith('VIDEO_SERVICE_') %}
+              const trigger_{{ instance.id[-5:] }} = document.getElementById('trigger_line_photo_{{ instance.id[-5:] }}');
+              trigger_{{ instance.id[-5:] }}.onclick = function() {
+                modal.style.display = "block";
+                modalImg.src = this.src;
+              }
+            {% endif %}
+        {% endfor %}
 
         closeBtn.onclick = function() {
           modal.style.display = "none";

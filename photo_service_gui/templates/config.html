@@ -213,7 +213,7 @@
       <div class="col-sm-12">
         <div class="status-card" role="status" aria-live="polite">
           <h4>
-            Service Instance: {{ service_instance.instance_name }}
+            {{ service_instance.service_type | lower }} - <b>{{ service_instance.instance_name }}</b>
             <span class="label {% if service_instance.status == 'running' %}label-success{% elif service_instance.status == 'stopped' %}label-default{% else %}label-warning{% endif %}">{{ service_instance.status }}</span>
           </h4>
             {% set items = service_instance.items() | list %}
