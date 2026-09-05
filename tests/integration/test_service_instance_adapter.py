@@ -25,6 +25,7 @@ def mock_token() -> str:
     """Return a mock token for testing."""
     return "mock_token_12345"
 
+
 @pytest.fixture
 def fake_token() -> str:
     """Return a fake token for testing."""

@@ -39,20 +39,11 @@ class LiveStreamService:
         """
         load_dotenv()
 
-        self.project_id = (
-            project_id
-            or os.getenv("GOOGLE_CLOUD_PROJECT", "")
-        )
+        self.project_id = project_id or os.getenv("GOOGLE_CLOUD_PROJECT", "")
 
-        self.location = (
-            location
-            or os.getenv("GOOGLE_CLOUD_REGION", "europe-north1")
-        )
+        self.location = location or os.getenv("GOOGLE_CLOUD_REGION", "europe-north1")
 
-        self.bucket_name = (
-            bucket_name
-            or os.getenv("GOOGLE_STORAGE_BUCKET", "")
-        )
+        self.bucket_name = bucket_name or os.getenv("GOOGLE_STORAGE_BUCKET", "")
 
         if not self.project_id:
             error_msg = "GOOGLE_CLOUD_PROJECT must be set"
@@ -94,19 +85,25 @@ class LiveStreamService:
         """
         information = ""
         clip_duration = await ConfigAdapter().get_config_int(
-            token, event["id"], "VIDEO_CLIP_DURATION",
+            token,
+            event["id"],
+            "VIDEO_CLIP_DURATION",
         )
 
         # Generate resource IDs
         input_prefix = await ConfigAdapter().get_config(
-            token, event["id"], "LIVESTREAM_INPUT_PREFIX",
+            token,
+            event["id"],
+            "LIVESTREAM_INPUT_PREFIX",
         )
         input_id = f"{input_prefix}-{name}"
         channel_id = name
 
         # Create output path in cloud storage
         output_path_template = await ConfigAdapter().get_config(
-            token, event["id"], "VIDEO_OUTPUT_PATH_TEMPLATE",
+            token,
+            event["id"],
+            "VIDEO_OUTPUT_PATH_TEMPLATE",
         )
         output_path = output_path_template.format(event_id=event["id"])
         output_uri = f"gs://{self.bucket_name}/{output_path}"
@@ -118,7 +115,6 @@ class LiveStreamService:
             name,
         )
         logging.debug("Registered new service instance with ID: %s", instance_id)
-
 
         try:
             # Create input endpoint
@@ -132,16 +128,24 @@ class LiveStreamService:
             logging.info("Creating channel for event: %s", event["id"])
             adapter = ConfigAdapter()
             video_bitrate = await adapter.get_config_int(
-                token, event["id"], "VIDEO_BITRATE_BPS",
+                token,
+                event["id"],
+                "VIDEO_BITRATE_BPS",
             )
             video_width = await adapter.get_config_int(
-                token, event["id"], "VIDEO_WIDTH",
+                token,
+                event["id"],
+                "VIDEO_WIDTH",
             )
             video_height = await adapter.get_config_int(
-                token, event["id"], "VIDEO_HEIGHT",
+                token,
+                event["id"],
+                "VIDEO_HEIGHT",
             )
             video_fps = await adapter.get_config_int(
-                token, event["id"], "VIDEO_CLIP_FPS",
+                token,
+                event["id"],
+                "VIDEO_CLIP_FPS",
             )
 
             await asyncio.to_thread(
@@ -170,7 +174,8 @@ class LiveStreamService:
 
         except Exception:
             logging.exception(
-                "Failed to create and start channel for event: %s", event["id"],
+                "Failed to create and start channel for event: %s",
+                event["id"],
             )
             # Cleanup on failure
             try:
@@ -280,6 +285,7 @@ class LiveStreamService:
         """
         return await asyncio.to_thread(self.adapter.list_inputs)
 
+
 async def create_service_instance(
     token: str,
     event: dict,
@@ -310,13 +316,15 @@ async def create_service_instance(
             "latest_photo_url": "",
             "trigger_line_photo_url": "",
             "trigger_line_xyxyn": await ConfigAdapter().get_config(
-                token, event["id"], "TRIGGER_LINE_XYXYN",
+                token,
+                event["id"],
+                "TRIGGER_LINE_XYXYN",
             ),
             "video_url": await ConfigAdapter().get_config(
-                token, event["id"], "VIDEO_URL",
+                token,
+                event["id"],
+                "VIDEO_URL",
             ),
         },
     }
     await ServiceInstanceAdapter().create_service_instance(token, service_instance)
-
-

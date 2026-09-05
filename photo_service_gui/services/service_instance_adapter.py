@@ -50,10 +50,13 @@ class ServiceInstanceAdapter:
         if query_params:
             url += "?" + "&".join(query_params)
 
-        async with ClientSession() as session, session.get(
-            url,
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 service_instances = await resp.json()
             elif resp.status == HTTPStatus.UNAUTHORIZED:
@@ -81,10 +84,13 @@ class ServiceInstanceAdapter:
         )
         servicename = "get_service_instance_by_id"
 
-        async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 service_instance = await resp.json()
             elif resp.status == HTTPStatus.NOT_FOUND:
@@ -118,11 +124,14 @@ class ServiceInstanceAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.post(
-            f"{PHOTO_SERVICE_URL}/service-instances",
-            headers=headers,
-            json=service_instance,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.post(
+                f"{PHOTO_SERVICE_URL}/service-instances",
+                headers=headers,
+                json=service_instance,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.CREATED:
                 logging.debug(f"result - got response {resp}")
                 location = resp.headers[hdrs.LOCATION]
@@ -132,9 +141,7 @@ class ServiceInstanceAdapter:
                 raise Exception(informasjon)
             elif resp.status == HTTPStatus.UNPROCESSABLE_ENTITY:
                 body = await resp.json()
-                informasjon = (
-                    f"{servicename} failed - {resp.status} - {body['detail']}"
-                )
+                informasjon = f"{servicename} failed - {resp.status} - {body['detail']}"
                 logging.error(informasjon)
                 raise web.HTTPUnprocessableEntity(reason=informasjon)
             else:
@@ -144,7 +151,6 @@ class ServiceInstanceAdapter:
                 raise web.HTTPBadRequest(reason=informasjon)
 
         return result
-
 
     async def update_service_instance_action(
         self,
@@ -173,10 +179,11 @@ class ServiceInstanceAdapter:
             instance["action"] = action
             instance["last_heartbeat"] = EventsAdapter().get_local_time(event, "log")
             informasjon = await self.update_service_instance(
-                token, instance["id"], instance,
+                token,
+                instance["id"],
+                instance,
             )
         return informasjon
-
 
     async def update_instance_details(
         self,
@@ -191,14 +198,16 @@ class ServiceInstanceAdapter:
         service_instance["metadata"]["trigger_line_xyxyn"] = new_trigger_line
         service_instance["metadata"]["video_url"] = video_url
         service_instance["last_heartbeat"] = EventsAdapter().get_local_time(
-            event, "log",
+            event,
+            "log",
         )
         service_instance["action"] = "trigger_line_photo"
 
         return await self.update_service_instance(
-            token, instance_id, service_instance,
+            token,
+            instance_id,
+            service_instance,
         )
-
 
     async def update_service_instance_photo(
         self,
@@ -225,10 +234,11 @@ class ServiceInstanceAdapter:
                 instance["action"] = ""
             instance["last_heartbeat"] = EventsAdapter().get_local_time(event, "log")
             informasjon = await self.update_service_instance(
-                token, instance["id"], instance,
+                token,
+                instance["id"],
+                instance,
             )
         return informasjon
-
 
     async def update_service_instance_status(
         self,
@@ -250,10 +260,11 @@ class ServiceInstanceAdapter:
             instance["status"] = status
             instance["last_heartbeat"] = EventsAdapter().get_local_time(event, "log")
             informasjon = await self.update_service_instance(
-                token, instance["id"], instance,
+                token,
+                instance["id"],
+                instance,
             )
         return informasjon
-
 
     async def send_heartbeat(
         self,
@@ -285,11 +296,14 @@ class ServiceInstanceAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.put(
-            f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
-            headers=headers,
-            json=service_instance,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.put(
+                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                headers=headers,
+                json=service_instance,
+            ) as resp,
+        ):
             response = str(resp.status)
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.debug(f"update service instance - got response {resp}")
@@ -304,9 +318,7 @@ class ServiceInstanceAdapter:
                 raise Exception(informasjon)
             elif resp.status == HTTPStatus.UNPROCESSABLE_ENTITY:
                 body = await resp.json()
-                informasjon = (
-                    f"{servicename} failed - {resp.status} - {body['detail']}"
-                )
+                informasjon = f"{servicename} failed - {resp.status} - {body['detail']}"
                 logging.error(informasjon)
                 raise web.HTTPUnprocessableEntity(reason=informasjon)
             else:
@@ -331,10 +343,13 @@ class ServiceInstanceAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.delete(
-            f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.delete(
+                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                headers=headers,
+            ) as resp,
+        ):
             response = str(resp.status)
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.debug(f"delete service instance - got response {resp}")

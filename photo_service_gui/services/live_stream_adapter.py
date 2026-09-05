@@ -58,11 +58,11 @@ class LiveStreamAdapter:
 
         logging.info("Creating input: %s", input_id)
         response = operation.result(timeout=600)
-        logging.info("Created input: %s", response.name) # pyright: ignore[reportOptionalMemberAccess]
+        logging.info("Created input: %s", response.name)  # pyright: ignore[reportOptionalMemberAccess]
 
         return response  # type: ignore[return-value]
 
-    def create_channel(
+    def create_channel(  # noqa: PLR0917
         self,
         channel_id: str,
         input_id: str,
@@ -117,9 +117,7 @@ class LiveStreamAdapter:
         audio_ch_def = 2
         # Configure audio stream (required for TS container)
         # Stereo or mono
-        channel_layout = (
-            ["fl", "fr"] if audio_channels == audio_ch_def else ["fc"]
-        )
+        channel_layout = ["fl", "fr"] if audio_channels == audio_ch_def else ["fc"]
 
         audio_stream = AudioStream(
             codec=audio_codec,

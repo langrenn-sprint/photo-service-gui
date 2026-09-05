@@ -74,7 +74,7 @@ class PhotosFileAdapter:
             logging.exception("Error getting photos")
         return photos
 
-    def get_all_capture_files(self, event_id: str, storage_mode: str) ->  list[dict]:
+    def get_all_capture_files(self, event_id: str, storage_mode: str) -> list[dict]:
         """Get all url to all captured files on file directory."""
         file_list = []
         try:
@@ -86,7 +86,7 @@ class PhotosFileAdapter:
                 file_list = [
                     {"name": f.name, "url": f"{CAPTURED_FILE_PATH}/{f.name}"}
                     for f in files
-                if f.is_file()
+                    if f.is_file()
                 ]
         except Exception:
             informasjon = "Error getting captured files"
@@ -96,14 +96,17 @@ class PhotosFileAdapter:
             return file_list
 
     def get_all_raw_capture_files(
-            self, event_id: str, storage_mode: str,
-        ) ->  list[dict]:
+        self,
+        event_id: str,
+        storage_mode: str,
+    ) -> list[dict]:
         """Get all url to all raw captured files on file directory."""
         file_list = []
         try:
             if storage_mode == "cloud_storage":
                 file_list = GoogleCloudStorageAdapter().list_blobs(
-                    event_id, "RAW_CAPTURE/",
+                    event_id,
+                    "RAW_CAPTURE/",
                 )
             else:
                 # Local file system
@@ -111,7 +114,7 @@ class PhotosFileAdapter:
                 file_list = [
                     {"name": f.name, "url": f"{CAPTURED_RAW_FILE_PATH}/{f.name}"}
                     for f in files
-                if f.is_file()
+                    if f.is_file()
                 ]
         except Exception:
             informasjon = "Error getting captured files"
@@ -149,7 +152,6 @@ class PhotosFileAdapter:
         except Exception:
             logging.exception("Error moving photo to archive.")
 
-
     def move_to_archive(self, filename: str) -> None:
         """Move photo to archive."""
         source_file = Path(VISION_ROOT_PATH) / filename
@@ -165,12 +167,16 @@ class PhotosFileAdapter:
             logging.exception("Error moving photo to archive.")
 
     def move_to_capture_archive(
-            self, event_id: str, storage_mode: str, filename: str,
-        ) -> str:
+        self,
+        event_id: str,
+        storage_mode: str,
+        filename: str,
+    ) -> str:
         """Move photo to local archive."""
         if storage_mode == "cloud_storage":
             return GoogleCloudStorageAdapter().move_to_capture_archive(
-                event_id, filename,
+                event_id,
+                filename,
             )
         source_file = Path(CAPTURED_FILE_PATH) / filename
         destination_file = Path(CAPTURED_ARCHIVE_PATH) / filename
@@ -185,12 +191,16 @@ class PhotosFileAdapter:
         return destination_file.name
 
     def move_to_error_archive(
-            self, event_id: str, storage_mode: str, filename: str,
-        ) -> str:
+        self,
+        event_id: str,
+        storage_mode: str,
+        filename: str,
+    ) -> str:
         """Move photo to local error archive."""
         if storage_mode == "cloud_storage":
             return GoogleCloudStorageAdapter().move_to_error_archive(
-                event_id, filename,
+                event_id,
+                filename,
             )
         source_file = Path(CAPTURED_FILE_PATH) / filename
         destination_file = Path(CAPTURED_ERROR_ARCHIVE_PATH) / filename
@@ -221,14 +231,22 @@ class PhotosFileAdapter:
             # Using -c:a aac if audio exists, otherwise ffmpeg will ignore it
             command = [
                 "ffmpeg",
-                "-i", input_file,
-                "-c:v", "libx264",    # H.264 video codec
-                "-preset", "fast",     # Encoding speed preset
-                "-crf", "23",          # Constant Rate Factor (quality)
-                "-c:a", "aac",        # AAC audio codec (ignored if no audio stream)
-                "-b:a", "128k",        # Audio bitrate (ignored if no audio stream)
-                "-map", "0:v:0",       # Map first video stream
-                "-map", "0:a?",        # Map audio if present (? makes it optional)
+                "-i",
+                input_file,
+                "-c:v",
+                "libx264",  # H.264 video codec
+                "-preset",
+                "fast",  # Encoding speed preset
+                "-crf",
+                "23",  # Constant Rate Factor (quality)
+                "-c:a",
+                "aac",  # AAC audio codec (ignored if no audio stream)
+                "-b:a",
+                "128k",  # Audio bitrate (ignored if no audio stream)
+                "-map",
+                "0:v:0",  # Map first video stream
+                "-map",
+                "0:a?",  # Map audio if present (? makes it optional)
                 str(output_path),
             ]
             subprocess.run(command, check=True)  # noqa: S603
@@ -241,4 +259,3 @@ class PhotosFileAdapter:
             informasjon = f"FFmpeg command failed with error for {input_file}"
             logging.exception(informasjon)
             raise Exception(informasjon) from e
-

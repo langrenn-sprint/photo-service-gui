@@ -25,13 +25,15 @@ class Album:
     place: str | None
     title: str | None
 
+
 class AlbumSchema(Schema):
 
     """Album data class."""
 
     camera_position = fields.String(allow_none=True)
     g_id = fields.String(
-        required=True, error_messages={"required": "Google album id is required."},
+        required=True,
+        error_messages={"required": "Google album id is required."},
     )
     is_photo_finish = fields.Boolean(load_default=False)
     is_start_registration = fields.Boolean(load_default=False)

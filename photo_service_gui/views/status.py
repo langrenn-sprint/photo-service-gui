@@ -50,11 +50,16 @@ class Status(web.View):
             status = []
             if my_filter:
                 status = await StatusAdapter().get_status_by_type(
-                    user["token"], event, my_filter, count,
+                    user["token"],
+                    event,
+                    my_filter,
+                    count,
                 )
             else:
                 status = await StatusAdapter().get_status(
-                    user["token"], event["id"], count,
+                    user["token"],
+                    event["id"],
+                    count,
                 )
 
             return await aiohttp_jinja2.render_template_async(
@@ -82,16 +87,17 @@ class Status(web.View):
         event_id = str(form["event_id"])
         user = await check_login(self)
         if not user:
-                informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-                return web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}",
-                )
+            informasjon = "Ingen tilgang, vennligst logg inn på nytt."
+            return web.HTTPSeeOther(
+                location=f"/login?informasjon={informasjon}",
+            )
         event = await get_event(user, event_id)
 
         try:
             if "delete_all" in form:
                 informasjon = await StatusAdapter().delete_all_status(
-                    user["token"], event,
+                    user["token"],
+                    event,
                 )
             elif "delete_select" in form:
                 informasjon = "Funksjon ikke implementert ennå."
@@ -99,7 +105,7 @@ class Status(web.View):
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
             error_reason = str(e)
-            if error_reason.count("401 Unauthorized") > 0   :
+            if error_reason.count("401 Unauthorized") > 0:
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",

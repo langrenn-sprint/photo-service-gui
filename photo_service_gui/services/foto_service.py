@@ -56,7 +56,9 @@ class FotoService:
                         photo["biblist"] = json.loads(new_biblist)
                         photo["event_id"] = event_id
                         await PhotosAdapter().update_photo(
-                            token, photo["id"], photo,
+                            token,
+                            photo["id"],
+                            photo,
                         )
                         i_count += 1
                 except Exception:

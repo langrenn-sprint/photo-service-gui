@@ -41,14 +41,16 @@ class Config(web.View):
 
             try:
                 event_config = await ConfigAdapter().get_all_configs(
-                    user["token"], event_id,
+                    user["token"],
+                    event_id,
                 )
             except Exception:
                 event_config = []
                 informasjon += " Feil ved innlasting av config."
 
             s_instances = await ServiceInstanceAdapter().get_all_service_instances(
-                user["token"], event_id,
+                user["token"],
+                event_id,
             )
 
             return await aiohttp_jinja2.render_template_async(
@@ -83,19 +85,25 @@ class Config(web.View):
             if "update_one" in form:
                 key = str(form["key"])
                 await ConfigAdapter().update_config(
-                    user["token"], event_id, key, str(form["value"]),
+                    user["token"],
+                    event_id,
+                    key,
+                    str(form["value"]),
                 )
                 informasjon = "Suksess. Informasjon er oppdatert."
             elif "delete_instance" in form:
                 await ServiceInstanceAdapter().delete_service_instance(
-                    user["token"], str(form["id"]),
+                    user["token"],
+                    str(form["id"]),
                 )
                 informasjon = "Suksess. Instans er slettet."
             elif "delete_channel" in form:
                 channel_name = str(form["name"])
                 service = LiveStreamService()
                 await delete_instance_by_channel_name(
-                    user["token"], event_id, channel_name,
+                    user["token"],
+                    event_id,
+                    channel_name,
                 )
                 informasjon = service.delete_channel(channel_name)
                 if "input" in form:
@@ -109,14 +117,16 @@ class Config(web.View):
                 name = str(form["name"]).strip().lower()
                 service = LiveStreamService()
                 informasjon = await service.create_and_start_channel(
-                    user["token"], event, name,
+                    user["token"],
+                    event,
+                    name,
                 )
 
         except Exception as e:
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
             error_reason = str(e)
-            if error_reason.count("401 Unauthorized") > 0   :
+            if error_reason.count("401 Unauthorized") > 0:
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
                 return web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
@@ -126,6 +136,7 @@ class Config(web.View):
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",
         )
 
+
 async def get_srt_streams() -> dict:
     """Get all srt streams."""
     service = LiveStreamService()
@@ -133,16 +144,21 @@ async def get_srt_streams() -> dict:
     inputs = await service.list_active_inputs()
     return {"channels": channels, "inputs": inputs}
 
+
 async def delete_instance_by_channel_name(
-        token: str, event_id: str, channel_name: str,
-    ) -> None:
+    token: str,
+    event_id: str,
+    channel_name: str,
+) -> None:
     """Delete service instance by channel name."""
     instances = await ServiceInstanceAdapter().get_all_service_instances(
-        token, event_id,
+        token,
+        event_id,
     )
     for instance in instances:
         if channel_name.endswith(instance["instance_name"]):
             await ServiceInstanceAdapter().delete_service_instance(
-                token, instance["id"],
+                token,
+                instance["id"],
             )
             break

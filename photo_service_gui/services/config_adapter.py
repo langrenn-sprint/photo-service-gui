@@ -32,10 +32,13 @@ class ConfigAdapter:
         )
         servicename = "get_config"
 
-        async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/config?key={key}&eventId={event_id}",
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{PHOTO_SERVICE_URL}/config?key={key}&eventId={event_id}",
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 config = await resp.json()
             elif resp.status == HTTPStatus.UNAUTHORIZED:
@@ -64,7 +67,7 @@ class ConfigAdapter:
                 informasjon = f"{servicename} failed - {resp.status} - {body['detail']}"
                 logging.error(informasjon)
                 raise web.HTTPBadRequest(reason=informasjon)
-        return config["value"].strip()
+        return config["value"]
 
     async def get_all_configs(self, token: str, event_id: str) -> list:
         """Get config by google id function."""
@@ -81,10 +84,13 @@ class ConfigAdapter:
         else:
             url = f"{PHOTO_SERVICE_URL}/configs"
 
-        async with ClientSession() as session, session.get(
-            url,
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 config = await resp.json()
             elif resp.status == HTTPStatus.UNAUTHORIZED:
@@ -113,21 +119,26 @@ class ConfigAdapter:
 
     async def get_config_list(self, token: str, event_id: str, key: str) -> list:
         """Get config list value."""
-        string_value = await self.get_config(token, event_id, key)
+        config_value = await self.get_config(token, event_id, key)
+        if isinstance(config_value, list):
+            return config_value
         try:
             # convert from json string to list
-            return json.loads(string_value)
+            return json.loads(config_value)
         except json.JSONDecodeError:
             pass
         # then try Python literal (handles "['a','b']")
         try:
-            return ast.literal_eval(string_value)
+            return ast.literal_eval(config_value)
         except (ValueError, SyntaxError):
-            logging.exception(f"JSON for key '{key}', value '{string_value}'")
+            logging.exception(f"JSON for key '{key}', value '{config_value}'")
             return []
 
     async def get_config_img_res_tuple(
-        self, token: str, event_id: str, key: str,
+        self,
+        token: str,
+        event_id: str,
+        key: str,
     ) -> tuple:
         """Get config tuple value."""
         string_value = await self.get_config(token, event_id, key)
@@ -139,10 +150,14 @@ class ConfigAdapter:
         return tuple_value
 
     async def create_config(
-        self, token: str, event_id: str, key: str, value: str,
+        self,
+        token: str,
+        event_id: str,
+        key: str,
+        value: str,
     ) -> str:
         """Create new config function."""
-        servicename = "create_config"
+        servicename = f"create_config - key/value: {key}/{value}"
         result = ""
         headers = MultiDict(
             [
@@ -157,9 +172,14 @@ class ConfigAdapter:
         }
         request_body = copy.deepcopy(config)
 
-        async with ClientSession() as session, session.post(
-            f"{PHOTO_SERVICE_URL}/config", headers=headers, json=request_body,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.post(
+                f"{PHOTO_SERVICE_URL}/config",
+                headers=headers,
+                json=request_body,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.CREATED:
                 logging.debug(f"result - got response {resp}")
                 location = resp.headers[hdrs.LOCATION]
@@ -176,18 +196,26 @@ class ConfigAdapter:
         return result
 
     async def update_config_list(
-        self, token: str, event_id: str, key: str, new_value: list,
+        self,
+        token: str,
+        event_id: str,
+        key: str,
+        new_value: list,
     ) -> str:
         """Update config list value."""
         new_value_str = json.dumps(new_value)
         return await self.update_config(token, event_id, key, new_value_str)
 
     async def update_config(
-        self, token: str, event_id: str, key: str, new_value: str,
+        self,
+        token: str,
+        event_id: str,
+        key: str,
+        new_value: str,
     ) -> str:
         """Update config function."""
         response = ""
-        servicename = "update_config"
+        servicename = f"update_config - key/value: {key}/{new_value}"
         headers = MultiDict(
             [
                 (hdrs.CONTENT_TYPE, "application/json"),
@@ -200,9 +228,14 @@ class ConfigAdapter:
             "value": new_value,
         }
 
-        async with ClientSession() as session, session.put(
-            f"{PHOTO_SERVICE_URL}/config", headers=headers, json=request_body,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.put(
+                f"{PHOTO_SERVICE_URL}/config",
+                headers=headers,
+                json=request_body,
+            ) as resp,
+        ):
             response = str(resp.status)
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.debug(f"update config - got response {resp}")

@@ -69,7 +69,9 @@ class Login(web.View):
             if action == "login":
                 session = await new_session(self.request)
                 result = await UserAdapter().login(
-                    str(form["username"]), str(form["password"]), session,
+                    str(form["username"]),
+                    str(form["password"]),
+                    session,
                 )
                 if result == HTTPStatus.OK:
                     informasjon = "Innlogget!"

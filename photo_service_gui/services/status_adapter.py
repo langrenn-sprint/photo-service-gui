@@ -33,10 +33,13 @@ class StatusAdapter:
         )
         servicename = "get_status"
 
-        async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event_id}",
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event_id}",
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 status = await resp.json()
             elif resp.status == HTTPStatus.UNAUTHORIZED:
@@ -50,7 +53,11 @@ class StatusAdapter:
         return status
 
     async def get_status_by_type(
-        self, token: str, event: dict, status_type: str, count: int,
+        self,
+        token: str,
+        event: dict,
+        status_type: str,
+        count: int,
     ) -> list:
         """Get latest status messages for a given type."""
         status = []
@@ -62,10 +69,13 @@ class StatusAdapter:
         )
         servicename = "get_status"
 
-        async with ClientSession() as session, session.get(
-            f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}&type={status_type}",
-            headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{PHOTO_SERVICE_URL}/status?count={count}&eventId={event['id']}&type={status_type}",
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.OK:
                 status = await resp.json()
             elif resp.status == HTTPStatus.UNAUTHORIZED:
@@ -79,7 +89,12 @@ class StatusAdapter:
         return status
 
     async def create_status(
-        self, token: str, event: dict, status_type: str, message: str, details: dict,
+        self,
+        token: str,
+        event: dict,
+        status_type: str,
+        message: str,
+        details: dict,
     ) -> str:
         """Create new status function."""
         servicename = "create_status"
@@ -100,9 +115,14 @@ class StatusAdapter:
         }
         request_body = copy.deepcopy(status_dict)
 
-        async with ClientSession() as session, session.post(
-            f"{PHOTO_SERVICE_URL}/status", headers=headers, json=request_body,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.post(
+                f"{PHOTO_SERVICE_URL}/status",
+                headers=headers,
+                json=request_body,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.CREATED:
                 logging.debug(f"result - got response {resp}")
                 location = resp.headers[hdrs.LOCATION]
@@ -129,9 +149,13 @@ class StatusAdapter:
             ],
         )
         url = f"{PHOTO_SERVICE_URL}/status?eventId={event['id']}"
-        async with ClientSession() as session, session.delete(
-            url, headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.delete(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.debug(f"result - got response {resp}")
             elif resp.status == HTTPStatus.UNAUTHORIZED:

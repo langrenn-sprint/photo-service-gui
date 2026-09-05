@@ -32,9 +32,13 @@ class EventsAdapter:
             ],
         )
         url = f"{EVENT_SERVICE_URL}/events/{event_id}/generate-raceclasses"
-        async with ClientSession() as session, session.post(
-            url, headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.post(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             res = resp.status
             logging.info(f"generate_raceclasses result - got response {resp}")
             if res == HTTPStatus.CREATED:
@@ -60,9 +64,13 @@ class EventsAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.get(
-            f"{EVENT_SERVICE_URL}/events", headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{EVENT_SERVICE_URL}/events",
+                headers=headers,
+            ) as resp,
+        ):
             logging.info(f"get_all_events - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
                 events = await resp.json()
@@ -85,9 +93,13 @@ class EventsAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.get(
-            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                f"{EVENT_SERVICE_URL}/events/{my_id}",
+                headers=headers,
+            ) as resp,
+        ):
             logging.info(f"get_event {my_id} - got response {resp.status}")
             if resp.status == HTTPStatus.OK:
                 event = await resp.json()
@@ -116,18 +128,22 @@ class EventsAdapter:
 
     def get_local_time(self, event: dict, time_format: str) -> str:
         """Return local time string, time zone adjusted from event info."""
-        lt = "" # local time
+        lt = ""  # local time
         time_zone = event["timezone"]
-        tn = datetime.datetime.now(
-            ZoneInfo(time_zone),
-        )if time_zone else datetime.datetime.now(datetime.UTC)
+        tn = (
+            datetime.datetime.now(
+                ZoneInfo(time_zone),
+            )
+            if time_zone
+            else datetime.datetime.now(datetime.UTC)
+        )
 
         if time_format == "HH:MM":
             lt = f"{tn.strftime('%H')}:{tn.strftime('%M')}"
         elif time_format == "log":
-            lt = f"{
-                tn.strftime('%Y')
-            }-{tn.strftime('%m')}-{tn.strftime('%d')}T{tn.strftime('%X')}"
+            lt = f"{tn.strftime('%Y')}-{tn.strftime('%m')}-{tn.strftime('%d')}T{
+                tn.strftime('%X')
+            }"
         else:
             lt = tn.strftime("%X")
         return lt
@@ -160,9 +176,13 @@ class EventsAdapter:
             ],
         )
         url = f"{remote_url}/?action=REST"
-        async with ClientSession() as session, session.get(
-            url, headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.get(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             res = resp.status
             if res == HTTPStatus.OK:
                 events = await resp.json()
@@ -171,7 +191,8 @@ class EventsAdapter:
                     for event in events:
                         if event["id"] not in current_event_ids:
                             information += await EventsAdapter().create_event(
-                                token, event,
+                                token,
+                                event,
                             )
             elif resp.status == HTTPStatus.UNAUTHORIZED:
                 raise web.HTTPBadRequest(reason=f"401 Unathorized - {servicename}")
@@ -218,22 +239,27 @@ class EventsAdapter:
         )
         request_body = copy.deepcopy(event)
 
-        async with ClientSession() as session, session.post(
-                f"{EVENT_SERVICE_URL}/events", headers=headers, json=request_body,
-            ) as resp:
-                if resp.status == HTTPStatus.CREATED:
-                    logging.info(f"result - got response {resp}")
-                    location = resp.headers[hdrs.LOCATION]
-                    result = location.split(os.path.sep)[-1]
-                elif resp.status == HTTPStatus.UNAUTHORIZED:
-                    err_msg = f"401 Unathorized - {servicename}"
-                    raise web.HTTPBadRequest(reason=err_msg)
-                else:
-                    body = await resp.json()
-                    logging.error(f"{servicename} failed - {resp.status} - {body}")
-                    raise web.HTTPBadRequest(
-                        reason=f"Error - {resp.status}: {body['detail']}.",
-                    )
+        async with (
+            ClientSession() as session,
+            session.post(
+                f"{EVENT_SERVICE_URL}/events",
+                headers=headers,
+                json=request_body,
+            ) as resp,
+        ):
+            if resp.status == HTTPStatus.CREATED:
+                logging.info(f"result - got response {resp}")
+                location = resp.headers[hdrs.LOCATION]
+                result = location.split(os.path.sep)[-1]
+            elif resp.status == HTTPStatus.UNAUTHORIZED:
+                err_msg = f"401 Unathorized - {servicename}"
+                raise web.HTTPBadRequest(reason=err_msg)
+            else:
+                body = await resp.json()
+                logging.error(f"{servicename} failed - {resp.status} - {body}")
+                raise web.HTTPBadRequest(
+                    reason=f"Error - {resp.status}: {body['detail']}.",
+                )
         return result
 
     async def delete_event(self, token: str, my_id: str) -> str:
@@ -246,9 +272,13 @@ class EventsAdapter:
             ],
         )
         url = f"{EVENT_SERVICE_URL}/events/{my_id}"
-        async with ClientSession() as session, session.delete(
-            url, headers=headers,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.delete(
+                url,
+                headers=headers,
+            ) as resp,
+        ):
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.info(f"result - got response {resp}")
             else:
@@ -269,9 +299,14 @@ class EventsAdapter:
             ],
         )
 
-        async with ClientSession() as session, session.put(
-            f"{EVENT_SERVICE_URL}/events/{my_id}", headers=headers, json=request_body,
-        ) as resp:
+        async with (
+            ClientSession() as session,
+            session.put(
+                f"{EVENT_SERVICE_URL}/events/{my_id}",
+                headers=headers,
+                json=request_body,
+            ) as resp,
+        ):
             result = resp.status
             if resp.status == HTTPStatus.NO_CONTENT:
                 logging.info(f"update event - got response {resp}")

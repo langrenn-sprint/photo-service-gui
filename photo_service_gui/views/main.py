@@ -58,11 +58,13 @@ class Main(web.View):
             if "get_events" in form:
                 server_url = str(form["server_url"])
                 informasjon = await EventsAdapter().sync_events(
-                    user["token"], server_url,
+                    user["token"],
+                    server_url,
                 )
             elif "delete_event" in form:
                 informasjon = await EventsAdapter().delete_event(
-                    user["token"], form["event_id"],  # type: ignore[no-untyped-call]
+                    user["token"],
+                    form["event_id"],  # type: ignore[no-untyped-call]
                 )
         except Exception as e:
             error_reason = str(e)
@@ -71,8 +73,6 @@ class Main(web.View):
                     location=f"/login?informasjon=Vennligst logg inn på nytt. {e}",
                 )
             logging.exception("Error")
-            informasjon = (
-                f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
-            )
+            informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
 
         return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

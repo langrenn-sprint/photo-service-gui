@@ -99,7 +99,8 @@ class Photos(web.View):
         try:
             event = await get_event(user, event_id)
             photos = GoogleCloudStorageAdapter().list_blobs(
-                event_id, "",
+                event_id,
+                "",
             )
             photos.reverse()
 
