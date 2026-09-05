@@ -41,7 +41,7 @@ def sample_service_instance() -> dict:
         "service_type": "photo-service",
         "status": "active",
         "host": "localhost",
-        "port": 8080,
+        "port": 8000,
         "created_at": "2026-01-24T10:00:00",
     }
 

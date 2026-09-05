@@ -127,7 +127,7 @@ To run tests with logging, do:
 ```
 
 ### Rydde opp i docker stuff
-docker system prune
+docker system prune -a --volumes
 
 ### Starte services i docker
 sudo docker-compose pull #oppdatere images
