@@ -62,6 +62,7 @@ services:
     ports:
       - 8094:8000
     environment:
+      - JWT_SECRET=${JWT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
       - USERS_HOST_SERVER=user-service

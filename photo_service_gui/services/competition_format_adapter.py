@@ -1,4 +1,4 @@
-"""Module for events adapter."""
+"""Module for competition format adapter."""
 
 import json
 import logging
@@ -21,7 +21,7 @@ COMPETITION_FORMAT_SERVICE_URL = (
 
 class CompetitionFormatAdapter:
 
-    """Class representing events."""
+    """Class representing competition formats."""
 
     async def create_competition_format(self, token: str, request_body: dict) -> str:
         """Generate create_competition_format standard values."""
