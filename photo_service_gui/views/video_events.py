@@ -65,6 +65,7 @@ class VideoEvents(web.View):
             "video_analytics": "",
             "video_status": "",
             "local_raw_captured_queue_length": 0,
+            "cloud_raw_captured_queue_length": 0,
             "local_captured_queue_length": 0,
             "cloud_captured_queue_length": 0,
             "trigger_line_url": "",
@@ -109,6 +110,14 @@ class VideoEvents(web.View):
                     .list_blobs(
                         event_id,
                         "CAPTURE/",
+                    )
+                    .__len__()
+                )
+                response["cloud_raw_captured_queue_length"] = (
+                    GoogleCloudStorageAdapter()
+                    .list_blobs(
+                        event_id,
+                        "CAPTURE_SRT/",
                     )
                     .__len__()
                 )
@@ -194,6 +203,8 @@ async def get_service_instances(user: dict, event: dict) -> list:
                         f"Error getting channel {instance['instance_name']}",
                     )
                     instance["status"] = "ERROR"
+                if instance["status"] == "STREAMING":
+                    await update_stream_preview(user, event, instance, service)
                 instance["status_class"] = (
                     "label-critical"
                     if instance["status"] == "ERROR"
@@ -211,6 +222,56 @@ async def get_service_instances(user: dict, event: dict) -> list:
                 )
 
     return service_instances
+
+
+async def update_stream_preview(
+    user: dict,
+    event: dict,
+    instance: dict,
+    service: LiveStreamService,
+) -> None:
+    """Capture and store a fresh preview screenshot for an active channel.
+
+    Skipped if the last capture is more recent than
+    PREVIEW_SCREENSHOT_INTERVAL_SECONDS, to avoid capturing on every poll.
+    """
+    metadata = instance.get("metadata", {})
+    preview_interval_seconds = await ConfigAdapter().get_config_int(
+        user["token"],
+        event["id"],
+        "PREVIEW_SCREENSHOT_INTERVAL_SECONDS",
+    )
+
+    last_captured = metadata.get("latest_photo_captured_at")
+    now = datetime.now(UTC)
+    if last_captured:
+        try:
+            last_captured_dt = datetime.fromisoformat(last_captured)
+            elapsed = (now - last_captured_dt).total_seconds()
+            if elapsed < preview_interval_seconds:
+                return
+        except ValueError:
+            pass
+    try:
+        photo_url = await service.capture_preview_screenshot(
+            user["token"],
+            event["id"],
+            instance["instance_name"],
+        )
+        metadata["latest_photo_url"] = photo_url
+        metadata["latest_photo_captured_at"] = now.isoformat()
+        await ServiceInstanceAdapter().update_service_instance_photo(
+            user["token"],
+            event,
+            instance["id"],
+            photo_url=photo_url,
+            latest_photo_captured_at=now.isoformat(),
+        )
+    except Exception:
+        logging.exception(
+            f"Error capturing preview screenshot for channel "
+            f"{instance['instance_name']}",
+        )
 
 
 async def handle_form_actions(user: dict, event: dict, form: dict) -> str:

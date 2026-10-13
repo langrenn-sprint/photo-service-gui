@@ -3,13 +3,18 @@
 import asyncio
 import logging
 import os
+import subprocess
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
 
 from .config_adapter import ConfigAdapter
 from .events_adapter import EventsAdapter
+from .google_cloud_storage_adapter import GoogleCloudStorageAdapter
 from .live_stream_adapter import LiveStreamAdapter
+from .photos_file_adapter import PHOTOS_URL_PATH, PhotosFileAdapter
 from .service_instance_adapter import ServiceInstanceAdapter
 
 
@@ -106,7 +111,7 @@ class LiveStreamService:
             "VIDEO_OUTPUT_PATH_TEMPLATE",
         )
         output_path = output_path_template.format(event_id=event["id"])
-        output_uri = f"gs://{self.bucket_name}/{output_path}"
+        output_uri = f"gs://{self.bucket_name}/{output_path}/{name}"
 
         # register new instance in database
         instance_id = await create_service_instance(
@@ -267,6 +272,80 @@ class LiveStreamService:
             else None,
         }
 
+    async def capture_preview_screenshot(
+        self,
+        token: str,
+        event_id: str,
+        channel_id: str,
+    ) -> str:
+        """Capture a single-frame JPEG preview from an active channel's stream.
+
+        Downloads the most recent HLS segment written to cloud storage for the
+        given channel, extracts its first frame with ffmpeg, and stores the
+        resulting image on local file storage, same as the trigger line
+        reference photo.
+
+        Args:
+            token: Authentication token for config lookups
+            event_id: The event ID
+            channel_id: The ID of the channel to capture a screenshot from
+
+        Returns:
+            URL of the stored preview screenshot
+
+        """
+        output_path_template = await ConfigAdapter().get_config(
+            token,
+            event_id,
+            "VIDEO_OUTPUT_PATH_TEMPLATE",
+        )
+        output_path = output_path_template.format(event_id=event_id)
+        relative_prefix = output_path.removeprefix(f"{event_id}/")
+        segment_prefix = f"{relative_prefix}/{channel_id}/"
+
+        storage_adapter = GoogleCloudStorageAdapter()
+        blobs = await asyncio.to_thread(
+            storage_adapter.list_blobs,
+            event_id,
+            segment_prefix,
+        )
+        segments = sorted(
+            (blob["name"] for blob in blobs if blob["name"].endswith(".ts")),
+        )
+        if not segments:
+            error_msg = f"No video segments found for channel: {channel_id}"
+            raise ValueError(error_msg)
+        latest_segment = segments[-1]
+
+        screenshot_file = (
+            Path(PhotosFileAdapter().get_photos_folder_path())
+            / f"{channel_id}_stream_preview.jpg"
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            segment_file = Path(tmp_dir) / "segment.ts"
+
+            await asyncio.to_thread(
+                storage_adapter.download_blob,
+                latest_segment,
+                str(segment_file),
+            )
+
+            command = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(segment_file),
+                "-frames:v",
+                "1",
+                "-q:v",
+                "2",
+                str(screenshot_file),
+            ]
+            await asyncio.to_thread(subprocess.run, command, check=True)
+
+        return f"/{PHOTOS_URL_PATH}/{screenshot_file.name}"
+
     async def list_active_channels(self) -> list[Any]:
         """List all active channels.
 
@@ -314,6 +393,7 @@ async def create_service_instance(
         "last_heartbeat": time_now,
         "metadata": {
             "latest_photo_url": "",
+            "latest_photo_captured_at": "",
             "trigger_line_photo_url": "",
             "trigger_line_xyxyn": await ConfigAdapter().get_config(
                 token,

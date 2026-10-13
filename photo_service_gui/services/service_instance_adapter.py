@@ -209,13 +209,14 @@ class ServiceInstanceAdapter:
             service_instance,
         )
 
-    async def update_service_instance_photo(
+    async def update_service_instance_photo(  # noqa: PLR0917
         self,
         token: str,
         event: dict,
         instance_id: str,
         photo_url: str | None = None,
         trigger_line_photo_url: str | None = None,
+        latest_photo_captured_at: str | None = None,
     ) -> str:
         """Update service instance photo function."""
         informasjon = ""
@@ -232,6 +233,10 @@ class ServiceInstanceAdapter:
             if trigger_line_photo_url:
                 instance["metadata"]["trigger_line_photo_url"] = trigger_line_photo_url
                 instance["action"] = ""
+            if latest_photo_captured_at:
+                instance["metadata"]["latest_photo_captured_at"] = (
+                    latest_photo_captured_at
+                )
             instance["last_heartbeat"] = EventsAdapter().get_local_time(event, "log")
             informasjon = await self.update_service_instance(
                 token,

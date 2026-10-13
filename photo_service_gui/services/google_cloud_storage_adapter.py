@@ -172,3 +172,20 @@ class GoogleCloudStorageAdapter:
         except Exception as e:
             logging.exception(servicename)
             raise Exception(servicename) from e
+
+    def download_blob(self, blob_name: str, destination_file_name: str) -> None:
+        """Download a blob from the bucket to a local file."""
+        servicename = "GoogleCloudStorageAdapter.download_blob"
+        storage_bucket = os.getenv("GOOGLE_STORAGE_BUCKET", "")
+        if storage_bucket == "":
+            err_msg = "GOOGLE_STORAGE_BUCKET not found in .env"
+            raise Exception(err_msg)
+
+        try:
+            storage_client = storage.Client()
+            bucket = storage_client.bucket(storage_bucket)
+            blob = bucket.blob(blob_name)
+            blob.download_to_filename(destination_file_name)
+        except Exception as e:
+            logging.exception(servicename)
+            raise Exception(servicename) from e

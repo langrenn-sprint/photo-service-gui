@@ -246,7 +246,7 @@ Edit the configuration file at `video-streaming/config/livestream_settings.json`
     "SRT_PORT": 5000,
     "LIVESTREAM_INPUT_PREFIX": "srt-input",
     "LIVESTREAM_OUTPUT_PREFIX": "gcs-output",
-    "VIDEO_OUTPUT_PATH_TEMPLATE": "events/{event_id}/captured/",
+    "VIDEO_OUTPUT_PATH_TEMPLATE": "events/{event_id}/captured",
     "SEGMENT_DURATION_SECONDS": 30
 }
 ```

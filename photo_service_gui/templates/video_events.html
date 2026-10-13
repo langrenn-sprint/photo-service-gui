@@ -135,6 +135,9 @@
       if (instance.service_type.startsWith('VIDEO_SERVICE_')) {
         document.getElementById(`trigger_line_photo_${instance.id.slice(-5)}`).src = instance.metadata.trigger_line_photo_url || '../static/no_image.png';
       }
+      if (instance.service_type === 'VIDEO_SERVICE_CAPTURE_SRT') {
+        document.getElementById(`stream_preview_${instance.id.slice(-5)}`).src = instance.metadata.latest_photo_url || '../static/no_image.png';
+      }
 
     });
   }
@@ -158,6 +161,7 @@
           document.getElementById("send_result").innerHTML = jsonDoc.video_status;
           formatServiceInstances(jsonDoc.service_instances);
           document.getElementById("local_raw_captured_queue_length").innerHTML = jsonDoc.local_raw_captured_queue_length;
+          document.getElementById("cloud_raw_captured_queue_length").innerHTML = jsonDoc.cloud_raw_captured_queue_length;
           document.getElementById("local_captured_queue_length").innerHTML = jsonDoc.local_captured_queue_length;
           document.getElementById("cloud_captured_queue_length").innerHTML = jsonDoc.cloud_captured_queue_length;
           const photo_latest = jsonDoc.photo_latest;
@@ -194,6 +198,7 @@
 </script>
     <section class="row" aria-label="Service status">
       <div class="col-sm-4">
+        <h4>Tilgjengelige tjenester</h4>
         {% for instance in service_instances %}
           <div class="status-card" role="status" aria-live="polite">
             {% if instance.service_type.startswith('VIDEO_SERVICE_') %}
@@ -202,14 +207,20 @@
                     alt="Crossing line, click to view big size" title="Click to enlarge">
               </figure>
             {% endif %}
+            {% if instance.service_type == 'VIDEO_SERVICE_CAPTURE_SRT' %}
+              <figure class="preview-figure">
+                <img id="stream_preview_{{ instance.id[-5:] }}" class="preview-img" src="{{ instance.metadata.latest_photo_url or '../static/no_image.png' }}"
+                    alt="Latest stream screenshot, click to view big size" title="Click to enlarge">
+              </figure>
+            {% endif %}
             <table>
               <tr>
-                <td><img id=menu_icon src=../static/{{ instance.icon_url }}> {{ instance.service_type }}</td>
+                <td><img id=menu_icon src=../static/{{ instance.icon_url }}> <strong>{{ instance.service_type }}</strong></td>
                 <td align="right"><span id="status_{{ instance.id }}" name="status_{{ instance.id }}" class="label {{ instance.status_class }}">{{ instance.status }}</span></td>
               </tr>
               <tr>
-                <td>Instance: <strong>{{ instance.instance_name }}</strong></td>
-                <td></td>
+                <td colspan="2">Instance: <strong>{{ instance.instance_name }}</strong><br>
+                Storage mode: <strong>{{ service_status.storage_mode_name }}</strong></td>
               </tr>
               <tr>
                 <td>
@@ -242,19 +253,18 @@
               </tr>
             </table>
           </div><br>
-            {% if loop.index == ((service_instances | length) // 2) or ((service_instances | length) < 2) %}
-              </div>
-              <div class="col-sm-4">
-            {% endif %}
         {% endfor %}
         <!-- preview inside the card -->
+      </div>
+      <div class="col-sm-4">
+        <h4>Siste bilder</h4>
         <figure class="preview-figure">
           <img id="photo_latest" class="preview-img" src="../static/no_image.png"
               alt="Latest detection">
         </figure>
-        <div class="status-card" role="status" aria-live="polite">
-            <button type="submit" onclick="action_toggle('start_all', '', '{{ event_id }}', '')" class="btn btn-default">Start all services</button>
-            <button type="submit" onclick="action_toggle('stop_all', '', '{{ event_id }}', '')" class="btn btn-default">Stop all services</button>
+        <div class="status-card" role="status" aria-live="polite" align="center">
+            <button type="submit" onclick="action_toggle('start_all', '', '{{ event_id }}', '')" class="btn btn-default">start all</button>
+            <button type="submit" onclick="action_toggle('stop_all', '', '{{ event_id }}', '')" class="btn btn-default">stop all</button>
         </div>
       </div>
 
@@ -262,10 +272,15 @@
         <h4>Status (kø)</h4>
         <table>
           <tr>
-            <td>Video tjenester:</td>
+            <td>Kø i cloud:</td>
             <td>
-              <strong id="local_raw_captured_queue_length">0</strong> råfiler
-              {% if service_status.storage_mode_name == "cloud_storage" %} og <strong id="local_captured_queue_length">0</strong> videoer{% endif %} i kø
+                <strong id="cloud_raw_captured_queue_length">0</strong> råfiler og <strong id="cloud_captured_queue_length">0</strong> videoer
+            </td>
+          </tr>
+          <tr>
+            <td>Kø lokalt:</td>
+            <td>
+                <strong id="local_raw_captured_queue_length">0</strong> råfiler og <strong id="local_captured_queue_length">0</strong> videoer
             </td>
           </tr>
           <tr>
@@ -354,6 +369,13 @@
             {% if instance.service_type.startswith('VIDEO_SERVICE_') %}
               const trigger_{{ instance.id[-5:] }} = document.getElementById('trigger_line_photo_{{ instance.id[-5:] }}');
               trigger_{{ instance.id[-5:] }}.onclick = function() {
+                modal.style.display = "block";
+                modalImg.src = this.src;
+              }
+            {% endif %}
+            {% if instance.service_type == 'VIDEO_SERVICE_CAPTURE_SRT' %}
+              const stream_preview_{{ instance.id[-5:] }} = document.getElementById('stream_preview_{{ instance.id[-5:] }}');
+              stream_preview_{{ instance.id[-5:] }}.onclick = function() {
                 modal.style.display = "block";
                 modalImg.src = this.src;
               }
