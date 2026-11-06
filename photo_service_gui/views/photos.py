@@ -9,6 +9,7 @@ from photo_service_gui.services import EventsAdapter, GoogleCloudStorageAdapter
 
 from .utils import (
     check_login,
+    error_message,
     get_event,
     raise_error,
 )
@@ -149,13 +150,7 @@ class Photos(web.View):
                 informasjon += f"Feil (ulovlig flytting): {error_text}"
 
         except Exception as e:
-            logging.exception("Error")
-            informasjon = f"Det har oppstått en feil - {e.args}."
-            if "401 Unauthorized" in str(e):
-                informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                raise web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}",
-                ) from e
+            informasjon = error_message(self, e)
 
         raise web.HTTPSeeOther(
             location=f"/photos?event_id={event_id}&informasjon={informasjon}",

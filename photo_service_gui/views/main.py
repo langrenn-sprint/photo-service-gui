@@ -10,6 +10,7 @@ from photo_service_gui.services import EventsAdapter
 from .utils import (
     check_login,
     check_login_open,
+    error_message,
     error_text,
     get_event,
     is_login_error,
@@ -82,12 +83,6 @@ class Main(web.View):
                     form["event_id"],  # type: ignore[no-untyped-call]
                 )
         except Exception as e:
-            error_reason = str(e)
-            if error_reason.startswith("401"):
-                raise web.HTTPSeeOther(
-                    location=f"/login?informasjon=Vennligst logg inn på nytt. {e}",
-                ) from e
-            logging.exception("Error")
-            informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
+            informasjon = error_message(self, e)
 
         raise web.HTTPSeeOther(location=f"/?informasjon={informasjon}")
