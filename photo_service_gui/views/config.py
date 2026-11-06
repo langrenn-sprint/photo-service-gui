@@ -10,6 +10,7 @@ from photo_service_gui.services import (
     LiveStreamService,
     ServiceInstanceAdapter,
 )
+from photo_service_gui.services.config_adapter import with_defaults
 
 from .utils import check_login, get_event
 
@@ -44,6 +45,10 @@ class Config(web.View):
                     user["token"],
                     event_id,
                 )
+                # Show all settings, also those not saved for the event yet,
+                # so they can be changed:
+                if event_id:
+                    event_config = with_defaults(event_config)
             except Exception:
                 event_config = []
                 informasjon += " Feil ved innlasting av config."

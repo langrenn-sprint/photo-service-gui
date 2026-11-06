@@ -17,25 +17,60 @@ PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
 PROJECT_ROOT = f"{Path.cwd()}/photo_service_gui"
 
 
+def default_settings() -> dict:
+    """Return the default settings, from global_settings.json.
+
+    Raises web.HTTPBadRequest if the file cannot be read.
+    """
+    config_file = Path(f"{PROJECT_ROOT}/config/global_settings.json")
+    with config_file.open() as json_file:
+        try:
+            return json.load(json_file)
+        except json.JSONDecodeError as e:
+            informasjon = f"Error decoding JSON from {config_file}"
+            logging.exception(informasjon)
+            raise web.HTTPBadRequest(reason=informasjon) from e
+
+
 def default_value(key: str) -> str:
     """Return the default value of a setting, from global_settings.json.
 
     Raises web.HTTPBadRequest if the file cannot be read, or the setting is
     unknown.
     """
-    config_file = Path(f"{PROJECT_ROOT}/config/global_settings.json")
-    with config_file.open() as json_file:
-        try:
-            settings = json.load(json_file)
-        except json.JSONDecodeError as e:
-            informasjon = f"Error decoding JSON from {config_file}"
-            logging.exception(informasjon)
-            raise web.HTTPBadRequest(reason=informasjon) from e
+    settings = default_settings()
     if key in settings:
         return settings[key]
-    informasjon = f"Config {key} not found in config file {config_file}."
+    informasjon = f"Config {key} not found in global_settings.json."
     logging.error(informasjon)
     raise web.HTTPBadRequest(reason=informasjon)
+
+
+def with_defaults(saved: list) -> list:
+    """Return all known settings for an event, saved or not.
+
+    saved is the list of settings saved for the event. Each setting in the
+    result has key, value and is_default: the saved value, or the default
+    from global_settings.json if it is not saved. The settings in
+    global_settings.json come first, in that order, then saved settings that
+    are not in the file.
+    """
+    defaults = default_settings()
+    saved_values = {setting["key"]: setting["value"] for setting in saved}
+    settings = [
+        {
+            "key": key,
+            "value": saved_values.get(key, default),
+            "is_default": key not in saved_values,
+        }
+        for key, default in defaults.items()
+    ]
+    settings += [
+        {"key": key, "value": value, "is_default": False}
+        for key, value in saved_values.items()
+        if key not in defaults
+    ]
+    return settings
 
 
 class ConfigAdapter:
