@@ -136,3 +136,6 @@ yolov8n.pt
 20240113_110011_KJ.mp4
 .vienv/bin/activate.csh
 photo_service_gui/files/CAPTURE/*.mp4
+
+# Log files written by the app, also when running the tests:
+error.log*
