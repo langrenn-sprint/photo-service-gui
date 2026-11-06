@@ -8,6 +8,7 @@ from aiohttp import web
 from aiohttp_session import new_session
 
 from photo_service_gui.services import UserAdapter
+from photo_service_gui.services.user_adapter import NOT_ACTIVATED
 
 from .utils import (
     check_login_open,
@@ -78,6 +79,8 @@ class Login(web.View):
                 )
                 if result == HTTPStatus.OK:
                     informasjon = "Innlogget!"
+                elif result == HTTPStatus.FORBIDDEN:
+                    informasjon = NOT_ACTIVATED
                 else:
                     informasjon = f"Innlogging feilet - {result}"
 
