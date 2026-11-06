@@ -8,6 +8,8 @@ from aiohttp import ClientSession, hdrs, web
 from aiohttp_session import Session
 from multidict import MultiDict
 
+from .ids import require_id
+
 USERS_HOST_SERVER = os.getenv("USERS_HOST_SERVER")
 USERS_HOST_PORT = os.getenv("USERS_HOST_PORT")
 USER_SERVICE_URL = f"http://{USERS_HOST_SERVER}:{USERS_HOST_PORT}"
@@ -67,7 +69,7 @@ class UserAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ],
         )
-        url = f"{USER_SERVICE_URL}/users/{w_id}"
+        url = f"{USER_SERVICE_URL}/users/{require_id(w_id)}"
         async with ClientSession() as session:
             async with session.delete(url, headers=headers) as resp:
                 pass

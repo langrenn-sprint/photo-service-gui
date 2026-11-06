@@ -10,6 +10,7 @@ from multidict import MultiDict
 from .events_adapter import (
     EventsAdapter,
 )
+from .ids import require_id
 
 PHOTOS_HOST_SERVER = os.getenv("PHOTOS_HOST_SERVER", "localhost")
 PHOTOS_HOST_PORT = os.getenv("PHOTOS_HOST_PORT", "8092")
@@ -87,7 +88,7 @@ class ServiceInstanceAdapter:
         async with (
             ClientSession() as session,
             session.get(
-                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                f"{PHOTO_SERVICE_URL}/service-instances/{require_id(service_instance_id)}",
                 headers=headers,
             ) as resp,
         ):
@@ -304,7 +305,7 @@ class ServiceInstanceAdapter:
         async with (
             ClientSession() as session,
             session.put(
-                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                f"{PHOTO_SERVICE_URL}/service-instances/{require_id(service_instance_id)}",
                 headers=headers,
                 json=service_instance,
             ) as resp,
@@ -351,7 +352,7 @@ class ServiceInstanceAdapter:
         async with (
             ClientSession() as session,
             session.delete(
-                f"{PHOTO_SERVICE_URL}/service-instances/{service_instance_id}",
+                f"{PHOTO_SERVICE_URL}/service-instances/{require_id(service_instance_id)}",
                 headers=headers,
             ) as resp,
         ):

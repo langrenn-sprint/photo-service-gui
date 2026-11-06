@@ -9,6 +9,8 @@ from multidict import MultiDict
 
 from photo_service_gui.model import Album, AlbumSchema
 
+from .ids import require_id
+
 PHOTOS_HOST_SERVER = os.getenv("PHOTOS_HOST_SERVER", "localhost")
 PHOTOS_HOST_PORT = os.getenv("PHOTOS_HOST_PORT", "8092")
 PHOTO_SERVICE_URL = f"http://{PHOTOS_HOST_SERVER}:{PHOTOS_HOST_PORT}"
@@ -63,7 +65,7 @@ class AlbumsAdapter:
         async with (
             ClientSession() as session,
             session.get(
-                f"{PHOTO_SERVICE_URL}/albums/{album_id}",
+                f"{PHOTO_SERVICE_URL}/albums/{require_id(album_id)}",
                 headers=headers,
             ) as resp,
         ):
@@ -156,7 +158,7 @@ class AlbumsAdapter:
                 (hdrs.AUTHORIZATION, f"Bearer {token}"),
             ],
         )
-        url = f"{PHOTO_SERVICE_URL}/albums/{album_id}"
+        url = f"{PHOTO_SERVICE_URL}/albums/{require_id(album_id)}"
         async with (
             ClientSession() as session,
             session.delete(
@@ -191,7 +193,7 @@ class AlbumsAdapter:
         async with (
             ClientSession() as session,
             session.put(
-                f"{PHOTO_SERVICE_URL}/albums/{album_id}",
+                f"{PHOTO_SERVICE_URL}/albums/{require_id(album_id)}",
                 headers=headers,
                 json=request_body,
             ) as resp,
