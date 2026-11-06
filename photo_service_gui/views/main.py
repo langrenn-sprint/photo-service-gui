@@ -7,7 +7,14 @@ from aiohttp import web
 
 from photo_service_gui.services import EventsAdapter
 
-from .utils import check_login, check_login_open, get_event
+from .utils import (
+    check_login,
+    check_login_open,
+    error_text,
+    get_event,
+    is_login_error,
+    raise_error,
+)
 
 
 class Main(web.View):
@@ -46,8 +53,16 @@ class Main(web.View):
                 },
             )
         except Exception as e:
-            logging.exception("Error. Redirect to login page.")
-            return web.HTTPSeeOther(location=f"/login?informasjon={e}")
+            if is_login_error(e):
+                raise_error(self, e)
+            # The other pages send errors here, so show an error page instead:
+            logging.exception("Error on the main page")
+            return await aiohttp_jinja2.render_template_async(
+                "error.html",
+                self.request,
+                {"informasjon": error_text(e)},
+                status=web.HTTPInternalServerError.status_code,
+            )
 
     async def post(self) -> web.Response:
         """Post route function."""
@@ -69,10 +84,10 @@ class Main(web.View):
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon=Vennligst logg inn på nytt. {e}",
-                )
+                ) from e
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
 
-        return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")
+        raise web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

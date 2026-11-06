@@ -10,6 +10,7 @@ from photo_service_gui.services import EventsAdapter, StatusAdapter
 from .utils import (
     check_login,
     get_event,
+    raise_error,
 )
 
 
@@ -40,10 +41,7 @@ class Status(web.View):
             informasjon = self.request.rel_url.query["informasjon"]
         except Exception:
             informasjon = ""
-        try:
-            user = await check_login(self)
-        except Exception as e:
-            return web.HTTPSeeOther(location=f"{e}")
+        user = await check_login(self)
 
         try:
             event = await get_event(user, event_id)
@@ -77,8 +75,7 @@ class Status(web.View):
                 },
             )
         except Exception as e:
-            logging.exception("Error. Redirect to main page.")
-            return web.HTTPSeeOther(location=f"/?informasjon={e}")
+            raise_error(self, e)
 
     async def post(self) -> web.Response:
         """Post route function that updates a collection of status."""
@@ -88,7 +85,7 @@ class Status(web.View):
         user = await check_login(self)
         if not user:
             informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-            return web.HTTPSeeOther(
+            raise web.HTTPSeeOther(
                 location=f"/login?informasjon={informasjon}",
             )
         event = await get_event(user, event_id)
@@ -107,9 +104,9 @@ class Status(web.View):
             error_reason = str(e)
             if error_reason.count("401 Unauthorized") > 0:
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
-                )
-        return web.HTTPSeeOther(
+                ) from e
+        raise web.HTTPSeeOther(
             location=f"/status?event_id={event_id}&action=delete_select&informasjon={informasjon}",
         )

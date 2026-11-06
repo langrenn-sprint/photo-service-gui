@@ -94,4 +94,4 @@ class Login(web.View):
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}."
             result = HTTPStatus.INTERNAL_SERVER_ERROR
-        return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")
+        raise web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

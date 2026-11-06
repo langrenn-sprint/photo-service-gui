@@ -10,6 +10,7 @@ from photo_service_gui.services import EventsAdapter, GoogleCloudStorageAdapter
 from .utils import (
     check_login,
     get_event,
+    raise_error,
 )
 
 
@@ -91,10 +92,7 @@ class Photos(web.View):
             informasjon = self.request.rel_url.query["informasjon"]
         except Exception:
             informasjon = ""
-        try:
-            user = await check_login(self)
-        except Exception as e:
-            return web.HTTPSeeOther(location=f"{e}")
+        user = await check_login(self)
 
         try:
             event = await get_event(user, event_id)
@@ -123,8 +121,7 @@ class Photos(web.View):
                 },
             )
         except Exception as e:
-            logging.exception("Error. Redirect to main page.")
-            return web.HTTPSeeOther(location=f"/?informasjon={e}")
+            raise_error(self, e)
 
     async def post(self) -> web.Response:
         """Post route function that updates a collection of photos."""
@@ -134,7 +131,7 @@ class Photos(web.View):
 
         if not user:
             informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-            return web.HTTPSeeOther(
+            raise web.HTTPSeeOther(
                 location=f"/login?informasjon={informasjon}",
             )
 
@@ -156,10 +153,10 @@ class Photos(web.View):
             informasjon = f"Det har oppstått en feil - {e.args}."
             if "401 Unauthorized" in str(e):
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
-                )
+                ) from e
 
-        return web.HTTPSeeOther(
+        raise web.HTTPSeeOther(
             location=f"/photos?event_id={event_id}&informasjon={informasjon}",
         )
