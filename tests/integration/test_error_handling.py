@@ -17,6 +17,7 @@ from aiohttp import web
 from yarl import URL
 
 from photo_service_gui.services import EventsAdapter, UserAdapter
+from photo_service_gui.services.user_adapter import NOT_ACTIVATED
 from photo_service_gui.views.utils import (
     LOGIN_AGAIN,
     LOGIN_REQUIRED,
@@ -325,3 +326,26 @@ async def test_login_error_message(
         "/",
         {"informasjon": f"Innlogging feilet. {UNEXPECTED_ERROR}"},
     )
+
+
+
+# --- A user who has not set a password (event-service-gui#222) ----------------------
+
+
+@pytest.mark.integration
+async def test_login_not_activated(
+    client: Any, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """user-service answers 403 for a user without password."""
+
+    async def fake_login(*_: object) -> int:
+        return HTTPStatus.FORBIDDEN
+
+    monkeypatch.setattr(UserAdapter, "login", fake_login)
+    resp = await client.post(
+        "/login?action=login",
+        data={"username": "ny", "password": "x"},
+        allow_redirects=False,
+    )
+    assert resp.status == HTTPStatus.OK
+    assert NOT_ACTIVATED in await resp.text()
