@@ -89,11 +89,16 @@ Then install the dependencies:
 
 ## Start the server locally (with all required services):
 
+Start the backend services on fixed ports with the [deploy](https://github.com/langrenn-sprint/deploy) repo, then:
+
+```Zsh
 set -a
 source .env
 set +a
 uv run adev runserver -p 8096 photo_service_gui
-docker compose up competition-format-service photo-service user-service event-service mongodb
+```
+
+The `docker-compose.yml` in this repo is for the contract tests. It publishes no fixed ports on the host, so the tests can run while the deploy stack is running.
 
 ## Running the wsgi-server in Docker
 

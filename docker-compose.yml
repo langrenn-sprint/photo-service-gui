@@ -3,7 +3,7 @@ services:
     build: .
     image: ghcr.io/langrenn-sprint/photo-service-gui:test
     ports:
-      - 8080:8080
+      - 8080
     environment:
       - ADMIN_USERNAME=${ADMIN_USERNAME}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD}
@@ -39,7 +39,7 @@ services:
   event-service:
     image: ghcr.io/langrenn-sprint/event-service:latest
     ports:
-      - 8082:8000
+      - 8000
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
@@ -59,8 +59,6 @@ services:
       - mongodb
   competition-format-service:
     image: ghcr.io/langrenn-sprint/competition-format-service:latest
-    ports:
-      - 8094:8000
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
@@ -77,8 +75,6 @@ services:
       - mongodb
   photo-service:
     image: ghcr.io/langrenn-sprint/photo-service:latest
-    ports:
-      - 8092:8000
     environment:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_USERNAME=${ADMIN_USERNAME}
@@ -99,8 +95,6 @@ services:
       - mongodb
   user-service:
     image: ghcr.io/langrenn-sprint/user-service:latest
-    ports:
-      - 8086:8000
     environment:
       - JWT_EXP_DELTA_SECONDS=${JWT_EXP_DELTA_SECONDS}
       - JWT_SECRET=${JWT_SECRET}
@@ -116,8 +110,6 @@ services:
   mongodb:
     # mongo 8+ refuses to start on kernel >=6.19 (SERVER-121912), pin to 7.0
     image: mongo:7-jammy
-    ports:
-      - 27017:27017
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${DB_USER}
       - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD}
