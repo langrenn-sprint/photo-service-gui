@@ -84,7 +84,14 @@ def http_service(docker_ip: Any, docker_services: Any) -> Any:
 
 @pytest.fixture(scope="session")
 def docker_compose_file(pytestconfig: Any) -> Any:
-    """Override default location of docker-compose.yml file."""
+    """Override default location of docker-compose.yml file.
+
+    docker-compose.yml bind-mounts ./error.log into the container. If the file
+    does not exist (e.g. in a fresh clone, when the contract tests run before
+    anything has logged), Docker creates a directory with that name instead,
+    and the app cannot open its log file.
+    """
+    (Path(str(pytestconfig.rootpath)) / "error.log").touch()
     return Path(str(pytestconfig.rootdir)) / "docker-compose.yml"
 
 
