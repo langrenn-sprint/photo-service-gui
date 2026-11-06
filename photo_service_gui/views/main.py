@@ -84,10 +84,10 @@ class Main(web.View):
         except Exception as e:
             error_reason = str(e)
             if error_reason.startswith("401"):
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon=Vennligst logg inn på nytt. {e}",
-                )
+                ) from e
             logging.exception("Error")
             informasjon = f"Det har oppstått en feil - {e.args}. Bruker: {user['name']}"
 
-        return web.HTTPSeeOther(location=f"/?informasjon={informasjon}")
+        raise web.HTTPSeeOther(location=f"/?informasjon={informasjon}")

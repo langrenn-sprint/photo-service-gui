@@ -131,7 +131,7 @@ class Photos(web.View):
 
         if not user:
             informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-            return web.HTTPSeeOther(
+            raise web.HTTPSeeOther(
                 location=f"/login?informasjon={informasjon}",
             )
 
@@ -153,10 +153,10 @@ class Photos(web.View):
             informasjon = f"Det har oppstått en feil - {e.args}."
             if "401 Unauthorized" in str(e):
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
-                )
+                ) from e
 
-        return web.HTTPSeeOther(
+        raise web.HTTPSeeOther(
             location=f"/photos?event_id={event_id}&informasjon={informasjon}",
         )

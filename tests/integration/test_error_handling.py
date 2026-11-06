@@ -7,7 +7,9 @@ itself fails, an error page is shown. An event without organiser does not
 break the pages.
 """
 
+import ast
 from http import HTTPStatus
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -207,3 +209,20 @@ async def test_event_without_organiser(client: Any, main_page: Any) -> None:
     resp = await client.get("/", allow_redirects=False)
     assert resp.status == HTTPStatus.OK
     assert "styles_whitelabel.css" in await resp.text()
+
+
+# --- Redirects are raised, not returned ----------------------------------------------
+
+
+@pytest.mark.integration
+def test_no_returned_http_exceptions_in_views() -> None:
+    """HTTP exceptions must be raised: returning them is deprecated in aiohttp."""
+    returned = [
+        f"{path.name}:{node.lineno}"
+        for path in sorted(Path("photo_service_gui/views").glob("*.py"))
+        for node in ast.walk(ast.parse(path.read_text()))
+        if isinstance(node, ast.Return)
+        and isinstance(node.value, ast.Call)
+        and ast.unparse(node.value.func).startswith("web.HTTP")
+    ]
+    assert returned == []

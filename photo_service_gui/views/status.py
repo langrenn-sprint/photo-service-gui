@@ -85,7 +85,7 @@ class Status(web.View):
         user = await check_login(self)
         if not user:
             informasjon = "Ingen tilgang, vennligst logg inn på nytt."
-            return web.HTTPSeeOther(
+            raise web.HTTPSeeOther(
                 location=f"/login?informasjon={informasjon}",
             )
         event = await get_event(user, event_id)
@@ -104,9 +104,9 @@ class Status(web.View):
             error_reason = str(e)
             if error_reason.count("401 Unauthorized") > 0:
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
-                )
-        return web.HTTPSeeOther(
+                ) from e
+        raise web.HTTPSeeOther(
             location=f"/status?event_id={event_id}&action=delete_select&informasjon={informasjon}",
         )

@@ -134,11 +134,11 @@ class Config(web.View):
             error_reason = str(e)
             if error_reason.count("401 Unauthorized") > 0:
                 informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                return web.HTTPSeeOther(
+                raise web.HTTPSeeOther(
                     location=f"/login?informasjon={informasjon}",
-                )
+                ) from e
 
-        return web.HTTPSeeOther(
+        raise web.HTTPSeeOther(
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",
         )
 

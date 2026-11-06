@@ -141,9 +141,9 @@ class VideoEvents(web.View):
         except Exception as e:
             err_msg = f"Error updating video events: {e}"
             logging.exception("Video events update")
-            return web.HTTPSeeOther(
+            raise web.HTTPSeeOther(
                 location=f"/video_events?event_id={event_id}&informasjon={err_msg}",
-            )
+            ) from e
         json_response = json.dumps(response)
 
         return web.Response(body=json_response)
