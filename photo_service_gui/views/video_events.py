@@ -20,6 +20,7 @@ from photo_service_gui.services import (
 from .utils import (
     check_login,
     get_event,
+    raise_error,
 )
 
 
@@ -55,8 +56,7 @@ class VideoEvents(web.View):
                 },
             )
         except Exception as e:
-            logging.exception("Error. Redirect to main page.")
-            return web.HTTPSeeOther(location=f"/?informasjon={e}")
+            raise_error(self, e)
 
     async def post(self) -> web.Response:
         """Post route function that updates video events."""
@@ -136,6 +136,8 @@ class VideoEvents(web.View):
                     event,
                 )
                 response["service_instances"] = await get_service_instances(user, event)
+        except web.HTTPException:
+            raise
         except Exception as e:
             err_msg = f"Error updating video events: {e}"
             logging.exception("Video events update")
