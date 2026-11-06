@@ -3,6 +3,7 @@
 import json
 import logging
 from datetime import UTC, datetime, timezone
+from urllib.parse import urlencode
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -19,6 +20,7 @@ from photo_service_gui.services import (
 
 from .utils import (
     check_login,
+    error_message,
     get_event,
     raise_error,
 )
@@ -136,14 +138,13 @@ class VideoEvents(web.View):
                     event,
                 )
                 response["service_instances"] = await get_service_instances(user, event)
-        except web.HTTPException:
+        except web.HTTPRedirection:
             raise
         except Exception as e:
-            err_msg = f"Error updating video events: {e}"
-            logging.exception("Video events update")
-            raise web.HTTPSeeOther(
-                location=f"/video_events?event_id={event_id}&informasjon={err_msg}",
-            ) from e
+            query = urlencode(
+                {"event_id": event_id, "informasjon": error_message(self, e)},
+            )
+            raise web.HTTPSeeOther(location=f"/video_events?{query}") from e
         json_response = json.dumps(response)
 
         return web.Response(body=json_response)

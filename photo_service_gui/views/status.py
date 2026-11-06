@@ -9,6 +9,7 @@ from photo_service_gui.services import EventsAdapter, StatusAdapter
 
 from .utils import (
     check_login,
+    error_message,
     get_event,
     raise_error,
 )
@@ -99,14 +100,7 @@ class Status(web.View):
             elif "delete_select" in form:
                 informasjon = "Funksjon ikke implementert ennå."
         except Exception as e:
-            logging.exception("Error")
-            informasjon = f"Det har oppstått en feil - {e.args}."
-            error_reason = str(e)
-            if error_reason.count("401 Unauthorized") > 0:
-                informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                raise web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}",
-                ) from e
+            informasjon = error_message(self, e)
         raise web.HTTPSeeOther(
             location=f"/status?event_id={event_id}&action=delete_select&informasjon={informasjon}",
         )

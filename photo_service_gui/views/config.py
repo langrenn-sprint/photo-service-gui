@@ -12,7 +12,12 @@ from photo_service_gui.services import (
 )
 from photo_service_gui.services.config_adapter import with_defaults
 
-from .utils import check_login, get_event, raise_error
+from .utils import (
+    check_login,
+    error_message,
+    get_event,
+    raise_error,
+)
 
 
 class Config(web.View):
@@ -126,17 +131,10 @@ class Config(web.View):
                     name,
                 )
 
-        except web.HTTPException:
+        except web.HTTPRedirection:
             raise
         except Exception as e:
-            logging.exception("Error")
-            informasjon = f"Det har oppstått en feil - {e.args}."
-            error_reason = str(e)
-            if error_reason.count("401 Unauthorized") > 0:
-                informasjon = "401 Unauthorized - Ingen tilgang, logg inn på nytt."
-                raise web.HTTPSeeOther(
-                    location=f"/login?informasjon={informasjon}",
-                ) from e
+            informasjon = error_message(self, e)
 
         raise web.HTTPSeeOther(
             location=f"/config?action=edit_mode&event_id={event_id}&informasjon={informasjon}",

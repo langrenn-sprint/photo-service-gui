@@ -16,11 +16,12 @@ import pytest
 from aiohttp import web
 from yarl import URL
 
-from photo_service_gui.services import EventsAdapter
+from photo_service_gui.services import EventsAdapter, UserAdapter
 from photo_service_gui.views.utils import (
     LOGIN_AGAIN,
     LOGIN_REQUIRED,
     UNEXPECTED_ERROR,
+    error_message,
     error_text,
     is_login_error,
     raise_error,
@@ -226,3 +227,101 @@ def test_no_returned_http_exceptions_in_views() -> None:
         and ast.unparse(node.value.func).startswith("web.HTTP")
     ]
     assert returned == []
+
+
+# --- Errors where the user stays on the page (follow-up to #240) -------------------
+
+
+@pytest.mark.integration
+def test_error_message() -> None:
+    """Returns the message; redirects pass through, 401 goes to login."""
+
+    class Request:
+        method = "POST"
+        path_qs = "/config"
+
+    class View:
+        request = Request()
+
+    view = View()
+    assert error_message(view, TypeError("x")) == UNEXPECTED_ERROR  # type: ignore[arg-type]
+    with pytest.raises(web.HTTPSeeOther) as e:
+        error_message(view, Exception("Login expired: x"))  # type: ignore[arg-type]
+    assert URL(e.value.location).path == "/login"
+    redirect = web.HTTPSeeOther(location="/somewhere")
+    with pytest.raises(web.HTTPSeeOther) as e:
+        error_message(view, redirect)  # type: ignore[arg-type]
+    assert e.value is redirect
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("error", "expected_path", "message"),
+    [
+        (TypeError("'NoneType' is not subscriptable"), "/config", UNEXPECTED_ERROR),
+        (
+            Exception("Kanalen finnes ikke"),
+            "/config",
+            "Det har oppstått en feil: Kanalen finnes ikke",
+        ),
+        # An HTTP error from a backend service, which before became a 400 page:
+        (
+            web.HTTPBadRequest(reason="Error - 404: Event not found."),
+            "/config",
+            "Det har oppstått en feil: Error - 404: Event not found.",
+        ),
+        # Before, only "401 Unauthorized" was recognised, not "401 Unathorized":
+        (
+            web.HTTPBadRequest(reason="401 Unathorized - get_event"),
+            "/login",
+            LOGIN_AGAIN,
+        ),
+    ],
+)
+async def test_config_post_error_stays_on_the_page(
+    client: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    error: Exception,
+    expected_path: str,
+    message: str,
+) -> None:
+    """Before, the message was the raw error, e.g. "('…',)"."""
+
+    async def fake_check_login(*_: Any) -> dict:
+        return USER
+
+    async def fail(*_: Any) -> dict:
+        raise error
+
+    views = "photo_service_gui.views.config"
+    monkeypatch.setattr(f"{views}.check_login", fake_check_login)
+    monkeypatch.setattr(f"{views}.get_event", fail)
+    form = {"event_id": "e1", "update_one": "1", "key": "VIDEO_CODEC", "value": "x"}
+    resp = await client.post("/config", data=form, allow_redirects=False)
+    assert resp.status == HTTPStatus.SEE_OTHER
+    path, query = location(resp)
+    assert path == expected_path
+    assert query["informasjon"] == message
+
+
+@pytest.mark.integration
+async def test_login_error_message(
+    client: Any, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A login that fails with an error gives a message, not the raw error."""
+    msg = "'NoneType' object is not subscriptable"
+
+    async def fail(*_: Any) -> int:
+        raise TypeError(msg)
+
+    monkeypatch.setattr(UserAdapter, "login", fail)
+    resp = await client.post(
+        "/login?action=login",
+        data={"username": "u", "password": "p"},
+        allow_redirects=False,
+    )
+    assert resp.status == HTTPStatus.SEE_OTHER
+    assert location(resp) == (
+        "/",
+        {"informasjon": f"Innlogging feilet. {UNEXPECTED_ERROR}"},
+    )
