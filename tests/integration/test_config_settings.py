@@ -12,6 +12,7 @@ running photo-service.
 """
 
 import json
+from http import HTTPStatus
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,7 @@ import pytest
 from aiohttp import web
 
 from photo_service_gui.services import ConfigAdapter
+from photo_service_gui.services.config_adapter import with_defaults
 
 EVENT_ID = "e1"
 DEFAULTS = json.loads(Path("photo_service_gui/config/global_settings.json").read_text())
@@ -40,6 +42,17 @@ class FakePhotoService:
             return web.json_response({"detail": "not found"}, status=404)
         value = self.settings[key]
         return web.json_response({"event_id": key[0], "key": key[1], "value": value})
+
+    async def get_all_configs(self, request: web.Request) -> web.Response:
+        """GET /configs: the settings saved for the event."""
+        event_id = request.query.get("eventId", "")
+        return web.json_response(
+            [
+                {"event_id": e, "key": k, "value": v}
+                for (e, k), v in self.settings.items()
+                if e == event_id
+            ],
+        )
 
     async def create_config(self, request: web.Request) -> web.Response:
         """POST /config: save a new setting."""
@@ -67,6 +80,7 @@ async def photo_service(
     fake = FakePhotoService()
     app = web.Application()
     app.router.add_get("/config", fake.get_config)
+    app.router.add_get("/configs", fake.get_all_configs)
     app.router.add_post("/config", fake.create_config)
     app.router.add_put("/config", fake.update_config)
     server = await aiohttp_server(app)
@@ -156,3 +170,74 @@ async def test_update_unknown_setting(photo_service: FakePhotoService) -> None:
     assert "NO_SUCH_SETTING not found" in e.value.reason
     assert [method for method, _ in photo_service.writes] == ["PUT"]
     assert photo_service.settings == {}
+
+
+# --- All settings on the settings page (follow-up) --------------------------------
+
+
+@pytest.mark.integration
+def test_with_defaults() -> None:
+    """All known settings, with saved values where saved, then other saved ones."""
+    saved = [
+        {"event_id": EVENT_ID, "key": "VIDEO_STORAGE_MODE", "value": "saved"},
+        {"event_id": EVENT_ID, "key": "NOT_IN_DEFAULTS", "value": "extra"},
+    ]
+    settings = with_defaults(saved)
+    assert [s["key"] for s in settings] == [*DEFAULTS, "NOT_IN_DEFAULTS"]
+    by_key = {s["key"]: s for s in settings}
+    assert by_key["VIDEO_STORAGE_MODE"] == {
+        "key": "VIDEO_STORAGE_MODE",
+        "value": "saved",
+        "is_default": False,
+    }
+    assert by_key["NOT_IN_DEFAULTS"]["is_default"] is False
+    assert by_key["VIDEO_CLIP_DURATION"] == {
+        "key": "VIDEO_CLIP_DURATION",
+        "value": DEFAULTS["VIDEO_CLIP_DURATION"],
+        "is_default": True,
+    }
+
+
+@pytest.mark.integration
+async def test_settings_page_shows_all_settings(
+    client: Any, photo_service: FakePhotoService, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A new event shows every setting, with the default, so it can be changed."""
+    photo_service.settings[(EVENT_ID, "VIDEO_STORAGE_MODE")] = "saved value"
+    photo_service.settings[(EVENT_ID, "NOT_IN_DEFAULTS")] = "extra"
+
+    async def fake_check_login(*_: Any) -> dict:
+        return {"name": "tester", "loggedin": True, "token": "t"}
+
+    async def fake_get_event(*_: Any) -> dict:
+        return {
+            "id": EVENT_ID,
+            "name": "Test",
+            "date_of_event": "2026-11-06",
+            "organiser": "Lyn Ski",
+        }
+
+    async def fake_srt_streams() -> list:
+        return []
+
+    async def fake_service_instances(*_: Any) -> list:
+        return []
+
+    views = "photo_service_gui.views.config"
+    monkeypatch.setattr(f"{views}.check_login", fake_check_login)
+    monkeypatch.setattr(f"{views}.get_event", fake_get_event)
+    monkeypatch.setattr(f"{views}.get_srt_streams", fake_srt_streams)
+    monkeypatch.setattr(
+        f"{views}.ServiceInstanceAdapter.get_all_service_instances",
+        fake_service_instances,
+    )
+
+    resp = await client.get(f"/config?event_id={EVENT_ID}&action=edit")
+    assert resp.status == HTTPStatus.OK
+    text = await resp.text()
+    for key in DEFAULTS:
+        assert f'name="key" value="{key}"' in text
+    assert 'name="key" value="NOT_IN_DEFAULTS"' in text
+    assert text.count("name=update_one") == len(DEFAULTS) + 1
+    assert text.count(">(standard)</i>") == len(DEFAULTS) - 1
+    assert 'value="saved value"' in text
