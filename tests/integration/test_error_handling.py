@@ -349,3 +349,10 @@ async def test_login_not_activated(
     )
     assert resp.status == HTTPStatus.OK
     assert NOT_ACTIVATED in await resp.text()
+
+
+@pytest.mark.integration
+async def test_secret_route_is_removed(client: Any) -> None:
+    """The unused example route /secret read and wrote the session."""
+    resp = await client.get("/secret", allow_redirects=False)
+    assert resp.status == HTTPStatus.NOT_FOUND

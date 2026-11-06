@@ -3,14 +3,13 @@
 import base64
 import logging
 import os
-import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 import aiohttp_jinja2
 import jinja2
 from aiohttp import web
-from aiohttp_session import get_session, setup
+from aiohttp_session import setup
 from aiohttp_session.cookie_storage import EncryptedCookieStorage
 from dotenv import load_dotenv
 
@@ -32,15 +31,6 @@ logging.info(f"PROJECT_ROOT: {PROJECT_ROOT}")
 gs_config_file = f"{PROJECT_ROOT}/config/global_settings.json"
 
 
-async def handler(request) -> web.Response:
-    """Create a session handler."""
-    session = await get_session(request)
-    last_visit = session.get("last_visit", None)
-    session["last_visit"] = time.time()
-    text = f"Last visited: {last_visit}"
-    return web.Response(text=text)
-
-
 async def create_app() -> web.Application:
     """Create an web application."""
     app = web.Application()
@@ -49,7 +39,6 @@ async def create_app() -> web.Application:
     fernet_key = os.getenv("FERNET_KEY", "23EHUWpP_tpleR_RjuX5hxndWqyc0vO-cjNUMSzbjN4=")
     secret_key = base64.urlsafe_b64decode(fernet_key)
     setup(app, EncryptedCookieStorage(secret_key))
-    app.router.add_get("/secret", handler)
 
     # Set up logging - errors to separate file
     logging.basicConfig(level=LOGGING_LEVEL)
